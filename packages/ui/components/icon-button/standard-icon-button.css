@@ -1,0 +1,56 @@
+:host([variant="standard"]) {
+  --md-icon-button-background-color: transparent;
+  --md-icon-button-border-color: transparent;
+  --md-icon-button-foreground-color: var(--md-sys-color-on-surface-variant);
+}
+
+:host([variant="standard"]:hover:not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      transparent,
+      var(--md-sys-color-on-surface-variant) 8%);
+}
+
+:host([variant="standard"]:focus:not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      transparent,
+      var(--md-sys-color-on-surface-variant) 12%);
+}
+
+:host([variant="standard"]:active:not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      transparent,
+      var(--md-sys-color-on-surface-variant) 12%);
+}
+
+:host([variant="standard"]:where([disabled])) {
+  --md-icon-button-foreground-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 12%);
+  --md-icon-button-foreground-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 38%);
+}
+
+:host([variant="standard"]:where([selected]):not([disabled])) {
+  --md-icon-button-background-color: transparent;
+  --md-icon-button-border-color: transparent;
+  --md-icon-button-foreground-color: var(--md-sys-color-primary);
+}
+
+:host([variant="standard"]:hover:where([selected]):not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      transparent,
+      var(--md-sys-color-primary) 8%);
+}
+
+:host([variant="standard"]:focus:where([selected]):not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      transparent,
+      var(--md-sys-color-primary) 12%);
+}
+
+:host([variant="standard"]:active:where([selected]):not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      transparent,
+      var(--md-sys-color-primary) 12%);
+}

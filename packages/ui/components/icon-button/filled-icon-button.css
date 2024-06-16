@@ -1,0 +1,57 @@
+/* || FILLED */
+
+:host([variant="filled"]) {
+  --md-icon-button-background-color: var(--md-sys-color-surface-container-highest);
+  --md-icon-button-foreground-color: var(--md-sys-color-primary);
+}
+
+:host([variant="filled"]:hover:not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-surface-container-highest),
+      var(--md-sys-color-primary) 8%);
+}
+
+:host([variant="filled"]:active:not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-surface-container-highest),
+      var(--md-sys-color-primary) 12%);
+}
+
+:host([variant="filled"]:focus:not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-surface-container-highest),
+      var(--md-sys-color-primary) 1%);
+}
+
+/* || SELECTED */
+:host([variant="filled"]:where([selected])) {
+  --md-icon-button-background-color: var(--md-sys-color-primary);
+  --md-icon-button-foreground-color: var(--md-sys-color-on-primary);
+}
+
+:host([variant="filled"]:hover:not([disabled]):where([selected])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 8%);
+}
+
+:host([variant="filled"]:active:not([disabled]):where([selected])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 12%);
+}
+
+:host([variant="filled"]:focus:not([disabled]):where([selected])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 12%);
+}
+
+:host([variant="filled"]:where([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      transparent,
+      var(--md-sys-color-on-surface) 12%);
+  --md-icon-button-foreground-color: color-mix(in oklch,
+      transparent,
+      var(--md-sys-color-on-surface) 38%);
+}

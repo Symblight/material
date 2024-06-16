@@ -1,0 +1,14 @@
+{
+  "name": "material-ui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.7"
+  }
+}

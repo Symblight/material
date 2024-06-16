@@ -1,0 +1,61 @@
+.text-field_variant_filled {
+  border-radius: var(--md-filled-text-field-shape);
+}
+
+.text-field_variant_filled:hover:where(:not(.text-field_disabled)) {
+  --md-text-field-background-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 88%);
+}
+
+.text-field__input-wrapper_variant_filled {
+  --_bottom-space: var(--md-text-field-top-space);
+  --_top-space: var(--md-text-field-top-space);
+}
+
+.text-field__input-wrapper_label:where(.text-field__input-wrapper_variant_filled) {
+  --padding-top: calc(var(--md-text-field-top-space) + 0.5rem);
+  --_top-space: var(--padding-top);
+  --_bottom-space: calc(var(--md-text-field-bottom-space) - 0.5rem);
+}
+
+.text-field__input-wrapper_multiline:where(.text-field__input-wrapper_variant_filled) {
+  --md-text-field-top-space: 0.55rem;
+}
+
+.text-field__indicator {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-end: 0;
+  z-index: 1;
+  width: 100%;
+  height: 0.063rem;
+  background-color: var(--md-filled-text-field-background-indicator);
+}
+
+.text-field__indicator_focused {
+  height: 0.188rem;
+  --md-filled-text-field-background-indicator: var(--md-text-field-primary-color);
+}
+
+.text-field__indicator_error {
+  --md-filled-text-field-background-indicator: var(--md-text-field-error-color);
+}
+
+.text-field__filled-label-wrap {
+  inset: 0;
+}
+
+.text-field__filled-label {
+  position: absolute;
+  transform: translate(0rem, -0.5rem);
+}
+
+.text-field__filled-label_populated {
+  font-size: var(--md-text-field-label-size-populated);
+  transform: translate(0rem, -1.25rem);
+}
+
+.text-field__input-wrapper_multiline:where(.text-field__input-wrapper_variant_filled) {
+  margin: 0.45rem 0px 0px;
+}

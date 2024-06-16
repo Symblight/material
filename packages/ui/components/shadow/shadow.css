@@ -1,0 +1,61 @@
+:host,
+.shadow,
+.shadow::after,
+.shadow::before {
+  border-radius: inherit;
+  inset: 0;
+  position: absolute;
+  transition-duration: inherit;
+  transition-property: inherit;
+  transition-timing-function: inherit;
+  transition-duration: 280ms;
+}
+
+.shadow::before,
+.shadow::after {
+  content: "";
+  --md-elevation-shadow-color: #000;
+  --md-sys-color-shadow: #000;
+  --_level: var(--md-elevation-level);
+  --_shadow-color: var(--md-sys-color-shadow);
+}
+
+.shadow::before {
+  box-shadow: 0px
+    calc(
+      1px *
+        (
+          clamp(0, var(--_level), 1) + clamp(0, var(--_level) - 3, 1) + 2 *
+            clamp(0, var(--_level) - 4, 1)
+        )
+    )
+    calc(
+      1px *
+        (
+          2 * clamp(0, var(--_level), 1) + clamp(0, var(--_level) - 2, 1) +
+            clamp(0, var(--_level) - 4, 1)
+        )
+    )
+    0px var(--_shadow-color);
+  opacity: 0.3;
+}
+
+.shadow::after {
+  box-shadow: 0px
+    calc(
+      1px *
+        (
+          clamp(0, var(--_level), 1) + clamp(0, var(--_level) - 1, 1) + 2 *
+            clamp(0, var(--_level) - 2, 3)
+        )
+    )
+    calc(
+      1px *
+        (3 * clamp(0, var(--_level), 2) + 2 * clamp(0, var(--_level) - 2, 3))
+    )
+    calc(
+      1px * (clamp(0, var(--_level), 4) + 2 * clamp(0, var(--_level) - 4, 1))
+    )
+    var(--_shadow-color);
+  opacity: 0.15;
+}

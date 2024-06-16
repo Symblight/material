@@ -1,0 +1,102 @@
+{
+  "name": "ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "wireit",
+    "build-css": "node ./scripts/build-css.mjs",
+    "build:vite": "tsc && vite build",
+    "package": "npm run build",
+    "prepublishOnly": "npm run package",
+    "lint": "eslint --ext .ts . --ignore-path .gitignore",
+    "format": "prettier --write . --ignore-path .gitignore",
+    "preview": "vite preview",
+    "sb": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "prepare": "husky"
+  },
+  "files": [
+    "dist/"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "default": "./dist/index.js",
+        "types": "./dist/components/index.d.ts"
+      }
+    },
+    "./theme/theme.css": "./dist/theme.css",
+    "./theme/dark.css": "./dist/themes/dark.css",
+    "./theme/light.css": "./dist/themes/light.css"
+  },
+  "dependencies": {
+    "@lit-labs/observers": "^2.0.2",
+    "@material-design-icons/svg": "^0.14.13",
+    "@open-wc/form-control": "^1.0.0",
+    "@open-wc/form-helpers": "^1.0.0",
+    "lit": "^3.1.4",
+    "rollup-plugin-postcss-lit": "^2.1.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.24.7",
+    "@chromatic-com/storybook": "^1.3.5",
+    "@storybook/addon-essentials": "^8.1.10",
+    "@storybook/addon-links": "^8.1.10",
+    "@storybook/blocks": "^8.1.10",
+    "@storybook/test": "^8.1.10",
+    "@storybook/web-components": "^8.1.10",
+    "@storybook/web-components-vite": "^8.1.10",
+    "esbuild": "^0.21.5",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.7",
+    "postcss": "^8.4.38",
+    "rimraf": "^5.0.7",
+    "storybook": "^8.1.10",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1",
+    "vite-plugin-dts": "^3.9.1",
+    "wireit": "^0.14.4"
+  },
+  "wireit": {
+    "build-ts": {
+      "command": "vite build",
+      "files": [
+        "components/**/*.ts",
+        "components/**/*.css"
+      ],
+      "output": [
+        "dist/**/*.js",
+        "dist/**/*.ts",
+        "dist/**/*.css",
+        "dist/**/*.js.map"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "build": {
+      "command": "node ./scripts/build-css.mjs",
+      "dependencies": [
+        "build-ts"
+      ],
+      "files": [
+        "**/*.css"
+      ],
+      "output": [
+        "dist/theme.css"
+      ],
+      "clean": "if-file-deleted"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  }
+}

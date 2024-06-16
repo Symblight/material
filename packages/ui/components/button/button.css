@@ -1,0 +1,295 @@
+:host {
+  --md-button-foreground-color: var(--global-foreground);
+
+  --md-button-background-color: transparent;
+
+  --md-button-rounded-border-radius: 2rem;
+
+  --md-button-font-size: 1rem;
+
+  ---_container-height: 20px;
+  --md-button-inline-start-space: 1.5rem;
+  --md-button-inline-end-space: 1.5rem;
+  --md-button-block-start-space: 0.625rem;
+  --md-button-block-end-space: 0.625rem;
+  --md-button-border-size: 0;
+
+  --_container-space-left: var(--md-button-inline-start-space);
+  --_container-space-right: var(--md-button-inline-end-space);
+  --_container-space-top: var(--md-button-block-start-space);
+  --_container-space-bottom: var(--md-button-block-end-space);
+}
+
+::slotted([slot="icon"]) {
+  font-size: 1.125rem;
+}
+
+.button_icon {
+  --_container-space-left: 1rem;
+}
+
+:host {
+  display: flex;
+  position: relative;
+  inline-size: fit-content;
+  box-sizing: border-box;
+  text-wrap: nowrap;
+  user-select: none;
+  cursor: pointer;
+  border-radius: 6.25rem;
+
+  background-color: var(--md-button-background-color);
+  color: var(--md-button-foreground-color);
+  min-height: var(--_container-height);
+
+  line-height: 1.25rem;
+}
+
+.button {
+  display: inline-flex;
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  justify-content: center;
+  place-items: center;
+  user-select: none;
+  cursor: pointer;
+  white-space: nowrap;
+  border-width: 0;
+  z-index: 0;
+  color: inherit;
+  border-radius: inherit;
+  border: var(--md-button-border-size) solid var(--md-button-border-color);
+  text-decoration: none;
+  padding-inline: var(--_container-space-left) var(--_container-space-right);
+  padding-block: var(--_container-space-top) var(--_container-space-bottom);
+  margin: 0;
+  appearance: none;
+  font: inherit;
+  line-height: inherit;
+  gap: 0.5rem;
+  background: none;
+}
+
+.button:focus-visible::before {
+  outline: none;
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  border: 0.063rem solid var(--md-button-border-color);
+}
+
+.button_disabled {
+  cursor: not-allowed;
+}
+
+.button__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.button__content_hidden {
+  padding-inline: 0;
+}
+
+.button__spin {
+  color: inherit;
+}
+
+.button:has(.button__icon) {
+  display: flex;
+  align-items: center;
+
+  --_container-space-left: 1rem;
+}
+
+/* || FILLED */
+:host([variant="filled"]) {
+  --md-button-background-color: var(--md-sys-color-primary);
+  --md-button-foreground-color: var(--md-sys-color-on-primary);
+}
+
+:host([variant="filled"]:hover:not([disabled]):not(:active)) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 8%);
+  --md-elevation-level: 1;
+}
+
+:host([variant="filled"]:focus:not([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 12%);
+}
+
+:host([variant="filled"]:active:not([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 12%);
+}
+
+:host([disabled]:where(:host([variant="filled"]))) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 88%);
+  --md-button-foreground-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 38%);
+}
+
+/* || ELEVATED */
+:host([variant="elevated"]) {
+  --md-button-background-color: transparent;
+  --md-button-border-color: transparent;
+  --md-button-foreground-color: var(--md-sys-color-primary);
+
+  --md-elevation-level: 1;
+}
+
+:host([variant="elevated"]:hover:not([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 92%);
+  --md-elevation-level: 2;
+}
+
+:host([variant="elevated"]:focus:not([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 88%);
+}
+
+:host([variant="elevated"]:active:not([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 88%);
+}
+
+:host([variant="elevated"]:where([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 88%);
+  --md-button-foreground-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 38%);
+  --md-elevation-level: -1;
+}
+
+/* || OUTLINED */
+:host([variant="outlined"]) {
+  --md-button-background-color: transparent;
+  --md-button-border-color: var(--md-sys-color-outline);
+  --md-button-foreground-color: var(--md-sys-color-primary);
+  --md-button-border-size: 0.063rem;
+  --_container-space-top: calc(var(--md-button-block-start-space) - var(--md-button-border-size));
+  --_container-space-bottom: calc(var(--md-button-block-end-space) - var(--md-button-border-size));
+}
+
+:host([variant="outlined"]:hover:not([disabled]):not(:active)) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 92%);
+}
+
+:host([variant="outlined"]:focus:not([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 88%);
+}
+
+:host([variant="outlined"]:active:not([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 88%);
+}
+
+:host([disabled]:where(:host([variant="outlined"]))) {
+  --md-button-border-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 12%);
+  --md-button-foreground-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 38%);
+  --md-button-border-color: color-mix(in oklch,
+      var(--md-sys-color-outline),
+      transparent 38%);
+}
+
+/* || TEXT */
+:host([variant="text"]) {
+  --md-button-background-color: transparent;
+  --md-button-border-color: transparent;
+  --md-button-foreground-color: var(--md-sys-color-primary);
+
+  --_container-space-left: 0.75rem;
+  --_container-space-right: 0.75rem;
+}
+
+:host([variant="text"]:where([loading])) {
+  --_container-space-left: 1rem;
+  --_container-space-right: 0.75rem;
+}
+
+:host([variant="text"]:hover:not([disabled]):not(:active)) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 92%);
+}
+
+:host([variant="text"]:focus:not([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 88%);
+}
+
+:host([variant="text"]:active:not([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 88%);
+}
+
+:host([disabled]:where(:host([variant="text"]))) {
+  --md-button-foreground-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 38%);
+}
+
+/* || TONAL */
+:host([variant="tonal"]) {
+  --md-button-background-color: var(--md-sys-color-secondary-container);
+  --md-button-foreground-color: var(--md-sys-color-on-secondary-container);
+  --md-button-border-color: transparent;
+}
+
+:host([variant="tonal"]:hover:not([disabled]):not(:active)) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 92%);
+}
+
+:host([variant="tonal"]:focus:not([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 88%);
+}
+
+:host([variant="tonal"]:active:not([disabled])) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-primary),
+      transparent 88%);
+}
+
+:host([disabled]:where(:host([variant="tonal"]))) {
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 88%);
+  --md-button-foreground-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 38%);
+}
+
+.button_focused {
+  /* background-color: red; */
+}

@@ -1,0 +1,66 @@
+:host([variant="tonal"]) {
+  --md-icon-button-background-color: var(--md-sys-color-secondary-container);
+  --md-icon-button-foreground-color: var(--md-sys-color-on-secondary-container);
+  --md-icon-button-border-color: transparent;
+}
+
+:host([variant="tonal"]:hover:not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-secondary-container),
+      var(--md-sys-color-on-secondary-container) 8%);
+}
+
+:host([variant="tonal"]:focus:not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-secondary-container),
+      var(--md-sys-color-on-secondary-container) 12%);
+}
+
+:host([variant="tonal"]:active):not([disabled]) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-secondary-container),
+      var(--md-sys-color-on-secondary-container) 12%);
+}
+
+:host([variant="tonal"]:where([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 88%);
+
+  --md-icon-button-foreground-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 38%);
+}
+
+:host([variant="tonal"]:where([selected])) {
+  --md-icon-button-background-color: var(--md-sys-color-surface-container-highest);
+
+  --md-icon-button-foreground-color: var(--md-sys-color-on-surface-variant);
+}
+
+:host([variant="tonal"]:hover:where([selected]):not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-surface-container-highest),
+      var(--md-sys-color-on-surface-variant) 8%);
+}
+
+:host([variant="tonal"]:focus:where([selected]):not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-surface-container-highest),
+      var(--md-sys-color-on-surface-variant) 12%);
+}
+
+:host([variant="tonal"]:active:where([selected]):not([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-surface-container-highest),
+      var(--md-sys-color-on-surface-variant) 12%);
+}
+
+:host([variant="tonal"]:where([selected]):where([disabled])) {
+  --md-icon-button-background-color: color-mix(in oklch,
+      transparent,
+      var(--md-sys-color-on-surface) 12%);
+  --md-icon-button-foreground-color: color-mix(in oklch,
+      transparent,
+      var(--md-sys-color-on-surface) 38%);
+}
