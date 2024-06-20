@@ -1,5 +1,5 @@
-import './button/button'
-import './icon/icon'
-import './icon-button/icon-button'
-import './spin/spin'
-import './text-field/text-field'
+import "./button/button";
+import "./icon/icon";
+import "./icon-button/icon-button";
+import "./progress-circular/progress-circular";
+import "./text-field/text-field";

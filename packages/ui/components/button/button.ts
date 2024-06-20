@@ -5,10 +5,18 @@ import { classMap } from "lit/directives/class-map.js";
 import { when } from "lit/directives/when.js";
 import { submit } from "@open-wc/form-helpers";
 
-import "../spin/spin.ts";
+import MdRipple from "../ripple/ripple";
+
+import "../progress-circular/progress-circular.ts";
 import "../shadow/shadow.ts";
+import "../ripple/ripple.ts";
 
 import styles from "./button.css?inline";
+import filledStyles from "./filled-button.css?inline";
+import elevatedStyles from "./elevated-button.css?inline";
+import outlinedStyles from "./outlined-button.css?inline";
+import textStyles from "./text-button.css?inline";
+import tonalStyles from "./tonal-button.css?inline";
 
 export type ButtonVariant =
   | "filled"
@@ -67,7 +75,7 @@ export default class Button extends LitElement {
   public get variant(): ButtonVariant {
     return this._variant;
   }
-  
+
   @property()
   public set variant(variant: ButtonVariant) {
     if (variant === this.variant) return;
@@ -122,7 +130,10 @@ export default class Button extends LitElement {
   accessor icon: Node | null = null;
 
   @query(".button")
-  accessor buttonOrAnchor: HTMLButtonElement | HTMLAnchorElement;
+  accessor buttonOrAnchor: HTMLButtonElement | HTMLAnchorElement | undefined;
+
+  @query("md-ripple")
+  accessor ripple: MdRipple | undefined;
 
   /**
    * The focused state.
@@ -134,7 +145,24 @@ export default class Button extends LitElement {
   accessor childrenContent: Node | null | string = null;
 
   static get styles(): CSSResultGroup {
-    return [styles as unknown as CSSResultOrNative];
+    return [
+      filledStyles,
+      elevatedStyles,
+      outlinedStyles,
+      textStyles,
+      tonalStyles,
+      styles,
+    ] as unknown as CSSResultOrNative[];
+  }
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    this.addEventListener("click", this.handleClick);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.removeEventListener("click", this.handleClick);
   }
 
   private handleClick() {
@@ -174,7 +202,7 @@ export default class Button extends LitElement {
   get assignedNodesList() {
     const slotSelector = "slot:not([name])";
     const slotEl = this.renderRoot?.querySelector(
-      slotSelector
+      slotSelector,
     ) as HTMLSlotElement;
     return slotEl?.assignedNodes() ?? [];
   }
@@ -186,7 +214,7 @@ export default class Button extends LitElement {
           return true;
         }
         return node.textContent ? node.textContent.trim() : false;
-      }
+      },
     );
 
     this.slotHasContent = assignedNodes.length > 0;
@@ -194,7 +222,7 @@ export default class Button extends LitElement {
 
   updateChildren() {
     const iconSlot = this.shadowRoot?.querySelector(
-      'slot[name="icon"]'
+      'slot[name="icon"]',
     ) as HTMLSlotElement;
     const icon = !iconSlot
       ? []
@@ -239,8 +267,10 @@ export default class Button extends LitElement {
               button__icon: !!this.childrenContent,
             })}"
           >
-            <md-spin class="button__spin" size="xs"></md-spin>
-          </div>`
+            <md-progress-circular
+              class="button__progress-circular"
+            ></md-progress-circular>
+          </div>`,
       )}
       <slot ?icon-only=${this.slotHasContent} name="icon"> </slot> `;
   }
@@ -276,10 +306,10 @@ export default class Button extends LitElement {
     return html` <button
       part="button"
       type=${this.type}
+      id="button"
       class="button ${this.classes}"
       ?disabled=${this.disabled}
       aria-busy=${this.loading}
-      @click=${this.handleClick}
       @focus=${this.handleFocus}
       @blur=${this.handleFocus}
     >
@@ -290,6 +320,7 @@ export default class Button extends LitElement {
   override render() {
     return html`
       <md-shadow></md-shadow>
+      <!-- <md-ripple class="button__ripple" for="button"></md-ripple> -->
       ${this.renderButtonOrLink()}
     `;
   }

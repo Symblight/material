@@ -4,7 +4,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { when } from "lit/directives/when.js";
 import { submit } from "@open-wc/form-helpers";
 
-import "../spin/spin.ts";
+import "../ripple/ripple.ts";
 
 import styles from "./icon-button.css?inline";
 import filledStyles from "./filled-icon-button.css?inline";
@@ -32,7 +32,7 @@ export default class IconButton extends LitElement {
    * Type: String or HTMLFormElement
    */
   @property({ type: String })
-  accessor form: HTMLFormElement | string;
+  accessor form: HTMLFormElement | string | undefined;
 
   /**
    * The variant style of the button.
@@ -79,23 +79,37 @@ export default class IconButton extends LitElement {
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor selected: boolean = false;
 
-  /**
-   * Tracks whether the button slot has content.
-   */
-  @state()
-  accessor slotHasContent = false;
+  @property({ type: Boolean, attribute: true, reflect: true })
+  accessor toggle: boolean = false;
 
   /**
    * The icon associated with the button.
    */
   @state()
-  accessor icon: Node | null = null;
+  accessor selectedIcon: Node | null = null;
 
   @state()
   accessor childrenContent: Node | null | string = null;
 
   static get styles(): CSSResultGroup {
-    return [styles, filledStyles, standardStyles, outlinedStyles, tonalStyles] as unknown as CSSResultOrNative[];
+    return [
+      filledStyles,
+      standardStyles,
+      outlinedStyles,
+      tonalStyles,
+      styles,
+    ] as unknown as CSSResultOrNative[];
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    this.addEventListener("click", this.handleClick);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.removeEventListener("click", this.handleClick);
   }
 
   firstUpdated(changes: any) {
@@ -123,26 +137,9 @@ export default class IconButton extends LitElement {
       }
     }
 
+    if (!this.toggle) return;
+
     this.selected = !this.selected;
-  }
-
-  handleSlotchange(e: Event) {
-    const childNodes = (e.target as HTMLSlotElement).assignedNodes({
-      flatten: true,
-    }) as Element[];
-
-    this.childrenContent = childNodes
-      .map((node) => (node.textContent ? node.textContent : ""))
-      .join("")
-      .trim();
-  }
-
-  get assignedNodesList() {
-    const slotSelector = "slot:not([name])";
-    const slotEl = this.renderRoot?.querySelector(
-      slotSelector
-    ) as HTMLSlotElement;
-    return slotEl?.assignedNodes() ?? [];
   }
 
   private get classes() {
@@ -153,7 +150,7 @@ export default class IconButton extends LitElement {
 
   private renderIcon() {
     return html` ${when(
-      this.selected,
+      this.toggle && this.selected,
       () => html`<slot name="selected"></slot>`,
       () => html`<slot></slot>`,
     )}`;
@@ -164,6 +161,7 @@ export default class IconButton extends LitElement {
       return html`<a
         role="button"
         part="button"
+        id="button"
         class="icon-button ${this.classes}"
         href=${this.href}
       >
@@ -172,17 +170,20 @@ export default class IconButton extends LitElement {
     }
     return html` <button
       part="button"
+      id="button"
       type=${this.type}
       class="icon-button ${this.classes}"
       ?disabled=${this.disabled}
-      @click=${this.handleClick}
     >
       ${this.renderIcon()}
     </button>`;
   }
 
   override render() {
-    return html` ${this.renderButtonOrLink()} `;
+    return html`
+      <!-- <md-ripple class="icon-button__ripple" for="button"></md-ripple> -->
+      ${this.renderButtonOrLink()}
+    `;
   }
 }
 

@@ -1,0 +1,41 @@
+:host {
+  color: var(--md-sys-color-primary);
+
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-circular__svg {
+  display: inline-block;
+  animation: progress-circular 2s linear infinite;
+}
+
+.progress-circular__circle {
+  stroke: currentColor;
+  animation: dash 1.5s ease-in-out infinite;
+  border-radius: 50%;
+}
+
+@keyframes progress-circular {
+  100% {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 282.743;
+    stroke-dashoffset: 0;
+  }
+
+  50% {
+    stroke-dasharray: 141.372, 141.372;
+    stroke-dashoffset: -70.686;
+  }
+
+  100% {
+    stroke-dasharray: 1, 282.743;
+    stroke-dashoffset: -282.743;
+  }
+}

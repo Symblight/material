@@ -1,12 +1,4 @@
 :host {
-  display: inline-block;
-  position: relative;
-  inline-size: fit-content;
-  cursor: pointer;
-  border-radius: 100%;
-}
-
-:host {
   --md-icon-button-foreground-color: inherit;
 
   --md-icon-button-background-color: transparent;
@@ -17,6 +9,18 @@
 
   --md-icon-button-font-size: 0.875rem;
   --md-icon-button-border-size: 0.063rem;
+
+  --md-icon-button-pressed-state-color: transparent;
+}
+
+:host {
+  display: inline-block;
+  position: relative;
+  inline-size: fit-content;
+  cursor: pointer;
+  border-radius: 100%;
+
+  background-color: var(--md-icon-button-background-color);
 }
 
 .icon-button {
@@ -38,17 +42,18 @@
   color: inherit;
 
   border-radius: inherit;
-  border: var(--md-icon-button-border-size) solid var(--md-icon-button-border-color);
+  border: var(--md-icon-button-border-size) solid
+    var(--md-icon-button-border-color);
   text-decoration: none;
   margin: 0;
   box-sizing: border-box;
   appearance: none;
-  background-color: var(--md-icon-button-background-color);
   color: var(--md-icon-button-foreground-color);
   font-size: var(--md-icon-button-font-size);
   line-height: 1.125rem;
   padding: calc(0.5rem - 0.063rem);
   font-size: 1.5rem;
+  background: none;
 }
 
 .icon-button::-moz-focus-inner {
@@ -73,4 +78,9 @@
 
 .icon-button__spin {
   color: inherit;
+}
+
+.icon-button__ripple {
+  --md-ripple-pressed-color: var(--md-icon-button-pressed-state-color);
+  --md-ripple-pressed-opacity: 1;
 }

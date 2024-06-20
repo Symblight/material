@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/web-components";
 import { html } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
-import logout from '@material-design-icons/svg/filled/logout.svg?raw';
+import logout from "@material-design-icons/svg/filled/logout.svg?raw";
 
 import "../button.ts";
 import "../../icon/icon.ts";
@@ -75,10 +75,9 @@ export const Regular: Story = {
 export const WithIconContent: Story = {
   args: {
     children: html`Sign out
-      <md-icon
-        slot="icon"
-        name="logout"
-      >${unsafeSVG(logout)}</md-icon>` as unknown as HTMLCollection,
+      <md-icon slot="icon" name="logout"
+        >${unsafeSVG(logout)}</md-icon
+      >` as unknown as HTMLCollection,
     variant: "filled",
   },
 };

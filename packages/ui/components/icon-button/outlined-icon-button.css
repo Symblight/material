@@ -3,65 +3,93 @@
   --md-icon-button-border-color: var(--md-sys-color-outline);
   --md-icon-button-foreground-color: var(--md-sys-color-on-surface-variant);
   --md-icon-button-border-size: 0.063rem;
+
+  --md-icon-button-pressed-state-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface-variant) 12%
+  );
 }
 
 :host([variant="outlined"]:hover:not([disabled])) {
-  --md-icon-button-background-color: color-mix(in oklch,
-      transparent,
-      var(--md-sys-color-on-surface-variant) 8%);
+  --md-icon-button-background-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface-variant) 8%
+  );
 }
 
 :host([variant="outlined"]:focus:not([disabled])) {
-  --md-icon-button-background-color: color-mix(in oklch,
-      transparent,
-      var(--md-sys-color-on-surface-variant) 12%);
+  /* --md-icon-button-background-color: color-mix(in oklch, */
+  /*     transparent, */
+  /*     var(--md-sys-color-on-surface-variant) 1%); */
 }
 
 :host([variant="outlined"]:active:not([disabled])) {
-  --md-icon-button-background-color: color-mix(in oklch,
-      transparent,
-      var(--md-sys-color-on-surface-variant) 12%);
+  --md-icon-button-background-color: color-mix(
+    in oklch,
+    transparent,
+    * / var(--md-sys-color-on-surface-variant) 12%
+  );
 }
 
 :host([variant="outlined"]:where([disabled])) {
-  --md-icon-button-border-color: color-mix(in oklch,
-      var(--md-sys-color-outline),
-      transparent 12%);
-  --md-icon-button-foreground-color: color-mix(in oklch,
-      var(--md-sys-color-on-surface),
-      transparent 38%);
+  --md-icon-button-border-color: color-mix(
+    in oklch,
+    var(--md-sys-color-outline),
+    transparent 12%
+  );
+  --md-icon-button-foreground-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 38%
+  );
 }
 
 :host([variant="outlined"]:where([selected]):not([disabled])) {
   --md-icon-button-background-color: var(--md-sys-color-inverse-surface);
   --md-icon-button-foreground-color: var(--md-sys-color-inverse-on-surface);
   --md-icon-button-border-color: transparent;
+
+  --md-icon-button-pressed-state-color: color-mix(
+    in oklch,
+    var(--md-sys-color-inverse-surface),
+    var(--md-sys-color-inverse-on-surface) 22%
+  );
 }
 
 :host([variant="outlined"]:hover:where([selected]):not([disabled])) {
-  --md-icon-button-background-color: color-mix(in oklch,
-      var(--md-sys-color-inverse-surface),
-      var(--md-sys-color-inverse-on-surface) 8%);
+  --md-icon-button-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-inverse-surface),
+    var(--md-sys-color-inverse-on-surface) 8%
+  );
 }
 
 :host([variant="outlined"]:focus:where([selected]):not([disabled])) {
-  --md-icon-button-background-color: color-mix(in oklch,
-      var(--md-sys-color-inverse-surface),
-      var(--md-sys-color-inverse-on-surface) 12%);
+  /* --md-icon-button-background-color: color-mix(in oklch, */
+  /*     var(--md-sys-color-inverse-surface), */
+  /*     var(--md-sys-color-inverse-on-surface) 1%); */
 }
 
 :host([variant="outlined"]:active:where([selected]):not([disabled])) {
-  --md-icon-button-background-color: color-mix(in oklch,
-      var(--md-sys-color-inverse-surface),
-      var(--md-sys-color-inverse-on-surface) 12%);
+  --md-icon-button-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-inverse-surface),
+    var(--md-sys-color-inverse-on-surface) 12%
+  );
 }
 
 :host([variant="outlined"]:where([selected]):where([disabled])) {
-  --md-icon-button-background-color: color-mix(in oklch,
-      transparent,
-      var(--md-sys-color-on-surface) 12%);
-  --md-icon-button-foreground-color: color-mix(in oklch,
-      transparent,
-      var(--md-sys-color-on-surface) 38%);
+  --md-icon-button-background-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface) 12%
+  );
+  --md-icon-button-foreground-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface) 38%
+  );
   --md-icon-button-border-color: transparent;
 }

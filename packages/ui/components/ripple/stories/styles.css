@@ -1,0 +1,11 @@
+.ripple-container {
+  align-items: center;
+  border-radius: 24px;
+  display: flex;
+  height: 64px;
+  justify-content: center;
+  outline: 1px solid var(--md-sys-color-outline);
+  padding: 16px;
+  position: relative;
+  width: 64px;
+}

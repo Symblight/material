@@ -82,8 +82,8 @@ export class TextField extends FormControlMixin(LitElement) {
   /**
    * Indicates an error state.
    */
-  @property({ type: Boolean, attribute: true, reflect: true }) accessor error = false;
-
+  @property({ type: Boolean, attribute: true, reflect: true }) accessor error =
+    false;
 
   /**
    * The placeholder text for the text field.
@@ -152,10 +152,10 @@ export class TextField extends FormControlMixin(LitElement) {
   accessor prefixText = "";
 
   @query(".text-field__control")
-  accessor inputOrTextArea: HTMLInputElement | HTMLAreaElement;
+  accessor inputOrTextArea: HTMLInputElement | HTMLAreaElement | undefined;
 
   @query(".text-field__control")
-  accessor validationTarget: HTMLInputElement | HTMLAreaElement;
+  accessor validationTarget: HTMLInputElement | HTMLAreaElement | undefined;
 
   resetFormControl(): void {
     this.value = "";
@@ -188,7 +188,7 @@ export class TextField extends FormControlMixin(LitElement) {
     super.connectedCallback();
 
     const slots = Array.from(this.shadowRoot?.host.children || []).map(
-      (element) => element.attributes.getNamedItem("slot")
+      (element) => element.attributes.getNamedItem("slot"),
     );
     const trailingSlot = slots.find((slot) => slot?.nodeValue === "trailing");
     const leadingSlot = slots.find((slot) => slot?.nodeValue === "leading");
@@ -226,7 +226,7 @@ export class TextField extends FormControlMixin(LitElement) {
               ${unsafeSVG(errorIcon)}
             </md-icon>`,
 
-          () => html` <slot name="trailing"> </slot> `
+          () => html` <slot name="trailing"> </slot> `,
         )}
       </div>
     `;
@@ -306,7 +306,7 @@ export class TextField extends FormControlMixin(LitElement) {
           >${this.label}</label
         >
       `,
-      () => nothing
+      () => nothing,
     );
   }
 
@@ -314,7 +314,7 @@ export class TextField extends FormControlMixin(LitElement) {
     return when(
       !this.multiline,
       () => this.renderInput,
-      () => this.renderTextarea
+      () => this.renderTextarea,
     );
   }
 
@@ -328,7 +328,7 @@ export class TextField extends FormControlMixin(LitElement) {
             "text-field__indicator_error": this.hasValidation,
           })}"
         ></div>`,
-      () => nothing
+      () => nothing,
     );
   }
 
@@ -353,7 +353,7 @@ export class TextField extends FormControlMixin(LitElement) {
             <span class="text-field__outlined-legend-label">${this.label}</span>
           </legend>
         </fieldset>`,
-      () => nothing
+      () => nothing,
     );
   }
 
@@ -373,7 +373,7 @@ export class TextField extends FormControlMixin(LitElement) {
           >
         </div>
       `,
-      () => nothing
+      () => nothing,
     );
   }
 
@@ -401,7 +401,7 @@ export class TextField extends FormControlMixin(LitElement) {
         >
           ${this.prefixText}
         </div>`,
-      () => nothing
+      () => nothing,
     );
   }
   private get renderSuffix() {
@@ -415,7 +415,7 @@ export class TextField extends FormControlMixin(LitElement) {
         >
           ${this.suffixText}
         </div>`,
-      () => nothing
+      () => nothing,
     );
   }
 

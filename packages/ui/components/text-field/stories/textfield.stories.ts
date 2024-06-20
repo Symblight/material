@@ -4,7 +4,7 @@ import { Meta, StoryObj } from "@storybook/web-components";
 import search from "@material-design-icons/svg/outlined/search.svg?raw";
 import cancel from "@material-design-icons/svg/outlined/cancel.svg?raw";
 import visibility from "@material-design-icons/svg/outlined/visibility.svg?raw";
-import visibilityOff from "@material-design-icons/svg/outlined/visibility-off.svg?raw";
+import visibilityOff from "@material-design-icons/svg/outlined/visibility_off.svg?raw";
 
 import "../text-field.ts";
 import "../../icon/icon.ts";
@@ -27,7 +27,7 @@ function Template({
   variant = "filled",
   label = "label",
 }: MdTextFieldProps) {
-  function handleChange(e) {
+  function handleChange(e: any) {
     console.log(e.target.value, "value");
   }
   return html`
@@ -164,7 +164,7 @@ export const Invalid: Story = {
     }
 
     function handleReset() {
-      document.querySelector("form").reset();
+      document.querySelector("form")?.reset();
     }
 
     return html`<form @submit=${handleSubmit}>
@@ -209,8 +209,9 @@ export const Password: Story = {
         label="Password"
         type="password"
       >
-        <md-icon-button slot="trailing">
+        <md-icon-button slot="trailing" toggle>
           <md-icon> ${unsafeSVG(visibility)} </md-icon>
+          <md-icon slot="selected"> ${unsafeSVG(visibilityOff)} </md-icon>
         </md-icon-button>
       </md-text-field>
       <md-text-field
@@ -219,8 +220,9 @@ export const Password: Story = {
         label="Password"
         type="password"
       >
-        <md-icon-button slot="trailing">
+        <md-icon-button slot="trailing" toggle>
           <md-icon> ${unsafeSVG(visibility)} </md-icon>
+          <md-icon slot="selected"> ${unsafeSVG(visibilityOff)} </md-icon>
         </md-icon-button>
       </md-text-field>
     `;

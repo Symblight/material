@@ -10,13 +10,9 @@ import { rimraf } from "rimraf";
 
 // const { postCSSPlugins } = cssProcessing;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const styles = path.resolve(
-  path.join(__dirname, "..", "theme.css"),
-);
+const styles = path.resolve(path.join(__dirname, "..", "theme.css"));
 
-const themes = [
-  path.resolve(path.join(__dirname, "..", "theme.css")),
-];
+const themes = [path.resolve(path.join(__dirname, "..", "theme.css"))];
 
 const readFilePromise = util.promisify(fs.readFile);
 

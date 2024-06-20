@@ -1,0 +1,53 @@
+:host {
+  margin: auto;
+
+  --md-ripple-pressed-opacity: 0.12;
+  --md-ripple-hover-opacity: 0.08;
+  --md-ripple-pressed-color: var(--md-sys-color-on-surface);
+}
+
+:host,
+.surface {
+  border-radius: inherit;
+  position: absolute;
+  inset: 0px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.surface::before {
+  background-color: var(
+    --md-ripple-hover-color,
+    var(--md-sys-color-on-surface, #1d1b20)
+  );
+  inset: 0px;
+  transition:
+    opacity 15ms linear,
+    background-color 15ms linear;
+
+  inset: 0px;
+}
+
+.surface::after,
+.surface::before {
+  content: "";
+  position: absolute;
+  opacity: 0;
+  inset: 0px;
+}
+
+.surface::after {
+  background: radial-gradient(
+    closest-side,
+    var(--md-ripple-pressed-color, var(--md-sys-color-on-surface, #1d1b20))
+      max(100% - 70px, 65%),
+    transparent 100%
+  );
+  transition: opacity 175ms linear;
+  transform-origin: center center 0px;
+}
+
+.surface_pressed:after {
+  opacity: var(--md-ripple-pressed-opacity, 0.12);
+  transition-duration: 105ms;
+}

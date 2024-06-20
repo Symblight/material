@@ -1,33 +1,32 @@
 :host {
-    display: inline-flex;
-    align-items: center;
-    color: inherit;
-    font-style: normal;
-    line-height: 0;
-    text-align: center;
-    text-transform: none;
-    text-rendering: optimizeLegibility;
-    font-size: inherit;
-  
-    --stroke-width: 2px;
-  }
-  
-  svg > path {
-    stroke-width: var(--stroke-width);
-  }
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  font-style: normal;
+  line-height: 0;
+  text-align: center;
+  text-transform: none;
+  text-rendering: optimizeLegibility;
+  font-size: inherit;
 
-  svg {
-    fill: currentColor;
-  }
+  --stroke-width: 2px;
+}
 
+svg > path {
+  stroke-width: var(--stroke-width);
+}
 
-  ::slotted(svg) {
-    fill: currentColor;
-    height: 1em;
-    width: 1em;
-  }
+svg {
+  fill: currentColor;
+}
 
-  svg {
-    height: 1em;
-    width: 1em;
-  }
+::slotted(svg) {
+  fill: currentColor;
+  height: 1em;
+  width: 1em;
+}
+
+svg {
+  height: 1em;
+  width: 1em;
+}

@@ -13,7 +13,7 @@ function IconButton({
   variant = "standard",
   children,
   disabled = false,
-  loading = false,
+  toggle = false,
   selected = true,
   href,
 }: IconButtonProps) {
@@ -21,7 +21,7 @@ function IconButton({
     <md-icon-button
       variant=${variant}
       ?disabled=${disabled}
-      ?loading=${loading}
+      ?toggle=${toggle}
       ?selected=${selected}
       href=${href}
     >
@@ -46,15 +46,18 @@ const meta = {
     disabled: {
       control: { type: "boolean" },
     },
+    toggle: {
+      control: { type: "boolean" },
+    },
     href: {
       control: { type: "text" },
     },
   },
   args: {
     children: html` <md-icon
-    >${unsafeSVG(settings)}</md-icon
-  >` as unknown as HTMLCollection,
-  }
+      >${unsafeSVG(settings)}</md-icon
+    >` as unknown as HTMLCollection,
+  },
 } satisfies Meta<IconButtonProps>;
 export default meta;
 
@@ -62,11 +65,18 @@ type Story = StoryObj<IconButtonProps>;
 
 export const Regular: Story = {
   args: {
-    children: html` <md-icon slot="selected"
-      >${unsafeSVG(visibility)}</md-icon
-    ><md-icon
+    children: html`<md-icon
       >${unsafeSVG(settings)}</md-icon
     >` as unknown as HTMLCollection,
+    disabled: false,
+    href: undefined,
+  },
+};
+
+export const Selected: Story = {
+  args: {
+    children: html` <md-icon slot="selected">${unsafeSVG(visibility)}</md-icon
+      ><md-icon>${unsafeSVG(settings)}</md-icon>` as unknown as HTMLCollection,
     disabled: false,
     href: undefined,
   },

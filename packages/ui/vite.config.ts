@@ -6,12 +6,12 @@ export default defineConfig({
   esbuild: {
     target: "esnext",
     minifyIdentifiers: false,
-    tsconfigRaw: {
-      compilerOptions: {
-        experimentalDecorators: true,
-        useDefineForClassFields: false,
-      },
-    },
+    // tsconfigRaw: {
+    //   compilerOptions: {
+    //     experimentalDecorators: true,
+    //     useDefineForClassFields: false,
+    //   },
+    // },
   },
   build: {
     target: "esnext",
