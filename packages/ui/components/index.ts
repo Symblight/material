@@ -3,3 +3,4 @@ import "./icon/icon";
 import "./icon-button/icon-button";
 import "./progress-circular/progress-circular";
 import "./text-field/text-field";
+import "./dialog/dialog";
