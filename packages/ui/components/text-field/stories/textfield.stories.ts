@@ -10,6 +10,7 @@ import "../text-field.ts";
 import "../../icon/icon.ts";
 import "../../button/button.ts";
 import "../../icon-button/icon-button.ts";
+import "../../checkbox/checkbox.ts";
 
 import { type TextField as MdTextFieldProps } from "../text-field.ts";
 
@@ -185,7 +186,8 @@ export const Invalid: Story = {
         <md-icon slot="trailing"> ${unsafeSVG(search)} </md-icon>
         <span slot="help-text">This field is required</span>
       </md-text-field>
-      <input required />
+      <md-checkbox required value="test" name="nametest"></md-checkbox>
+
       <md-button type="submit">Submit</md-button>
       <md-button type="button" @click=${handleReset}>Reset</md-button>
     </form> `;

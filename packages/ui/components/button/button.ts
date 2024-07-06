@@ -1,4 +1,10 @@
-import { CSSResultGroup, CSSResultOrNative, LitElement, html } from "lit";
+import {
+  CSSResultGroup,
+  CSSResultOrNative,
+  LitElement,
+  html,
+  isServer,
+} from "lit";
 import { MutationController } from "@lit-labs/observers/mutation-controller.js";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
@@ -157,12 +163,17 @@ export default class Button extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
 
-    this.addEventListener("click", this.handleClick);
+    if (!isServer) {
+      this.addEventListener("click", this.handleClick);
+    }
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.removeEventListener("click", this.handleClick);
+
+    if (!isServer) {
+      this.removeEventListener("click", this.handleClick);
+    }
   }
 
   private handleClick() {
@@ -202,7 +213,7 @@ export default class Button extends LitElement {
   get assignedNodesList() {
     const slotSelector = "slot:not([name])";
     const slotEl = this.renderRoot?.querySelector(
-      slotSelector,
+      slotSelector
     ) as HTMLSlotElement;
     return slotEl?.assignedNodes() ?? [];
   }
@@ -214,7 +225,7 @@ export default class Button extends LitElement {
           return true;
         }
         return node.textContent ? node.textContent.trim() : false;
-      },
+      }
     );
 
     this.slotHasContent = assignedNodes.length > 0;
@@ -222,7 +233,7 @@ export default class Button extends LitElement {
 
   updateChildren() {
     const iconSlot = this.shadowRoot?.querySelector(
-      'slot[name="icon"]',
+      'slot[name="icon"]'
     ) as HTMLSlotElement;
     const icon = !iconSlot
       ? []
@@ -270,7 +281,7 @@ export default class Button extends LitElement {
             <md-progress-circular
               class="button__progress-circular"
             ></md-progress-circular>
-          </div>`,
+          </div>`
       )}
       <slot ?icon-only=${this.slotHasContent} name="icon"> </slot> `;
   }

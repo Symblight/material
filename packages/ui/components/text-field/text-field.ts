@@ -152,10 +152,10 @@ export class TextField extends FormControlMixin(LitElement) {
   accessor prefixText = "";
 
   @query(".text-field__control")
-  accessor inputOrTextArea: HTMLInputElement | HTMLAreaElement | undefined;
+  accessor inputOrTextArea!: HTMLInputElement | HTMLAreaElement;
 
   @query(".text-field__control")
-  accessor validationTarget: HTMLInputElement | HTMLAreaElement | undefined;
+  accessor validationTarget!: HTMLInputElement | HTMLAreaElement;
 
   resetFormControl(): void {
     this.value = "";
@@ -180,7 +180,7 @@ export class TextField extends FormControlMixin(LitElement) {
     this.focused = this.inputOrTextArea?.matches(":focus") ?? false;
   }
 
-  override focus() {
+  public override focus() {
     this.inputOrTextArea?.focus();
   }
 
