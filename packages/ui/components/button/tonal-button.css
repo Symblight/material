@@ -4,49 +4,37 @@
   --md-button-foreground-color: var(--md-sys-color-on-secondary-container);
   --md-button-border-color: transparent;
 
-  --md-button-pressed-state-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-secondary-container) 12%,
-    var(--md-sys-color-secondary-container)
-  );
+  --md-button-pressed-state-color: color-mix(in oklch,
+      var(--md-sys-color-on-secondary-container) 12%,
+      var(--md-sys-color-secondary-container));
   --md-button-pressed-state-opacity: 1;
 }
 
 :host([variant="tonal"]:hover:not([disabled])) {
-  --md-button-background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-secondary-container) 8%,
-    var(--md-sys-color-secondary-container)
-  );
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-on-secondary-container) 8%,
+      var(--md-sys-color-secondary-container));
   --md-elevation-level: 1;
 }
 
 :host([variant="tonal"]:focus-visible:not([disabled])) {
-  --md-button-background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-secondary-container) 12%,
-    var(--md-sys-color-secondary-container)
-  );
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-on-secondary-container) 12%,
+      var(--md-sys-color-secondary-container));
 }
 
 :host([variant="tonal"]:active:not([disabled])) {
-  --md-button-background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-secondary-container) 12%,
-    var(--md-sys-color-secondary-container)
-  );
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-on-secondary-container) 12%,
+      var(--md-sys-color-secondary-container));
   --md-elevation-level: 0;
 }
 
 :host([disabled]:where(:host([variant="tonal"]))) {
-  --md-button-background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-surface),
-    transparent 88%
-  );
-  --md-button-foreground-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-surface),
-    transparent 38%
-  );
+  --md-button-background-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 88%);
+  --md-button-foreground-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 38%);
 }

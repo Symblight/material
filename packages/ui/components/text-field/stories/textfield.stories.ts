@@ -11,6 +11,7 @@ import "../../icon/icon.ts";
 import "../../button/button.ts";
 import "../../icon-button/icon-button.ts";
 import "../../checkbox/checkbox.ts";
+import "../../radio-button/radio-button.ts";
 
 import { type TextField as MdTextFieldProps } from "../text-field.ts";
 
@@ -168,6 +169,17 @@ export const Invalid: Story = {
       document.querySelector("form")?.reset();
     }
 
+    function handleDisable() {
+      const group = document.querySelector("fieldset");
+      if (!group) return;
+
+      if (!group.hasAttribute("disabled")) {
+        group.setAttribute("disabled", "");
+      } else {
+        group.removeAttribute("disabled");
+      }
+    }
+
     return html`<form @submit=${handleSubmit}>
       <md-text-field id="text-field" name="username" label="Username" required>
         <md-icon slot="trailing"> ${unsafeSVG(search)} </md-icon>
@@ -187,9 +199,23 @@ export const Invalid: Story = {
         <span slot="help-text">This field is required</span>
       </md-text-field>
       <md-checkbox required value="test" name="nametest"></md-checkbox>
+      <fieldset>
+        <legend>Select a maintenance drone:</legend>
+        <label>
+          <md-radio required value="read" name="my-radio"></md-radio>
+          test radio
+        </label>
+        <label>
+          <md-radio required value="read2" name="my-radio"></md-radio>
+          test radio2
+        </label>
+      </fieldset>
 
       <md-button type="submit">Submit</md-button>
       <md-button type="button" @click=${handleReset}>Reset</md-button>
+      <md-button type="button" variant="tonal" @click=${handleDisable}
+        >Disable radio</md-button
+      >
     </form> `;
   },
 };

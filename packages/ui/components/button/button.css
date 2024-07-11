@@ -60,6 +60,7 @@
   width: 100%;
   justify-content: center;
   place-items: center;
+  -webkit-user-select: none;
   user-select: none;
   cursor: pointer;
   white-space: nowrap;
@@ -98,6 +99,8 @@
   align-items: center;
   gap: 0.5rem;
   z-index: 2;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .button__content_hidden {

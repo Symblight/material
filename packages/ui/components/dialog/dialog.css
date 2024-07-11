@@ -3,6 +3,8 @@
   --md-dialog-container-color: var(--md-sys-color-surface-container-high);
   --md-dialog-container-radius: 1.75rem;
   --md-dialog-container-support-text-color: var(--md-sys-color-on-surface-variant);
+
+  height: fit-content;
 }
 
 .dialog:not([open]) {
@@ -10,10 +12,11 @@
   opacity: 0;
 }
 
-
 .dialog::backdrop {
   transition: backdrop-filter 0.4s ease;
-  background-color: color-mix(in oklch, transparent, var(--md-sys-color-scrim) 32%);
+  background-color: color-mix(in oklch,
+      transparent,
+      var(--md-sys-color-scrim) 32%);
 }
 
 .dialog {
@@ -26,14 +29,12 @@
   padding: 1.5rem;
   max-inline-size: min(90vw, 60ch);
   max-block-size: min(80vh, 100%);
-  max-block-size: min(80dvb, 100%);
   overflow: hidden;
 
   background-color: var(--md-dialog-container-color);
   border-radius: var(--md-dialog-container-radius);
   color: var(--md-dialog-container-support-text-color);
 
-  display: grid;
   align-content: start;
   border: none;
   box-sizing: border-box;
