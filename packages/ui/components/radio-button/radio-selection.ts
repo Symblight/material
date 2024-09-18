@@ -6,31 +6,42 @@ export class RadioSelectionController implements ReactiveController {
   host: ReactiveControllerHost;
 
   #groupObserver?: MutationObserver;
+  #group?: HTMLFieldSetElement | HTMLFormElement;
 
   currentControl: HTMLElement | null | undefined;
-  selectedValues: Set<string> = new Set();
+  selectedValue?: string;
+  controls: RadioButton[] = [];
 
   constructor(host: ReactiveControllerHost) {
     (this.host = host).addController(this);
   }
 
   hostConnected() {
-    this.#groupObserver = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === "attributes") {
-          const radioButtons = this.group?.querySelectorAll("md-radio") || [];
-          Array.from(radioButtons).forEach((radio) => {
-            radio.disabled = (mutation.target as HTMLElement).hasAttribute(
-              "disabled"
-            );
-          });
-        }
-      });
-    });
+    if (this.group) {
+      const radioButtons = this.group?.querySelectorAll("md-radio");
+      this.controls = Array.from(radioButtons);
 
-    this.#groupObserver.observe(this.group as Node, {
-      attributes: true,
-    });
+      // attach observer
+      this.#groupObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.attributeName === "disabled") {
+            this.controls.forEach((radio) => {
+              radio.disabled = (mutation.target as HTMLElement).hasAttribute(
+                "disabled"
+              );
+            });
+          }
+          if (mutation.attributeName === "checked") {
+            this.selectedValue = mutation.target.value;
+          }
+        });
+      });
+
+      this.#groupObserver.observe(this.group as Node, {
+        attributes: true,
+        subtree: true,
+      });
+    }
   }
 
   hostDisconnected() {
@@ -54,13 +65,19 @@ export class RadioSelectionController implements ReactiveController {
   }
 
   get group() {
+    if (this.#group) return this.#group;
+
     const currentFieldsetHTMLElement = this.getGroupElement("fieldset");
 
     if (currentFieldsetHTMLElement) {
+      this.#group = currentFieldsetHTMLElement;
       return currentFieldsetHTMLElement;
     }
 
     const currentFormHTMLElement = this.getGroupElement("form");
+    if (currentFormHTMLElement) {
+      this.#group = currentFormHTMLElement;
+    }
 
     return currentFormHTMLElement;
   }
@@ -69,9 +86,7 @@ export class RadioSelectionController implements ReactiveController {
     const { value, name } = this.host as RadioButton;
     if (!this.group) return;
 
-    const radioButtons = this.group?.querySelectorAll("md-radio");
-
-    Array.from(radioButtons).forEach((radio) => {
+    this.controls.forEach((radio) => {
       if (radio.value !== value && radio.name === name) {
         radio.checked = false;
       }

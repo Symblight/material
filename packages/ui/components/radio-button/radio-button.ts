@@ -3,12 +3,14 @@ import {
   html,
   isServer,
   LitElement,
+  PropertyDeclaration,
   PropertyValues,
 } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 
 import { RadioSelectionController } from "./radio-selection";
+import { FormAssociateMixin, internals } from "./form-associate";
 
 import styles from "./radio-button.css?inline";
 
@@ -16,12 +18,9 @@ import styles from "./radio-button.css?inline";
  * @tag md-radio
  * @summary Material Radio web component
  */
-const internals = Symbol("internals");
 
 @customElement("md-radio")
-export default class RadioButton extends LitElement {
-  static readonly formAssociated = true;
-  [internals]: ElementInternals;
+export default class RadioButton extends FormAssociateMixin(LitElement) {
   static override shadowRootOptions: ShadowRootInit = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
@@ -35,13 +34,17 @@ export default class RadioButton extends LitElement {
 
   constructor() {
     super();
-    this[internals] = this.attachInternals();
+    this.addController(this.selectionController)
+    this[internals].role = "radio";
   }
 
   connectedCallback(): void {
     super.connectedCallback();
     if (!isServer) {
       this.addEventListener("click", this.handleClick);
+
+      if (this.input) {
+      }
     }
   }
 
@@ -62,7 +65,7 @@ export default class RadioButton extends LitElement {
   accessor value: string = "on";
 
   // form
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, attribute: true, reflect: true })
   required = false;
 
   @property({ type: Boolean, reflect: true })
@@ -114,10 +117,6 @@ export default class RadioButton extends LitElement {
     this.checked = target.checked;
   }
 
-  formResetCallback() {
-    this.checked = false;
-    this[internals].setFormValue(this.value);
-  }
 
   public updated(_changedProperties: PropertyValues): void {
     if (_changedProperties.has("checked")) {
@@ -127,6 +126,7 @@ export default class RadioButton extends LitElement {
         this[internals].setFormValue(null);
       }
     }
+    this[internals].ariaChecked = String(this.checked);
   }
 
   private handleFocus() {
@@ -140,14 +140,20 @@ export default class RadioButton extends LitElement {
     this.dispatchEvent(copy);
 
     this.selectionController.select();
+    this.updateValidity();
   }
 
-  onValidate(state: boolean) {
-    if (!state) {
-      this[internals].setValidity({ customError: true }, "required");
-    } else if (state === true) {
+  updateValidity() {
+    if (!this.required) return;
+
+    if (!this.selectionController.group) return;
+
+    if (this.selectionController.selectedValue) {
       this[internals].setValidity({});
+      return;
     }
+    this[internals].setValidity({ customError: true }, "required");
+    this[internals].reportValidity();
   }
 
   render() {
