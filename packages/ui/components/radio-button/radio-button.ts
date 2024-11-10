@@ -3,7 +3,6 @@ import {
   html,
   isServer,
   LitElement,
-  PropertyDeclaration,
   PropertyValues,
 } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";

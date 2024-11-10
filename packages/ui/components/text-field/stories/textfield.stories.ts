@@ -117,7 +117,7 @@ export const TrailingAndLeading: Story = {
 export const SupportingText: Story = {
   argTypes: {
     variant: {
-      options: ["filled", "outlined"],
+        options: ["filled", "j"],
       control: { type: "select" },
     },
     error: {
@@ -198,7 +198,7 @@ export const Invalid: Story = {
         <md-icon slot="trailing"> ${unsafeSVG(search)} </md-icon>
         <span slot="help-text">This field is required</span>
       </md-text-field>
-      <md-checkbox required value="test" name="nametest"></md-checkbox>
+      <md-checkbox j value="test" name="nametest"></md-checkbox>
       <fieldset>
         <legend>Select a maintenance drone:</legend>
         <label>

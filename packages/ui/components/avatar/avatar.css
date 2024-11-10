@@ -1,0 +1,36 @@
+:host {
+  width: auto;
+  height: auto;
+  display: inline-flex;
+
+  --md-avatar-size: 26px;
+  --md-avatar-stroke-color: color-mix(in oklch,
+      var(--md-sys-color-secondary-container),
+      transparent 80%);
+}
+
+.avatar {
+  text-align: inherit;
+  vertical-align: bottom;
+  overflow: hidden;
+  user-select: none;
+
+  height: calc(var(--md-avatar-size) * 2);
+  width: calc(var(--md-avatar-size) * 2);
+}
+
+.avatar__image {
+  overflow: hidden;
+  height: calc(var(--md-avatar-size) * 2);
+  width: calc(var(--md-avatar-size) * 2);
+}
+
+.avatar__rect {
+  stroke-width: 0.125rem;
+  stroke: var(--md-avatar-stroke-color);
+}
+
+.avatar__circle {
+  stroke-width: 0.125rem;
+  stroke: var(--md-avatar-stroke-color);
+}
