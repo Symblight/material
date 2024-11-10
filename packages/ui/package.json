@@ -1,7 +1,9 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.0.3",
+  "version": "0.0.5",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.es.js",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,42 +17,63 @@
     "preview": "vite preview",
     "sb": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "web-test-runner components/**/*.spec.ts --node-resolve"
   },
   "files": [
-    "dist/"
+    "**/*.js",
+    "**/*.js.map",
+    "**/*.d.ts",
+    "**/*.scss",
+    "**/*.css",
+    "**/*.css.map",
+    "!web-test-runner.config.js",
+    "!**/test/**",
+    "!**/*_test.*",
+    "!.wireit/**"
   ],
   "exports": {
     ".": {
       "import": {
-        "default": "./dist/index.js",
+        "default": "./dist/index.es.js",
         "types": "./dist/components/index.d.ts"
       }
     },
-    "./theme/theme.css": "./dist/theme.css",
-    "./theme/dark.css": "./dist/themes/dark.css",
-    "./theme/light.css": "./dist/themes/light.css"
+    "./theme/theme.css": "./dist/theme.css"
   },
   "dependencies": {
     "@lit-labs/observers": "^2.0.4",
     "@material-design-icons/svg": "^0.14.13",
     "@open-wc/form-control": "^1.0.0",
     "@open-wc/form-helpers": "^1.0.0",
+    "@open-wc/testing": "3.0.0-next.5",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/user-event": "^14.5.2",
+    "jest": "^29.7.0",
     "lit": "^3.2.1",
+    "remove": "^0.1.5",
     "rollup-plugin-postcss-lit": "^2.1.0"
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.25.9",
     "@chromatic-com/storybook": "^1.9.0",
+    "@remcovaes/web-test-runner-vite-plugin": "^1.2.1",
     "@storybook/addon-essentials": "^8.4.2",
     "@storybook/addon-links": "^8.4.2",
     "@storybook/blocks": "^8.4.2",
     "@storybook/test": "^8.4.2",
     "@storybook/web-components": "^8.4.2",
     "@storybook/web-components-vite": "^8.4.2",
+    "@types/jest": "^29.5.14",
+    "@web/dev-server-esbuild": "^1.0.3",
+    "@web/test-runner": "^0.19.0",
+    "@web/test-runner-playwright": "^0.11.0",
     "esbuild": "^0.21.5",
+    "fast-glob": "^3.3.2",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
+    "playwright": "^1.48.2",
     "postcss": "^8.4.47",
     "rimraf": "^5.0.10",
     "storybook": "^8.4.2",

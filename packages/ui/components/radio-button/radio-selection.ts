@@ -27,7 +27,7 @@ export class RadioSelectionController implements ReactiveController {
           if (mutation.attributeName === "disabled") {
             this.controls.forEach((radio) => {
               radio.disabled = (mutation.target as HTMLElement).hasAttribute(
-                "disabled"
+                "disabled",
               );
             });
           }
@@ -52,11 +52,11 @@ export class RadioSelectionController implements ReactiveController {
     const target = this.host as RadioButton;
     const parentHTML = target.getRootNode();
     const groupHTMLElements = (parentHTML as HTMLElement)?.querySelectorAll(
-      tagName
+      tagName,
     );
 
     const currentGroupHTMLElement = Array.from(groupHTMLElements).find(
-      (groupHTMLElement) => groupHTMLElement.contains(target)
+      (groupHTMLElement) => groupHTMLElement.contains(target),
     );
 
     if (!currentGroupHTMLElement) return null;

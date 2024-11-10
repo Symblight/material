@@ -2,7 +2,9 @@
   z-index: 1;
   --md-dialog-container-color: var(--md-sys-color-surface-container-high);
   --md-dialog-container-radius: 1.75rem;
-  --md-dialog-container-support-text-color: var(--md-sys-color-on-surface-variant);
+  --md-dialog-container-support-text-color: var(
+    --md-sys-color-on-surface-variant
+  );
 
   height: fit-content;
 }
@@ -14,9 +16,11 @@
 
 .dialog::backdrop {
   transition: backdrop-filter 0.4s ease;
-  background-color: color-mix(in oklch,
-      transparent,
-      var(--md-sys-color-scrim) 32%);
+  background-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-scrim) 32%
+  );
 }
 
 .dialog {

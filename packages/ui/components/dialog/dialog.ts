@@ -78,7 +78,7 @@ export default class MdDialog extends LitElement {
       return;
     }
     const preventOpen = !this.dispatchEvent(
-      new Event("open", { cancelable: true })
+      new Event("open", { cancelable: true }),
     );
     if (preventOpen) {
       this.open = false;

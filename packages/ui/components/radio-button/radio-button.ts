@@ -33,7 +33,7 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
 
   constructor() {
     super();
-    this.addController(this.selectionController)
+    this.addController(this.selectionController);
     this[internals].role = "radio";
   }
 
@@ -115,7 +115,6 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
     const target = event.target as HTMLInputElement;
     this.checked = target.checked;
   }
-
 
   public updated(_changedProperties: PropertyValues): void {
     if (_changedProperties.has("checked")) {

@@ -7,9 +7,11 @@
   --_container-space-left: 0.75rem;
   --_container-space-right: 0.75rem;
 
-  --md-button-pressed-state-color: color-mix(in oklch,
-      var(--md-sys-color-primary) 12%,
-      transparent);
+  --md-button-pressed-state-color: color-mix(
+    in oklch,
+    var(--md-sys-color-primary) 12%,
+    transparent
+  );
   --md-button-pressed-state-opacity: 1;
 }
 
@@ -19,25 +21,33 @@
 }
 
 :host([variant="text"]:hover:not([disabled])) {
-  --md-button-background-color: color-mix(in oklch,
-      var(--md-sys-color-primary) 8%,
-      transparent);
+  --md-button-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-primary) 8%,
+    transparent
+  );
 }
 
 :host([variant="text"]:focus-visible:not([disabled])) {
-  --md-button-background-color: color-mix(in oklch,
-      var(--md-sys-color-primary) 12%,
-      transparent);
+  --md-button-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-primary) 12%,
+    transparent
+  );
 }
 
 :host([variant="text"]:active:not([disabled])) {
-  --md-button-background-color: color-mix(in oklch,
-      var(--md-sys-color-primary) 12%,
-      transparent);
+  --md-button-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-primary) 12%,
+    transparent
+  );
 }
 
 :host([disabled]:where(:host([variant="text"]))) {
-  --md-button-foreground-color: color-mix(in oklch,
-      var(--md-sys-color-on-surface),
-      transparent 38%);
+  --md-button-foreground-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 38%
+  );
 }

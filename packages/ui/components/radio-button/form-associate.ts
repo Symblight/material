@@ -6,7 +6,7 @@ export const internals = Symbol("internals");
 const privateInternals = Symbol("privateInternals");
 
 export const FormAssociateMixin = <T extends Constructor<LitElement>>(
-  superClass: T
+  superClass: T,
 ) => {
   class FormAssociate extends superClass {
     static formAssociated = true;

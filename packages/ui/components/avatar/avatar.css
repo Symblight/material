@@ -4,9 +4,11 @@
   display: inline-flex;
 
   --md-avatar-size: 26px;
-  --md-avatar-stroke-color: color-mix(in oklch,
-      var(--md-sys-color-secondary-container),
-      transparent 80%);
+  --md-avatar-stroke-color: color-mix(
+    in oklch,
+    var(--md-sys-color-secondary-container),
+    transparent 80%
+  );
 }
 
 .avatar {

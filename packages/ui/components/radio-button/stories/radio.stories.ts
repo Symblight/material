@@ -5,14 +5,7 @@ import "../radio-button";
 
 import type Radio from "../radio-button.ts";
 
-function Template({
-  disabled,
-  checked,
-  name,
-  id,
-  value,
-  error,
-}: Radio) {
+function Template({ disabled, checked, name, id, value, error }: Radio) {
   return html`<md-radio
     ?disabled=${disabled}
     ?checked=${checked}

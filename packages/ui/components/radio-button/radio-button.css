@@ -26,50 +26,66 @@
 }
 
 :host([disabled]) {
-  --_box-border-color: color-mix(in oklch,
-      transparent,
-      var(--md-sys-color-on-surface) 38%);
+  --_box-border-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface) 38%
+  );
 
   --_box-container-color: transparent;
-  --_container-color: color-mix(in oklch,
-      transparent,
-      var(--md-sys-color-on-surface) 38%);
+  --_container-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface) 38%
+  );
 }
 
 :where(:hover:not([disabled])) .radio__input {
-  --_box-container-color: color-mix(in oklch,
-      transparent,
-      var(--_container-color) 8%);
+  --_box-container-color: color-mix(
+    in oklch,
+    transparent,
+    var(--_container-color) 8%
+  );
 }
 
 :where(:focus-visible) .radio__input {
-  ---_box-container-color: color-mix(in oklch,
-      transparent,
-      var(--_container-color) 12%);
+  ---_box-container-color: color-mix(
+    in oklch,
+    transparent,
+    var(--_container-color) 12%
+  );
 }
 
 :where(:active:not([disabled])) .radio__input {
-  --_box-container-color: color-mix(in oklch,
-      transparent,
-      var(--md-sys-color-on-surface) 12%);
+  --_box-container-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface) 12%
+  );
 }
 
 .radio__input:hover:not([disabled]) {
-  --_box-container-color: color-mix(in oklch,
-      transparent,
-      var(--_container-color) 8%);
+  --_box-container-color: color-mix(
+    in oklch,
+    transparent,
+    var(--_container-color) 8%
+  );
 }
 
 .radio__input_focused {
-  ---_box-container-color: color-mix(in oklch,
-      transparent,
-      var(--_container-color) 12%);
+  ---_box-container-color: color-mix(
+    in oklch,
+    transparent,
+    var(--_container-color) 12%
+  );
 }
 
 .radio__input:active:not([disabled]) {
-  --_box-container-color: color-mix(in oklch,
-      transparent,
-      var(--md-sys-color-on-surface) 12%);
+  --_box-container-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface) 12%
+  );
 }
 
 .radio__box {
@@ -134,7 +150,8 @@
   background-color: var(--_container-color);
 }
 
-.radio__box_checked:not(.radio__box_disabled)::after {}
+.radio__box_checked:not(.radio__box_disabled)::after {
+}
 
 .radio__box_disabled {
   cursor: not-allowed;

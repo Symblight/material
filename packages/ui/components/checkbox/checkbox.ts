@@ -154,25 +154,25 @@ export default class Checkbox extends LitElement {
 
   render() {
     return html`
-        <input
-          part="input"
-          type="checkbox"
-          .id=${this.id}
-          ?disabled=${this.disabled}
-          ?required=${this.required}
-          .checked=${this.checked}
-          .indeterminate=${this.indeterminate}
-          .name=${this.name}
-          .value=${this.value}
-          @focus=${this.handleFocus}
-          @blur=${this.handleFocus}
-          @change=${this.handleChange}
-          @input=${this.handleInput}
-          class="checkbox__input  ${classMap({
+      <input
+        part="input"
+        type="checkbox"
+        .id=${this.id}
+        ?disabled=${this.disabled}
+        ?required=${this.required}
+        .checked=${this.checked}
+        .indeterminate=${this.indeterminate}
+        .name=${this.name}
+        .value=${this.value}
+        @focus=${this.handleFocus}
+        @blur=${this.handleFocus}
+        @change=${this.handleChange}
+        @input=${this.handleInput}
+        class="checkbox__input  ${classMap({
           checkbox__input_focused: this.focused,
           checkbox__input_error: this.error,
         })}"
-        />
+      />
       <span
         class="checkbox__box ${classMap({
           checkbox__box_checked: this.checked,
@@ -185,7 +185,7 @@ export default class Checkbox extends LitElement {
         ${when(
           this.checked,
           () => html`${unsafeSVG(check)}`,
-          () => nothing
+          () => nothing,
         )}
         ${when(
           !this.checked && this.indeterminate,
@@ -199,7 +199,7 @@ export default class Checkbox extends LitElement {
             >
               <path d="M240-440v-80h480v80H240Z" />
             </svg>`,
-          () => nothing
+          () => nothing,
         )}
       </span>
     `;

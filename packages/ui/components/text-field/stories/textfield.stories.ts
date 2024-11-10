@@ -117,7 +117,7 @@ export const TrailingAndLeading: Story = {
 export const SupportingText: Story = {
   argTypes: {
     variant: {
-        options: ["filled", "j"],
+      options: ["filled", "j"],
       control: { type: "select" },
     },
     error: {

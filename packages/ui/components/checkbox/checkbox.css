@@ -15,7 +15,7 @@
   background-color: var(--_box-container-color);
   width: 1.125rem;
   height: 1.125rem;
-  padding: calc(0.688rem)
+  padding: calc(0.688rem);
 }
 
 :where(:hover:not([disabled])) .checkbox__input {
@@ -26,7 +26,7 @@
   );
 }
 
-:where(:focus-visible)  .checkbox__input {
+:where(:focus-visible) .checkbox__input {
   ---_box-container-color: color-mix(
     in oklch,
     transparent,
@@ -34,7 +34,7 @@
   );
 }
 
-:where(:active:not([disabled])) .checkbox__input  {
+:where(:active:not([disabled])) .checkbox__input {
   --_box-container-color: color-mix(
     in oklch,
     transparent,

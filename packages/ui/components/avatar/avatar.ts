@@ -24,7 +24,7 @@ export default class Avatar extends LitElement {
     const sizeSVG = Number(
       getComputedStyle(this)
         .getPropertyValue("--md-avatar-size")
-        .replace("px", "")
+        .replace("px", ""),
     );
 
     return html` <svg class="avatar" aria-hidden="true" role="none">

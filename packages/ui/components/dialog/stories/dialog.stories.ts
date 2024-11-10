@@ -38,11 +38,11 @@ function Template({ open }: PvDialogProps) {
       <div>
         <form>
           <p>
-          Material Design is an adaptable system of guidelines, components, and
-          tools that support the best practices of user interface design. Backed
-          by open-source code, Material Design streamlines collaboration between
-          designers and developers, and helps teams quickly build beautiful
-          products.
+            Material Design is an adaptable system of guidelines, components,
+            and tools that support the best practices of user interface design.
+            Backed by open-source code, Material Design streamlines
+            collaboration between designers and developers, and helps teams
+            quickly build beautiful products.
           </p>
           <md-text-field></md-text-field>
         </form>
