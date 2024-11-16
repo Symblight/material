@@ -1,8 +1,7 @@
-import { CSSResultGroup, CSSResultOrNative, LitElement, html } from "lit";
+import { CSSResultGroup, CSSResultOrNative, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { when } from "lit/directives/when.js";
-import { submit } from "@open-wc/form-helpers";
 
 import "../ripple/ripple.ts";
 
@@ -11,6 +10,7 @@ import filledStyles from "./filled-icon-button.css?inline";
 import standardStyles from "./standard-icon-button.css?inline";
 import outlinedStyles from "./outlined-icon-button.css?inline";
 import tonalStyles from "./tonal-icon-button.css?inline";
+import { BaseButton } from "../button/base-button.ts";
 
 export type IconButtonVariant = "filled" | "standard" | "outlined" | "tonal";
 
@@ -21,19 +21,7 @@ const VALID_VARIANTS = ["filled", "standard", "outlined", "tonal"];
  * @summary Material Button web component
  */
 @customElement("md-icon-button")
-export default class IconButton extends LitElement {
-  static override shadowRootOptions: ShadowRootInit = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
-
-  /**
-   * The form associated with the button.
-   * Type: String or HTMLFormElement
-   */
-  @property({ type: String })
-  accessor form: HTMLFormElement | string | undefined;
-
+export default class IconButton extends BaseButton {
   /**
    * The variant style of the button.
    */
@@ -58,24 +46,6 @@ export default class IconButton extends LitElement {
     this.setAttribute("variant", this.variant);
   }
 
-  /**
-   * The type of the button.
-   */
-  @property()
-  accessor type: HTMLButtonElement["type"] = "button";
-
-  /**
-   * The href link for the button.
-   */
-  @property({ type: String, attribute: true })
-  accessor href: boolean = false;
-
-  /**
-   * Indicates whether the button is disabled.
-   */
-  @property({ type: Boolean, attribute: true })
-  accessor disabled: boolean = false;
-
   @property({ type: Boolean, attribute: true, reflect: true })
   accessor selected: boolean = false;
 
@@ -88,9 +58,6 @@ export default class IconButton extends LitElement {
   @state()
   accessor selectedIcon: Node | null = null;
 
-  @state()
-  accessor childrenContent: Node | null | string = null;
-
   static get styles(): CSSResultGroup {
     return [
       filledStyles,
@@ -101,45 +68,12 @@ export default class IconButton extends LitElement {
     ] as unknown as CSSResultOrNative[];
   }
 
-  connectedCallback(): void {
-    super.connectedCallback();
-
-    this.addEventListener("click", this.handleClick);
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this.removeEventListener("click", this.handleClick);
-  }
-
   firstUpdated(changes: any) {
     super.firstUpdated(changes);
 
     if (!this.hasAttribute("variant")) {
       this.setAttribute("variant", this.variant);
     }
-  }
-
-  private handleClick() {
-    if (this.type === "submit") {
-      let targetForm: HTMLFormElement;
-
-      if (this.form instanceof HTMLFormElement) {
-        targetForm = this.form;
-      } else if (typeof this.form === "string") {
-        targetForm = document.getElementById(this.form) as HTMLFormElement;
-      } else {
-        targetForm = this.closest("form") as HTMLFormElement;
-      }
-
-      if (targetForm) {
-        submit(targetForm);
-      }
-    }
-
-    if (!this.toggle) return;
-
-    this.selected = !this.selected;
   }
 
   private get classes() {
@@ -152,7 +86,7 @@ export default class IconButton extends LitElement {
     return html` ${when(
       this.toggle && this.selected,
       () => html`<slot name="selected"></slot>`,
-      () => html`<slot></slot>`,
+      () => html`<slot></slot>`
     )}`;
   }
 

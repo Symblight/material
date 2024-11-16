@@ -1,5 +1,5 @@
 :host {
-  --md-button-foreground-color: var(--global-foreground);
+  --md-button-foreground-color: inherit;
 
   --md-button-background-color: transparent;
 
@@ -19,6 +19,10 @@
   --md-button-pressed-state-opacity: 12%;
   --md-button-hovered-state-opacity: 8%;
 
+  --md-button-border-color: transparent;
+
+  --md-button-border-radius: 6.25rem;
+
   --_container-height: 20px;
   --_container-space-left: var(--md-button-inline-start-space);
   --_container-space-right: var(--md-button-inline-end-space);
@@ -26,10 +30,25 @@
   --_container-space-bottom: var(--md-button-block-end-space);
   --_container-bg-color: var(--md-button-background-color);
   --_container-fg-color: var(--md-button-foreground-color);
+  --_container-border-size: var(--md-button-border-size);
+  --_container-border-color: var(--md-button-border-color);
+
+  --_container-pressed-state-color: var(--md-button-pressed-state-color);
 }
 
 ::slotted([slot="icon"]) {
   font-size: 1.125rem;
+}
+
+.button {
+  gap: 0.5rem;
+}
+
+.button:has(.button__icon) {
+  display: flex;
+  align-items: center;
+
+  --_container-space-left: 1rem;
 }
 
 .button_icon {
@@ -44,81 +63,11 @@
   text-wrap: nowrap;
   user-select: none;
   cursor: pointer;
-  border-radius: 6.25rem;
+  border-radius: var(--md-button-border-radius);
 
   background-color: var(--_container-bg-color);
   color: var(--_container-fg-color);
   min-height: var(--_container-height);
 
   line-height: 1.25rem;
-}
-
-.button {
-  display: inline-flex;
-  position: relative;
-  box-sizing: border-box;
-  width: 100%;
-  justify-content: center;
-  place-items: center;
-  -webkit-user-select: none;
-  user-select: none;
-  cursor: pointer;
-  white-space: nowrap;
-  border-width: 0;
-  z-index: 0;
-  color: inherit;
-  border-radius: inherit;
-  border: var(--md-button-border-size) solid var(--md-button-border-color);
-  text-decoration: none;
-  padding-inline: var(--_container-space-left) var(--_container-space-right);
-  padding-block: var(--_container-space-top) var(--_container-space-bottom);
-  margin: 0;
-  appearance: none;
-  font: inherit;
-  line-height: inherit;
-  gap: 0.5rem;
-  background: none;
-  overflow: hidden;
-}
-
-.button:focus-visible::before {
-  outline: none;
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  content: "";
-  border: 0.063rem solid var(--md-button-border-color);
-}
-
-.button_disabled {
-  cursor: not-allowed;
-}
-
-.button__content {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  z-index: 2;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.button__content_hidden {
-  padding-inline: 0;
-}
-
-.button__progress-circular {
-  color: inherit;
-}
-
-.button:has(.button__icon) {
-  display: flex;
-  align-items: center;
-
-  --_container-space-left: 1rem;
-}
-
-.button__ripple {
-  --md-ripple-pressed-color: var(--md-button-pressed-state-color);
-  --md-ripple-pressed-opacity: 1;
 }

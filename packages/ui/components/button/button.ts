@@ -7,6 +7,7 @@ import "../progress-circular/progress-circular.ts";
 import "../shadow/shadow.ts";
 import "../ripple/ripple.ts";
 
+import baseStyles from "./base-button.css?inline";
 import styles from "./button.css?inline";
 import filledStyles from "./filled-button.css?inline";
 import elevatedStyles from "./elevated-button.css?inline";
@@ -57,6 +58,7 @@ export default class Button extends BaseButton {
       textStyles,
       tonalStyles,
       styles,
+      baseStyles,
     ] as unknown as CSSResultOrNative[];
   }
 
@@ -103,7 +105,7 @@ export default class Button extends BaseButton {
           button__content_hidden: !this.childrenContent,
         })}"
       >
-        <slot @slotchange=${this.handleSlotchange}></slot>
+        <slot @slotchange=${this.handleSlotChange}></slot>
       </span>
     `;
   }

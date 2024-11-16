@@ -12,7 +12,6 @@ import type PvButtonProps from "../button.ts";
 function Button({
   variant = "filled",
   children,
-  danger = false,
   disabled = false,
   loading = false,
   href,
@@ -20,7 +19,6 @@ function Button({
   return html`
     <md-button
       variant=${variant}
-      ?danger=${danger}
       ?disabled=${disabled}
       ?loading=${loading}
       href=${href}
@@ -39,9 +37,6 @@ const meta = {
     variant: {
       options: ["filled", "outlined", "text", "elevated", "tonal"],
       control: { type: "select" },
-    },
-    danger: {
-      control: { type: "boolean" },
     },
     disabled: {
       control: { type: "boolean" },

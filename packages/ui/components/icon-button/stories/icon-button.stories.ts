@@ -56,7 +56,8 @@ const meta = {
   args: {
     children: html` <md-icon
       >${unsafeSVG(settings)}</md-icon
-    >` as unknown as HTMLCollection,
+    > <md-icon slot="selected">${unsafeSVG(visibility)}</md-icon
+    ><md-icon>` as unknown as HTMLCollection,
   },
 } satisfies Meta<IconButtonProps>;
 export default meta;
@@ -65,9 +66,8 @@ type Story = StoryObj<IconButtonProps>;
 
 export const Regular: Story = {
   args: {
-    children: html`<md-icon
-      >${unsafeSVG(settings)}</md-icon
-    >` as unknown as HTMLCollection,
+    children: html` <md-icon slot="selected">${unsafeSVG(visibility)}</md-icon
+      ><md-icon>${unsafeSVG(settings)}</md-icon>` as unknown as HTMLCollection,
     disabled: false,
     href: undefined,
   },

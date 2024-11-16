@@ -1,0 +1,44 @@
+/* || TERTIARY */
+:host([variant="tertiary"]) {
+  --md-fab-background-color: var(--md-sys-color-tertiary-container);
+  --md-fab-foreground-color: var(--md-sys-color-on-tertiary-container);
+
+  --md-elevation-level: 1;
+
+  --md-fab-pressed-state-color: color-mix(in oklch,
+      var(--md-sys-color-tertiary-container),
+      var(--md-sys-color-on-tertiary-container) 12%);
+  --md-fab-pressed-state-opacity: 1;
+}
+
+:host([variant="tertiary"]:hover:not([disabled])) {
+  --md-fab-background-color: color-mix(in oklch,
+      var(--md-sys-color-tertiary-container),
+      var(--md-sys-color-on-tertiary-container) 8%);
+
+  --md-elevation-level: 2;
+}
+
+:host([variant="tertiary"]:focus-visible:not([disabled])) {
+  --md-fab-background-color: color-mix(in oklch,
+      var(--md-sys-color-tertiary-container),
+      var(--md-sys-color-on-tertiary-container) 12%);
+}
+
+:host([variant="tertiary"]:active:not([disabled])) {
+  --md-fab-background-color: color-mix(in oklch,
+      var(--md-sys-color-tertiary-container),
+      var(--md-sys-color-on-tertiary-container) 12%);
+
+  --md-elevation-level: 1;
+}
+
+:host([variant="tertiary"]:where([disabled])) {
+  --md-fab-background-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 88%);
+  --md-fab-foreground-color: color-mix(in oklch,
+      var(--md-sys-color-on-surface),
+      transparent 38%);
+  --md-elevation-level: -1;
+}

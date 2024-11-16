@@ -1,0 +1,93 @@
+:host {
+  --md-button-foreground-color: inherit;
+
+  --md-fab-background-color: transparent;
+
+  --md-fab-rounded-border-radius: 2rem;
+
+  --md-fab-font-size: 1rem;
+
+  /* --md-fab-inline-start-space: 1.5rem; */
+  /* --md-fab-inline-end-space: 1.5rem; */
+  /* --md-fab-block-start-space: 0.625rem; */
+  /* --md-fab-block-end-space: 0.625rem; */
+
+  --md-fab-inline-start-space: 1rem;
+  --md-fab-inline-end-space: 1rem;
+  --md-fab-block-start-space: 1rem;
+  --md-fab-block-end-space: 1rem;
+
+  --md-fab-border-size: 0;
+
+  --md-fab-pressed-state-color: transparent;
+  --md-fab-pressed-state-opacity: 0.12;
+
+  --md-fab-pressed-state-opacity: 12%;
+  --md-fab-hovered-state-opacity: 9%;
+
+  --md-fab-border-radius: 1rem;
+  --md-fab-icon-size: 1.5rem;
+
+  --_container-height: 20px;
+  --_container-space-left: var(--md-fab-inline-start-space);
+  --_container-space-right: var(--md-fab-inline-end-space);
+  --_container-space-top: var(--md-fab-block-start-space);
+  --_container-space-bottom: var(--md-fab-block-end-space);
+  --_container-bg-color: var(--md-fab-background-color);
+  --_container-fg-color: var(--md-fab-foreground-color);
+  --_container-border-size: var(--md-fab-border-size);
+  --_container-border-color: var(--md-fab-border-color);
+
+  --_container-pressed-state-color: var(--md-fab-pressed-state-color);
+}
+
+::slotted([slot="icon"]) {
+  font-size: var(--md-fab-icon-size);
+}
+
+:host {
+  display: flex;
+  position: relative;
+  inline-size: fit-content;
+  box-sizing: border-box;
+  text-wrap: nowrap;
+  user-select: none;
+  cursor: pointer;
+  border-radius: var(--md-fab-border-radius);
+
+  background-color: var(--_container-bg-color);
+  color: var(--_container-fg-color);
+  min-height: var(--_container-height);
+
+  line-height: 1.25rem;
+}
+
+:host([size="s"]) {
+  --md-fab-inline-start-space: 0.5rem;
+  --md-fab-inline-end-space: 0.5rem;
+  --md-fab-block-start-space: 0.5rem;
+  --md-fab-block-end-space: 0.5rem;
+
+  --md-fab-border-radius: 0.75rem;
+}
+
+:host([size="m"]) {
+  --md-fab-inline-start-space: 1rem;
+  --md-fab-inline-end-space: 1rem;
+  --md-fab-block-start-space: 1rem;
+  --md-fab-block-end-space: 1rem;
+}
+
+:host([size="l"]) {
+  --md-fab-inline-start-space: 2.25rem;
+  --md-fab-inline-end-space: 2.25rem;
+  --md-fab-block-start-space: 2.25rem;
+  --md-fab-block-end-space: 2.25rem;
+
+  --md-fab-border-radius: 1.875rem;
+  --md-fab-icon-size: 2.25rem;
+}
+
+.button_label {
+  gap: 0.5rem;
+}

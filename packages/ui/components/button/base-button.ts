@@ -118,8 +118,6 @@ export abstract class BaseButton extends LitElement {
 
       if (this.form instanceof HTMLFormElement) {
         targetForm = this.form;
-      } else if (typeof this.form === "string") {
-        targetForm = document.getElementById(this.form) as HTMLFormElement;
       } else {
         targetForm = this.closest("form") as HTMLFormElement;
       }
@@ -135,7 +133,7 @@ export abstract class BaseButton extends LitElement {
     this.focused = this.buttonOrAnchor?.matches(":focus") ?? false;
   }
 
-  handleSlotchange(e: Event) {
+  handleSlotChange(e: Event) {
     const childNodes = (e.target as HTMLSlotElement).assignedNodes({
       flatten: true,
     }) as Element[];

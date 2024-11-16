@@ -2,54 +2,56 @@ import type { Meta, StoryObj } from "@storybook/web-components";
 import { html } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
-import logout from "@material-design-icons/svg/filled/logout.svg?raw";
+import edit from "@material-design-icons/svg/filled/edit.svg?raw";
 
-import type ButtonProps from "../fab-button";
+import type ButtonProps from "../fab";
 
-import "../fab-button";
+import "../fab.ts";
+import "../../icon/icon.ts";
 
 function Button({
-  variant = "filled",
+  variant = "surface",
   children,
-  danger = false,
   disabled = false,
-  loading = false,
+  size = 'm',
+  label = '',
   href,
 }: ButtonProps) {
   return html`
-    <md-fab-button
+    <md-fab
       variant=${variant}
-      ?danger=${danger}
+      size=${size}
       ?disabled=${disabled}
-      ?loading=${loading}
+      label=${label}
       href=${href}
     >
       ${children}
-    </md-fab-button>
+    </md-fab>
   `;
 }
 
 const meta = {
-  title: "FABButton",
-  component: "md-fab-button",
+  title: "FABs",
+  component: "md-fab",
   tags: ["autodocs"],
   render: Button,
   argTypes: {
+    label: {
+      control: { type: "text" },
+    },
     variant: {
-      options: ["filled", "outlined", "text", "elevated", "tonal"],
+      options: ["surface", "primary", "secondary", "tertiary"],
       control: { type: "select" },
     },
-    danger: {
-      control: { type: "boolean" },
+    size: {
+      options: ["s", "m", "l"],
+      control: { type: "select" },
     },
     disabled: {
       control: { type: "boolean" },
     },
     href: {
       control: { type: "text" },
-    },
-    loading: {
-      control: { type: "boolean" },
     },
     children: {
       control: { type: "text" },
@@ -64,9 +66,10 @@ type Story = StoryObj<ButtonProps>;
 
 export const Regular: Story = {
   args: {
-    children: unsafeHTML(`Label`) as HTMLCollection,
+    children: html`<md-icon slot="icon"
+        >${unsafeSVG(edit)}</md-icon
+>` as unknown as HTMLCollection,
     disabled: false,
-    danger: false,
     href: undefined,
   },
 };

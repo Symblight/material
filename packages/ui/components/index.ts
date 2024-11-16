@@ -7,3 +7,4 @@ import "./dialog/dialog";
 import "./checkbox/checkbox";
 import "./radio-button/radio-button";
 import "./avatar/avatar";
+import "./fab/fab";

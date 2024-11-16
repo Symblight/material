@@ -1,0 +1,61 @@
+.button {
+  display: inline-flex;
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  justify-content: center;
+  place-items: center;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  white-space: nowrap;
+  border-width: 0;
+  z-index: 0;
+  color: inherit;
+  border-radius: inherit;
+  border: var(--_container-border-size) solid var(--_container-border-color);
+  text-decoration: none;
+  padding-inline: var(--_container-space-left) var(--_container-space-right);
+  padding-block: var(--_container-space-top) var(--_container-space-bottom);
+  margin: 0;
+  appearance: none;
+  font: inherit;
+  line-height: inherit;
+  background: none;
+  overflow: hidden;
+}
+
+.button:focus-visible::before {
+  outline: none;
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  border: 0.063rem solid var(--_container-border-color);
+}
+
+.button_disabled {
+  cursor: not-allowed;
+}
+
+.button__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 2;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.button__content_hidden {
+  padding-inline: 0;
+}
+
+.button__progress-circular {
+  color: inherit;
+}
+
+.button__ripple {
+  --md-ripple-pressed-color: var(--_container-pressed-state-color);
+  --md-ripple-pressed-opacity: 1;
+}
