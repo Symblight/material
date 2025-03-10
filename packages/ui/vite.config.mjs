@@ -13,7 +13,7 @@ export default defineConfig({
   build: {
     lib: {
       name: "wc-material",
-      entry: "components/index.ts",
+      entry: "components/index.ts.ts",
       fileName: (format, entryName) => `${entryName}.${format}.js`,
       formats: ["es", "umd"],
     },

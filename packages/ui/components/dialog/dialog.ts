@@ -14,7 +14,7 @@ import "../icon/icon.ts";
 
 /**
  * @tag md-dialog
- * @summary Pavetra Dialog web component
+ * @summary Material Dialog web component
  */
 
 @customElement("md-dialog")

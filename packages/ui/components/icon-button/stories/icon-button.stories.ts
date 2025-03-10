@@ -54,10 +54,9 @@ const meta = {
     },
   },
   args: {
-    children: html` <md-icon
-      >${unsafeSVG(settings)}</md-icon
-    > <md-icon slot="selected">${unsafeSVG(visibility)}</md-icon
-    ><md-icon>` as unknown as HTMLCollection,
+    children: html` <md-icon>${unsafeSVG(settings)}</md-icon>
+      <md-icon slot="selected">${unsafeSVG(visibility)}</md-icon
+      ><md-icon></md-icon>` as unknown as HTMLCollection,
   },
 } satisfies Meta<IconButtonProps>;
 export default meta;

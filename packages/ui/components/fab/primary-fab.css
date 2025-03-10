@@ -5,40 +5,52 @@
 
   --md-elevation-level: 1;
 
-  --md-fab-pressed-state-color: color-mix(in oklch,
-      var(--md-sys-color-primary-container),
-      var(--md-sys-color-on-primary-container) 12%);
+  --md-fab-pressed-state-color: color-mix(
+    in oklch,
+    var(--md-sys-color-primary-container),
+    var(--md-sys-color-on-primary-container) 12%
+  );
   --md-fab-pressed-state-opacity: 1;
 }
 
 :host([variant="primary"]:hover:not([disabled])) {
-  --md-fab-background-color: color-mix(in oklch,
-      var(--md-sys-color-primary-container),
-      var(--md-sys-color-on-primary-container) 8%);
+  --md-fab-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-primary-container),
+    var(--md-sys-color-on-primary-container) 8%
+  );
 
   --md-elevation-level: 2;
 }
 
 :host([variant="primary"]:focus-visible:not([disabled])) {
-  --md-fab-background-color: color-mix(in oklch,
-      var(--md-sys-color-primary-container),
-      var(--md-sys-color-on-primary-container) 12%);
+  --md-fab-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-primary-container),
+    var(--md-sys-color-on-primary-container) 12%
+  );
 }
 
 :host([variant="primary"]:active:not([disabled])) {
-  --md-fab-background-color: color-mix(in oklch,
-      var(--md-sys-color-primary-container),
-      var(--md-sys-color-on-primary-container) 12%);
+  --md-fab-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-primary-container),
+    var(--md-sys-color-on-primary-container) 12%
+  );
 
   --md-elevation-level: 1;
 }
 
 :host([variant="primary"]:where([disabled])) {
-  --md-fab-background-color: color-mix(in oklch,
-      var(--md-sys-color-on-surface),
-      transparent 88%);
-  --md-fab-foreground-color: color-mix(in oklch,
-      var(--md-sys-color-on-surface),
-      transparent 38%);
+  --md-fab-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 88%
+  );
+  --md-fab-foreground-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 38%
+  );
   --md-elevation-level: -1;
 }

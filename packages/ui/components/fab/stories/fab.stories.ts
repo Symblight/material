@@ -13,8 +13,8 @@ function Button({
   variant = "surface",
   children,
   disabled = false,
-  size = 'm',
-  label = '',
+  size = "m",
+  label = "",
   href,
 }: ButtonProps) {
   return html`
@@ -67,8 +67,8 @@ type Story = StoryObj<ButtonProps>;
 export const Regular: Story = {
   args: {
     children: html`<md-icon slot="icon"
-        >${unsafeSVG(edit)}</md-icon
->` as unknown as HTMLCollection,
+      >${unsafeSVG(edit)}</md-icon
+    >` as unknown as HTMLCollection,
     disabled: false,
     href: undefined,
   },

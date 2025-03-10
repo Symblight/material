@@ -1,8 +1,4 @@
-import {
-  CSSResultGroup,
-  CSSResultOrNative,
-  html,
-} from "lit";
+import { CSSResultGroup, CSSResultOrNative, html } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { customElement, property } from "lit/decorators.js";
 
@@ -86,7 +82,7 @@ export default class FAB extends BaseButton {
       button_disabled: this.disabled,
       button_icon: !!this.icon,
       button_focused: this.focused,
-      button_label: !!this.label
+      button_label: !!this.label,
     });
   }
 

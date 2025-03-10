@@ -86,7 +86,7 @@ export default class IconButton extends BaseButton {
     return html` ${when(
       this.toggle && this.selected,
       () => html`<slot name="selected"></slot>`,
-      () => html`<slot></slot>`
+      () => html`<slot></slot>`,
     )}`;
   }
 

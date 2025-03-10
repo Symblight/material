@@ -56,19 +56,19 @@ const materialColors = {
   "surface-container-low": MaterialDynamicColors.surfaceContainerLow,
 };
 
-function generateCSSFile() {
-  const theme = themeFromSourceColor(argbFromHex("#54a0ff"), []);
+function generateCSSFile(config = {scheme: 'light'}) {
+  const sourceColor = '#1D5D78'
+  const theme = themeFromSourceColor(argbFromHex(sourceColor), []);
 
   const scheme = new SchemeContent(
-    Hct.fromInt(argbFromHex("#54a0ff")),
-    false,
+    Hct.fromInt(argbFromHex(sourceColor)), config.scheme === 'dark',
     0
   );
   let palette = {};
   for (const [key, value] of Object.entries(materialColors)) {
     palette[key] = value.getArgb(scheme);
   }
-  const currentTheme = theme.schemes.light.toJSON();
+  const currentTheme = theme.schemes[config.scheme].toJSON();
   const tokens = setSchemeProperties({ ...currentTheme, ...palette });
 
   const __filename = fileURLToPath(import.meta.url);
@@ -85,4 +85,4 @@ function generateCSSFile() {
     }
   });
 }
-generateCSSFile();
+generateCSSFile({scheme: 'dark'});

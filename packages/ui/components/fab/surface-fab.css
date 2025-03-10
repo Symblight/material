@@ -5,40 +5,52 @@
 
   --md-elevation-level: 1;
 
-  --md-fab-pressed-state-color: color-mix(in oklch,
-      var(--md-sys-color-surface-container-high),
-      var(--md-sys-color-primary) 12%);
+  --md-fab-pressed-state-color: color-mix(
+    in oklch,
+    var(--md-sys-color-surface-container-high),
+    var(--md-sys-color-primary) 12%
+  );
   --md-fab-pressed-state-opacity: 1;
 }
 
 :host([variant="surface"]:hover:not([disabled])) {
-  --md-fab-background-color: color-mix(in oklch,
-      var(--md-sys-color-surface-container-high),
-      var(--md-sys-color-primary) 8%);
+  --md-fab-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-surface-container-high),
+    var(--md-sys-color-primary) 8%
+  );
 
   --md-elevation-level: 2;
 }
 
 :host([variant="surface"]:focus-visible:not([disabled])) {
-  --md-fab-background-color: color-mix(in oklch,
-      var(--md-sys-color-surface-container-high),
-      var(--md-sys-color-primary) 12%);
+  --md-fab-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-surface-container-high),
+    var(--md-sys-color-primary) 12%
+  );
 }
 
 :host([variant="surface"]:active:not([disabled])) {
-  --md-fab-background-color: color-mix(in oklch,
-      var(--md-sys-color-surface-container-high),
-      var(--md-sys-color-primary) 12%);
+  --md-fab-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-surface-container-high),
+    var(--md-sys-color-primary) 12%
+  );
 
   --md-elevation-level: 1;
 }
 
 :host([variant="surface"]:where([disabled])) {
-  --md-fab-background-color: color-mix(in oklch,
-      var(--md-sys-color-on-surface),
-      transparent 88%);
-  --md-fab-foreground-color: color-mix(in oklch,
-      var(--md-sys-color-on-surface),
-      transparent 38%);
+  --md-fab-background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 88%
+  );
+  --md-fab-foreground-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 38%
+  );
   --md-elevation-level: -1;
 }
