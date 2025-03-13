@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   "@lit-labs/observers":
-    specifier: ^2.0.4
-    version: 2.0.4
+    specifier: ^2.0.5
+    version: 2.0.5
   "@lit/context":
     specifier: ^1.1.4
     version: 1.1.4
@@ -1910,10 +1910,10 @@ packages:
       "@jridgewell/resolve-uri": 3.1.2
       "@jridgewell/sourcemap-codec": 1.5.0
 
-  /@lit-labs/observers@2.0.4:
+  /@lit-labs/observers@2.0.5:
     resolution:
       {
-        integrity: sha512-x95jhDPGb+HtYU3hEdqkcLxb6v2JBP3tcajaiOijs1F/ZmOgRT0pRPn0v+jhhk8mAAbEO12SZJjPCmuysunssQ==,
+        integrity: sha512-DYHc3XhNgfl9RoDFMz99OvnElWIU7ncNga1tYd/9Wez4NOsMDRXsSD6LjFfpHCVfzZic6MdlVfB7+iIuWXl5Ng==,
       }
     dependencies:
       "@lit/reactive-element": 2.0.4

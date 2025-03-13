@@ -1,0 +1,19 @@
+.select__native-control {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: currentColor;
+  border: 0;
+  font-size: inherit;
+  cursor: pointer;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  outline: none;
+}
+
+.select__native-control:after {
+  position: absolute;
+  content: "";
+  inset: 0;
+}

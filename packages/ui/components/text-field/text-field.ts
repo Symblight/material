@@ -17,11 +17,11 @@ import { generateUniqueKey } from "../../shared/gen-id";
 
 import "../icon/icon.ts";
 
-import styles from "./text-field.css?inline";
 import filledStyles from "./filled-field.css?inline";
 import outlinedStyles from "./outlined-field.css?inline";
+import styles from "./text-field.css?inline";
 
-type TextFieldVariant = "filled" | "outlined";
+export type TextFieldVariant = "filled" | "outlined";
 
 const textFieldGeneratorKeys = generateUniqueKey("text-field-");
 
@@ -34,6 +34,7 @@ const textFieldGeneratorKeys = generateUniqueKey("text-field-");
 export class TextField extends FormControlMixin(LitElement) {
   private leadingSlot: boolean;
   private trailingSlot: boolean;
+  private customInputElement: HTMLElement | null;
 
   static override shadowRootOptions: ShadowRootInit = {
     ...LitElement.shadowRootOptions,
@@ -47,6 +48,7 @@ export class TextField extends FormControlMixin(LitElement) {
 
     this.leadingSlot = false;
     this.trailingSlot = false;
+    this.customInputElement = null;
   }
 
   static get styles(): CSSResultGroup {
@@ -177,11 +179,13 @@ export class TextField extends FormControlMixin(LitElement) {
 
   private handleFocus() {
     if (this.disabled) return;
-    this.focused = this.inputOrTextArea?.matches(":focus") ?? false;
+    const control = this.customInputElement || this.inputOrTextArea;
+    this.focused = control?.matches(":focus") ?? false;
   }
 
   public override focus() {
-    this.inputOrTextArea?.focus();
+    const control = this.customInputElement || this.inputOrTextArea;
+    control?.focus();
   }
 
   connectedCallback() {
@@ -240,6 +244,21 @@ export class TextField extends FormControlMixin(LitElement) {
 
   get populated() {
     return this.focused || !!this.value || !!this.placeholder;
+  }
+
+  private updateSlottedInput(event: CustomEvent) {
+    const [inputElement] = (event.target as HTMLSlotElement).assignedNodes();
+
+    if (inputElement) {
+      if (inputElement instanceof HTMLElement) {
+        this.customInputElement = inputElement;
+
+        inputElement.addEventListener("focus", this.handleFocus.bind(this));
+        inputElement.addEventListener("blur", this.handleFocus.bind(this));
+      }
+    } else {
+      this.customInputElement = null;
+    }
   }
 
   private get renderInput() {
@@ -390,7 +409,7 @@ export class TextField extends FormControlMixin(LitElement) {
     </div>`;
   }
 
-  private get renderPreffix() {
+  private get renderPrefix() {
     return when(
       this.prefixText,
       () =>
@@ -443,13 +462,15 @@ export class TextField extends FormControlMixin(LitElement) {
               this.variant === "outlined",
             "text-field__input-wrapper_focused": this.populated && this.label,
             "text-field__input-wrapper_label": this.label,
-
             "text-field__input-wrapper_multiline": this.multiline,
           })}"
         >
           ${this.renderFilledLabel}
           <div class="text-field__wrapper">
-            ${this.renderPreffix} ${this.renderInputOrTextArea}
+            ${this.renderPrefix}
+            <slot name="input" @slotchange=${this.updateSlottedInput}>
+              ${this.renderInputOrTextArea}
+            </slot>
             ${this.renderSuffix}
           </div>
         </div>
