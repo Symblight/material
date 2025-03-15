@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/web-components";
 import { html } from "lit";
 
 import "../select";
-import "../option.ts";
 import "../../button/button.ts";
 
 import SelectProps from "../select.ts";
@@ -15,7 +14,7 @@ function Select({ variant, disabled }: SelectProps) {
     <md-select ?disabled=${disabled} variant=${variant} @change=${handleChange}>
       <md-option value="">--Please choose an option--</md-option>
       <md-option value="tutor"> Tutor </md-option>
-      <md-option value="student"> Student </md-option>
+      <md-option value="student" selected> Student </md-option>
       <md-option value="classroom"> Classroom </md-option>
     </md-select>
   `;
@@ -57,17 +56,6 @@ export const Form: Story = {
       document.querySelector("form")?.reset();
     }
 
-    function handleDisable() {
-      const group = document.querySelector("fieldset");
-      if (!group) return;
-
-      if (!group.hasAttribute("disabled")) {
-        group.setAttribute("disabled", "");
-      } else {
-        group.removeAttribute("disabled");
-      }
-    }
-
     async function handleLoad() {
       const fetcher = () =>
         new Promise((resolve) =>
@@ -83,8 +71,6 @@ export const Form: Story = {
         optionEl.innerText = el;
         selectEl.appendChild(optionEl);
       });
-
-      console.log(selectEl);
     }
 
     return html`<form @submit=${handleSubmit}>
@@ -94,5 +80,26 @@ export const Form: Story = {
       </form>
 
       <md-button @click=${handleLoad}>Load more</md-button> `;
+  },
+};
+
+export const Group: Story = {
+  args: {},
+  render: () => {
+    return html`
+      <md-select name="my-select">
+        <md-option value="">--Please choose an option--</md-option>
+        <md-option value="test"><div>TEST NESTED DIV</div></md-option>
+        <md-optgroup label="person">
+          <md-option value="tutor"> Tutor </md-option>
+          <md-option value="student"> Student </md-option>
+        </md-optgroup>
+        <md-hr></md-hr>
+        <md-optgroup label="place">
+          <md-option value="classroom"> Classroom </md-option>
+          <md-option value="online"> Online </md-option>
+        </md-optgroup>
+      </md-select>
+    `;
   },
 };

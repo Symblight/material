@@ -83,7 +83,6 @@ const meta = {
     },
     label: {
       control: { type: "text" },
-      defaultValue: "Label",
     },
     suffixText: {
       control: { type: "text" },
@@ -254,5 +253,47 @@ export const Password: Story = {
         </md-icon-button>
       </md-text-field>
     `;
+  },
+};
+
+export const CustomInputSelect: Story = {
+  args: {
+    value: " ",
+    slot: html`
+      <select
+        slot="input"
+        style=" appearance: none; margin: 0;padding: 0;background: none;color: currentColor;border: 0;font-size: inherit;cursor: pointer;height: 1.5rem;line-height: 1.5rem;outline: none;"
+        name="foods"
+        id="hr-select"
+      >
+        <option value="">Choose a food</option>
+        <hr />
+        <optgroup label="Fruit">
+          <option value="apple">Apples</option>
+          <option value="banana">Bananas</option>
+          <option value="cherry">Cherries</option>
+          <option value="damson">Damsons</option>
+        </optgroup>
+        <hr />
+        <optgroup label="Vegetables">
+          <option value="artichoke">Artichokes</option>
+          <option value="broccoli">Broccoli</option>
+          <option value="cabbage">Cabbages</option>
+        </optgroup>
+        <hr />
+        <optgroup label="Meat">
+          <option value="beef">Beef</option>
+          <option value="chicken">Chicken</option>
+          <option value="pork">Pork</option>
+        </optgroup>
+        <hr />
+        <optgroup label="Fish">
+          <option value="cod">Cod</option>
+          <option value="haddock">Haddock</option>
+          <option value="salmon">Salmon</option>
+          <option value="turbot">Turbot</option>
+        </optgroup>
+      </select>
+    ` as unknown as string,
   },
 };

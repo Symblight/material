@@ -11,9 +11,3 @@
   line-height: 1.5rem;
   outline: none;
 }
-
-.select__native-control:after {
-  position: absolute;
-  content: "";
-  inset: 0;
-}
