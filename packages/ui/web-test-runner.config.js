@@ -1,15 +1,70 @@
 import { playwrightLauncher } from "@web/test-runner-playwright";
-import { vitePlugin } from "@remcovaes/web-test-runner-vite-plugin";
+import { esbuildPlugin } from "@web/dev-server-esbuild";
+
+// Transforms `import icon from "./foo.svg?raw"` → plain string default export
+function svgRawPlugin() {
+  return {
+    name: "svg-raw",
+    resolveMimeType(context) {
+      if (
+        context.path.endsWith(".svg") &&
+        context.querystring.includes("raw")
+      ) {
+        return "js";
+      }
+    },
+    async transform(context) {
+      if (
+        context.path.endsWith(".svg") &&
+        context.querystring.includes("raw")
+      ) {
+        const escaped = context.body
+          .replace(/\\/g, "\\\\")
+          .replace(/`/g, "\\`")
+          .replace(/\$\{/g, "\\${");
+        return { body: `export default \`${escaped}\`;` };
+      }
+    },
+  };
+}
+
+// Transforms `import styles from "./foo.css?inline"` → Lit CSSResult module
+function cssInlinePlugin() {
+  return {
+    name: "css-inline",
+    resolveMimeType(context) {
+      if (
+        context.path.endsWith(".css") &&
+        context.querystring.includes("inline")
+      ) {
+        return "js";
+      }
+    },
+    async transform(context) {
+      if (
+        context.path.endsWith(".css") &&
+        context.querystring.includes("inline")
+      ) {
+        const escaped = context.body
+          .replace(/\\/g, "\\\\")
+          .replace(/`/g, "\\`")
+          .replace(/\$\{/g, "\\${");
+        return {
+          body: `import { css } from "lit";\nexport default css\`${escaped}\`;`,
+        };
+      }
+    },
+  };
+}
 
 export default {
-  nodeResolve: true, // Resolves Node.js-style module imports
-  coverage: true, // Enables coverage reporting
-
-  files: ["**/*test.ts", "!node_modules/", "!.wireit/"],
-  plugins: [vitePlugin()],
-
-  browsers: [
-    playwrightLauncher({ product: "chromium" }), // Test in Chromium (can add firefox or webkit here)
+  nodeResolve: true,
+  coverage: true,
+  files: ["components/**/*.spec.ts", "!node_modules/", "!.wireit/"],
+  plugins: [
+    svgRawPlugin(),
+    cssInlinePlugin(),
+    esbuildPlugin({ ts: true, tsconfig: "./tsconfig.json" }),
   ],
-  setupFiles: ["test/setupJest.js"],
+  browsers: [playwrightLauncher({ product: "chromium" })],
 };

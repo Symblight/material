@@ -60,7 +60,7 @@ const internals = Symbol("internals");
 @customElement("md-select")
 export default class Select extends LitElement {
   @query("md-text-field")
-  textField: TextField | null = null;
+  textField!: TextField | null;
 
   @query("select")
   select!: HTMLSelectElement;
