@@ -1,9 +1,9 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.0.7",
-  "main": "dist/index.umd.js",
-  "module": "dist/index.es.js",
+  "version": "0.0.8",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -34,12 +34,61 @@
   ],
   "exports": {
     ".": {
-      "import": {
-        "default": "./dist/index.es.js",
-        "types": "./dist/components/index.d.ts"
-      }
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./avatar": {
+      "import": "./dist/avatar/avatar.js",
+      "types": "./dist/avatar/avatar.d.ts"
+    },
+    "./button": {
+      "import": "./dist/button/button.js",
+      "types": "./dist/button/button.d.ts"
+    },
+    "./checkbox": {
+      "import": "./dist/checkbox/checkbox.js",
+      "types": "./dist/checkbox/checkbox.d.ts"
+    },
+    "./chips": {
+      "import": "./dist/chips/index.js",
+      "types": "./dist/chips/index.d.ts"
+    },
+    "./dialog": {
+      "import": "./dist/dialog/dialog.js",
+      "types": "./dist/dialog/dialog.d.ts"
+    },
+    "./fab": {
+      "import": "./dist/fab/fab.js",
+      "types": "./dist/fab/fab.d.ts"
+    },
+    "./icon": {
+      "import": "./dist/icon/icon.js",
+      "types": "./dist/icon/icon.d.ts"
+    },
+    "./icon-button": {
+      "import": "./dist/icon-button/icon-button.js",
+      "types": "./dist/icon-button/icon-button.d.ts"
+    },
+    "./progress-circular": {
+      "import": "./dist/progress-circular/progress-circular.js",
+      "types": "./dist/progress-circular/progress-circular.d.ts"
+    },
+    "./radio-button": {
+      "import": "./dist/radio-button/radio-button.js",
+      "types": "./dist/radio-button/radio-button.d.ts"
+    },
+    "./select": {
+      "import": "./dist/select/index.js",
+      "types": "./dist/select/index.d.ts"
+    },
+    "./text-field": {
+      "import": "./dist/text-field/text-field.js",
+      "types": "./dist/text-field/text-field.d.ts"
     },
     "./theme/theme.css": "./dist/theme.css"
+  },
+  "peerDependencies": {
+    "lit": ">=3.0.0"
   },
   "dependencies": {
     "@lit-labs/observers": "^2.1.0",
@@ -48,7 +97,6 @@
     "@open-wc/form-control": "^1.0.0",
     "@open-wc/form-helpers": "^1.0.0",
     "@open-wc/testing": "4.0.0",
-    "lit": "^3.3.2",
     "rollup-plugin-postcss-lit": "^2.2.0"
   },
   "devDependencies": {

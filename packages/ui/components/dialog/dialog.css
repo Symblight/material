@@ -85,7 +85,7 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) and @media (max-width: 768px) {
+@media (prefers-reduced-motion: no-preference) and (max-width: 768px) {
   .dialog[modal-mode="mega"] {
     animation: slide-out-down 0.2s cubic-bezier(0.25, 0, 0.3, 1) forwards;
     animation-timing-function: cubic-bezier(0.5, -0.3, 0.1, 1.5);
