@@ -4,7 +4,7 @@ import { html } from "lit";
 import "../select";
 import "../../button/button.ts";
 
-import SelectProps from "../select.ts";
+import type SelectProps from "../select.ts";
 
 function Select({ variant, disabled }: SelectProps) {
   const handleChange = (event) => {

@@ -44,11 +44,6 @@
 }
 
 :host([disabled]:where(:host([variant="outlined"]))) {
-  --md-button-border-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-surface),
-    transparent 12%
-  );
   --md-button-foreground-color: color-mix(
     in oklch,
     var(--md-sys-color-on-surface),

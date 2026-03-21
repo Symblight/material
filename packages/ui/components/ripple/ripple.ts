@@ -20,13 +20,13 @@ export default class MdRipple extends LitElement {
   pressed: boolean = false;
 
   @state()
-  accessor hovered: boolean = false;
+  hovered: boolean = false;
 
   @query("div")
-  accessor mdSurfaceEl: HTMLDivElement | undefined;
+  mdSurfaceEl: HTMLDivElement | undefined;
 
   @state()
-  accessor rippleAnimation: Animation | undefined;
+  rippleAnimation: Animation | undefined;
 
   static get styles(): CSSResultGroup {
     return [styles as unknown as CSSResultOrNative];

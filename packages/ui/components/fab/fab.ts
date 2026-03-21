@@ -75,7 +75,7 @@ export default class FAB extends BaseButton {
   }
 
   @property({ type: String, attribute: true })
-  accessor label: string = "";
+  label: string = "";
 
   private get classes() {
     return classMap({

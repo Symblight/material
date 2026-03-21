@@ -1,11 +1,4 @@
-import {
-  CSSResultGroup,
-  CSSResultOrNative,
-  LitElement,
-  html,
-  isServer,
-  nothing,
-} from "lit";
+import { CSSResultGroup, LitElement, html, isServer, nothing } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { when } from "lit/directives/when.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
@@ -60,32 +53,32 @@ export default class Checkbox extends LitElement {
   }
 
   @property({ type: Boolean, reflect: true })
-  accessor disabled: boolean = false;
+  disabled: boolean = false;
 
   @property({ type: String, attribute: true })
-  accessor id: string = "";
+  id: string = "";
 
   @property({ type: String })
-  accessor value: string = "on";
+  value: string = "on";
 
   // form
   @property({ type: Boolean, reflect: true })
-  required = false;
+  required: boolean = false;
 
   @property({ type: Boolean, reflect: true })
-  accessor indeterminate: boolean = false;
+  indeterminate: boolean = false;
 
   @property({ type: Boolean, reflect: true })
-  accessor error: boolean = false;
+  error: boolean = false;
 
   @property({ type: Boolean, reflect: true })
-  accessor checked: boolean = false;
+  checked: boolean = false;
 
   @query("input")
-  accessor input!: HTMLInputElement;
+  input!: HTMLInputElement;
 
   @property({ type: String, attribute: true })
-  accessor name: string = "";
+  name: string = "";
 
   get form() {
     return this[internals].form;
@@ -100,7 +93,7 @@ export default class Checkbox extends LitElement {
   }
 
   @state()
-  private accessor focused: boolean = false;
+  private focused: boolean = false;
 
   private handleClick(event: MouseEvent): void {
     if (this.disabled || !this.input) return;

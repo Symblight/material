@@ -56,7 +56,6 @@ const meta = {
     children: {
       control: { type: "text" },
       type: "string",
-      defaultValue: unsafeHTML(`Button`) as HTMLCollection,
     },
   },
 } satisfies Meta<ButtonProps>;

@@ -1,0 +1,29 @@
+/* || OUTLINED */
+:host([variant="outlined"]) {
+    --md-chip-background-color: transparent;
+    --md-chip-border-color: var(--md-sys-color-outline);
+    --md-chip-foreground-color: var(--md-sys-color-primary);
+    --md-chip-border-size: 0.063rem;
+    --_container-space-top: calc(
+            var(--md-chip-block-start-space) - var(--md-chip-border-size)
+    );
+    --_container-space-bottom: calc(
+            var(--md-chip-block-end-space) - var(--md-chip-border-size)
+    );
+
+    --md-chip-pressed-state-color: color-mix(
+            in oklch,
+            var(--md-sys-color-primary) 12%,
+            transparent
+    );
+    --md-chip-pressed-state-opacity: 1;
+}
+
+:host([variant="outlined"]:hover:not([disabled])) {
+    --md-chip-background-color: color-mix(
+            in oklch,
+            var(--md-sys-color-primary) 8%,
+            transparent
+    );
+}
+

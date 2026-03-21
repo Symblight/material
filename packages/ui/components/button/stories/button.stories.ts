@@ -62,7 +62,6 @@ export const Regular: Story = {
   args: {
     children: unsafeHTML(`Label`) as HTMLCollection,
     disabled: false,
-    danger: false,
     href: undefined,
   },
 };

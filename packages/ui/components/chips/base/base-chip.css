@@ -1,0 +1,67 @@
+:host {
+    --md-chip-foreground-color: var(--md-sys-color-on-surface-variant);
+    --md-chip-background-color: var(
+            --md-sys-color-surface-container-highest
+    );
+    --md-chip-disabled-foreground-color: color-mix(
+            in oklch,
+            var(--md-sys-color-on-surface),
+            transparent 62%
+    );
+    --md-chip-disabled-background-color: color-mix(
+            in oklch,
+            var(--md-sys-color-on-surface),
+            transparent 96%
+    );
+
+    --md-chip-inline-start-space: 1rem;
+    --md-chip-inline-end-space: 1rem;
+    --md-chip-block-start-space: 0.375rem;
+    --md-chip-block-end-space: 0.375rem;
+
+    --md-button-border-size: 0;
+
+    --md-chip-label-size: 1rem;
+    --md-chip-label-size-populated: 0.75rem;
+    --md-chip-font-size: 1rem;
+
+    --md-chip-icon-size: 1.5rem;
+    --md-chip-trailing-space: 0.75rem;
+    --md-chip-leading-space: 0.75rem;
+
+    --md-chip-border-color: transparent;
+
+    --md-chip-border-radius: 0.5rem;
+
+
+    --_container-space-left: var(--md-chip-inline-start-space);
+    --_container-space-right: var(--md-chip-inline-end-space);
+    --_container-space-top: var(--md-chip-block-start-space);
+    --_container-space-bottom: var(--md-chip-block-end-space);
+
+--_container-bg-color: var( --md-chip-background-color);
+}
+
+
+:host {
+    display: flex;
+    position: relative;
+    inline-size: fit-content;
+    box-sizing: border-box;
+    text-wrap: nowrap;
+    user-select: none;
+
+    background-color: var(--_container-bg-color);
+    color: var(--_container-fg-color);
+    min-height: var(--_container-height);
+
+    line-height: 1.25rem;
+    border-radius: var(--md-chip-border-radius);
+
+    border: var(--md-chip-border-size) solid var(--md-chip-border-color);
+
+    padding-inline: var(--_container-space-left) var(--_container-space-right);
+    padding-block: var(--_container-space-top) var(--_container-space-bottom);
+    margin: 0;
+
+}

@@ -60,13 +60,13 @@ const internals = Symbol("internals");
 @customElement("md-select")
 export default class Select extends LitElement {
   @query("md-text-field")
-  accessor textField: TextField | null = null;
+  textField: TextField | null = null;
 
   @query("select")
-  accessor select!: HTMLSelectElement;
+  select!: HTMLSelectElement;
 
   @state()
-  accessor firstOptionValue: string = "";
+  firstOptionValue: string = "";
 
   static readonly formAssociated = true;
   [internals]: ElementInternals;
@@ -93,24 +93,24 @@ export default class Select extends LitElement {
   }
 
   @property({ type: Boolean, reflect: true })
-  accessor disabled: boolean = false;
+  disabled: boolean = false;
 
   @property({ type: String, attribute: true })
-  accessor id: string = "";
+  id: string = "";
 
   @property({ type: String, attribute: true })
-  accessor value: string | undefined;
+  value: string | undefined;
 
   @property({ type: Boolean, reflect: true })
-  required = false;
+  required: boolean = false;
 
   @property({ type: String, attribute: true })
-  accessor name: string = "";
+  name: string = "";
   /**
    * The variant style of the textField.
    */
   @property()
-  accessor variant: TextFieldVariant = "filled";
+  variant: TextFieldVariant = "filled";
 
   @queryAssignedElements()
   menu!: (MdOption | MdOptGroup | MdHr)[];

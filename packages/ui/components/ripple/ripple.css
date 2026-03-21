@@ -10,7 +10,7 @@
 .surface {
   border-radius: inherit;
   position: absolute;
-  inset: 0px;
+  inset: 0;
   overflow: hidden;
   pointer-events: none;
 }
@@ -20,12 +20,10 @@
     --md-ripple-hover-color,
     var(--md-sys-color-on-surface, #1d1b20)
   );
-  inset: 0px;
+  inset: 0;
   transition:
     opacity 15ms linear,
     background-color 15ms linear;
-
-  inset: 0px;
 }
 
 .surface::after,
@@ -33,7 +31,7 @@
   content: "";
   position: absolute;
   opacity: 0;
-  inset: 0px;
+  inset: 0;
 }
 
 .surface::after {
@@ -44,7 +42,7 @@
     transparent 100%
   );
   transition: opacity 175ms linear;
-  transform-origin: center center 0px;
+  transform-origin: center center 0;
 }
 
 .surface_pressed:after {

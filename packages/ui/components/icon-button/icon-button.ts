@@ -47,16 +47,16 @@ export default class IconButton extends BaseButton {
   }
 
   @property({ type: Boolean, attribute: true, reflect: true })
-  accessor selected: boolean = false;
+  selected: boolean = false;
 
   @property({ type: Boolean, attribute: true, reflect: true })
-  accessor toggle: boolean = false;
+  toggle: boolean = false;
 
   /**
    * The icon associated with the button.
    */
   @state()
-  accessor selectedIcon: Node | null = null;
+  selectedIcon: Node | null = null;
 
   static get styles(): CSSResultGroup {
     return [

@@ -63,19 +63,19 @@ export class TextField extends FormControlMixin(LitElement) {
    * The variant style of the textfield.
    */
   @property()
-  accessor variant: TextFieldVariant = "filled";
+  variant: TextFieldVariant = "filled";
 
   /**
    * The name associated with the text field.
    */
   @property({ type: String, attribute: true })
-  accessor name = "";
+  name = "";
 
   /**
    * The label for the text field.
    */
   @property({ type: String, attribute: true })
-  accessor label = "";
+  label = "";
 
   // form
   @property({ type: Boolean, attribute: true, reflect: true })
@@ -84,80 +84,80 @@ export class TextField extends FormControlMixin(LitElement) {
   /**
    * Indicates an error state.
    */
-  @property({ type: Boolean, attribute: true, reflect: true }) accessor error =
+  @property({ type: Boolean, attribute: true, reflect: true }) error =
     false;
 
   /**
    * The placeholder text for the text field.
    */
   @property({ type: String, attribute: true })
-  accessor placeholder = "";
+  placeholder = "";
 
   /**
    * Indicates a dirty state.
    */
   @state()
-  accessor dirty = false;
+  dirty = false;
 
   /**
    * Indicates an active state (private).
    */
   @property({ type: Boolean, attribute: true })
-  private accessor active = false;
+  private active = false;
 
   @state()
-  private accessor focused: boolean = false;
+  private focused: boolean = false;
 
   @state()
-  accessor nativeError: boolean = false;
+  nativeError: boolean = false;
 
   @state()
-  private accessor ariaId = `${textFieldGeneratorKeys.next().value}-${this.id}`;
+  private ariaId = `${textFieldGeneratorKeys.next().value}-${this.id}`;
 
   /**
    * Indicates whether the text field is disabled or not.
    */
   @property({ type: Boolean, attribute: true, reflect: true })
-  accessor disabled = false;
+  disabled = false;
 
   /**
    * Indicates whether the text field is read-only or not. Default is false.
    */
   @property({ type: Boolean, attribute: true, reflect: true })
-  accessor readOnly = false;
+  readOnly = false;
 
   /**
    * Specifies the type of the text field. Default value is "text".
    */
   @property()
-  accessor type: HTMLInputElement["type"] = "text";
+  type: HTMLInputElement["type"] = "text";
 
   /**
    * The current value of the text field. It is always a string.
    */
   @property()
-  accessor value = "";
+  value = "";
 
   @property({ type: Boolean, attribute: true, reflect: true })
-  accessor multiline = false;
+  multiline = false;
 
   /**
    * The suffix for the text field.
    */
   @property({ type: String, attribute: "suffix-text" })
-  accessor suffixText = "";
+  suffixText = "";
 
   /**
    * The prefix for the text field.
    */
   @property({ type: String, attribute: "prefix-text" })
-  accessor prefixText = "";
+  prefixText = "";
 
   @query(".text-field__control")
-  accessor inputOrTextArea!: HTMLInputElement | HTMLAreaElement;
+  inputOrTextArea!: HTMLInputElement | HTMLAreaElement;
 
   @query(".text-field__control")
-  accessor validationTarget!: HTMLInputElement | HTMLAreaElement;
+  validationTarget!: HTMLInputElement | HTMLAreaElement;
 
   resetFormControl(): void {
     this.value = "";
