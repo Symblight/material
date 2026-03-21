@@ -1,0 +1,27 @@
+/* ── Filter Chip ──────────────────────────────────────────────────────────────
+   Filter chips use tags or descriptive words to filter content.
+   Toggleable: selected-icon slot is shown when selected, leading-icon otherwise.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Tighten start padding when checkmark or leading icon is present */
+:where(.chip_selected) {
+  padding-inline-start: 0.5rem;
+}
+
+/* Hover state for unselected */
+:host([variant="outlined"]:not([selected])) .chip:hover:not(.chip_disabled) {
+  background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface-variant) 8%,
+    transparent
+  );
+}
+
+/* Hover state for selected */
+:host([selected]) .chip:hover:not(.chip_disabled) {
+  background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-secondary-container) 92%,
+    var(--md-sys-color-on-secondary-container) 8%
+  );
+}

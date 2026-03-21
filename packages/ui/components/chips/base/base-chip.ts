@@ -1,53 +1,62 @@
 import { CSSResultGroup, CSSResultOrNative, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 
-import styles from "./chip.css?inline";
-import outlinedStyles from "./outlined-chip.css?inline";
+import "../../ripple/ripple.ts";
 
-export type ChipVariant = "elevated" | "outlined";
+import styles from "./base-chip.css?inline";
 
-/**
- * @tag md-chips
- * @summary Material Chip web component
- */
-
-@customElement("md-chip")
-export default class MdChip extends LitElement {
+export default class BaseMdChip extends LitElement {
   static get styles(): CSSResultGroup {
-    return [styles, outlinedStyles] as unknown as CSSResultOrNative[];
+    return [styles] as unknown as CSSResultOrNative[];
   }
 
-  /**
-   * The variant style of the chips.
-   */
-  @property()
-  variant: ChipVariant = "outlined";
-
-  /**
-   * Indicates whether the chips is disabled or not.
-   */
   @property({ type: Boolean, attribute: true, reflect: true })
   disabled = false;
 
+  @state() protected _focused = false;
+  @state() protected _hasLeadingIcon = false;
+
+  protected _handleFocus() {
+    this._focused = true;
+  }
+
+  protected _handleBlur() {
+    this._focused = false;
+  }
+
+  protected _handleClick(_e: Event) {
+    // override in subclasses
+  }
+
+  protected _onSlotChange(e: Event, stateSetter: (v: boolean) => void) {
+    const slot = e.target as HTMLSlotElement;
+    stateSetter(slot.assignedNodes({ flatten: true }).length > 0);
+  }
+
   render() {
     return html`
-      <div
-        part="box"
+      <button
+        id="chip"
+        part="chip"
         class="chip ${classMap({
           chip_disabled: this.disabled,
-          chip_variant_elevated: this.variant === "elevated",
-          chip_variant_outlined: this.variant === "outlined",
+          chip_focused: this._focused,
         })}"
+        ?disabled=${this.disabled}
+        @focus=${this._handleFocus}
+        @blur=${this._handleBlur}
+        @click=${this._handleClick}
       >
-        <slot></slot>
-      </div>
+        <md-ripple for="chip"></md-ripple>
+        <slot
+          name="leading-icon"
+          class="${classMap({ "chip__leading-icon": this._hasLeadingIcon })}"
+          @slotchange=${(e: Event) =>
+            this._onSlotChange(e, (v) => (this._hasLeadingIcon = v))}
+        ></slot>
+        <span class="chip__label"><slot></slot></span>
+      </button>
     `;
-  }
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "md-chip": MdChip;
   }
 }

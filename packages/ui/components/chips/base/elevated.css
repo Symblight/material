@@ -1,0 +1,14 @@
+/* ── Elevated chip variant ── */
+:host([variant="elevated"]) {
+  --md-chip-container-color: var(--md-sys-color-surface-container-low);
+  --md-chip-border-color: transparent;
+  --md-chip-border-width: 0;
+}
+
+:host([variant="elevated"]) .chip {
+  box-shadow: var(--md-sys-elevation-level1, 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15));
+}
+
+:host([variant="elevated"]:hover:not([disabled])) .chip {
+  box-shadow: var(--md-sys-elevation-level2, 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15));
+}

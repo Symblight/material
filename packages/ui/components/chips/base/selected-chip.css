@@ -1,0 +1,8 @@
+/* ── Selected state for toggleable chips (filter, input) ── */
+:host([selected]) {
+  --md-chip-container-color: var(--md-sys-color-secondary-container);
+  --md-chip-label-color: var(--md-sys-color-on-secondary-container);
+  --md-chip-icon-color: var(--md-sys-color-on-secondary-container);
+  --md-chip-border-color: transparent;
+  --_ripple-color: var(--md-sys-color-on-secondary-container);
+}

@@ -1,0 +1,10 @@
+/* ── Assist Chip ──────────────────────────────────────────────────────────────
+   Assist chips suggest smart or automated actions.
+   Default variant: outlined
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:host {
+  --md-chip-label-color: var(--md-sys-color-on-surface);
+  --md-chip-icon-color: var(--md-sys-color-primary);
+  --_ripple-color: var(--md-sys-color-on-surface);
+}

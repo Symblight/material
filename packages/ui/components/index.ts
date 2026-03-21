@@ -1,4 +1,5 @@
 import "./button/button";
+import "./chips/index.ts";
 import "./icon/icon";
 import "./icon-button/icon-button";
 import "./progress-circular/progress-circular";

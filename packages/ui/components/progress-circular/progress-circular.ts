@@ -24,7 +24,6 @@ export default class MdProgressCircular extends LitElement {
   render() {
     return html`<svg
       xmlns="http://www.w3.org/2000/svg"
-      focusable="false"
       class="progress-circular__svg"
       viewBox="0 0 100 100"
       focusable="false"

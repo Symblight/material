@@ -1,0 +1,11 @@
+/* ── Suggestion Chip ──────────────────────────────────────────────────────────
+   Suggestion chips present dynamically generated suggestions (AI/smart actions).
+   Default variant: outlined. Same visual treatment as assist chip but
+   semantically distinct for content suggestions.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:host {
+  --md-chip-label-color: var(--md-sys-color-on-surface-variant);
+  --md-chip-icon-color: var(--md-sys-color-secondary);
+  --_ripple-color: var(--md-sys-color-on-surface-variant);
+}
