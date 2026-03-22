@@ -81,7 +81,7 @@
 }
 
 /* ── Focus ring ── */
-.chip_focused {
+.chip:focus-visible {
   outline: 3px solid var(--md-sys-color-secondary);
   outline-offset: 2px;
 }

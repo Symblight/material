@@ -69,14 +69,11 @@ export default class MdInputChip extends BaseMdChip {
         part="chip"
         class="chip ${classMap({
           chip_disabled: this.disabled,
-          chip_focused: this._focused,
           chip_selected: this.selected,
           "chip_has-avatar": this.avatar,
         })}"
         ?disabled=${this.disabled}
         aria-pressed=${this.selected}
-        @focus=${this._handleFocus}
-        @blur=${this._handleBlur}
         @click=${this._handleClick}
       >
         <md-ripple for="chip"></md-ripple>

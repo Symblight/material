@@ -8,7 +8,6 @@ export class RadioSelectionController implements ReactiveController {
   #groupObserver?: MutationObserver;
   #group?: HTMLFieldSetElement | HTMLFormElement;
 
-  currentControl: HTMLElement | null | undefined;
   selectedValue?: string;
   controls: RadioButton[] = [];
 
@@ -32,7 +31,7 @@ export class RadioSelectionController implements ReactiveController {
             });
           }
           if (mutation.attributeName === "checked") {
-            this.selectedValue = mutation.target.value;
+            this.selectedValue = (mutation.target as RadioButton).value;
           }
         });
       });
@@ -45,7 +44,7 @@ export class RadioSelectionController implements ReactiveController {
   }
 
   hostDisconnected() {
-    // Clean up
+    this.#groupObserver?.disconnect();
   }
 
   getGroupElement(tagName: "fieldset" | "form") {

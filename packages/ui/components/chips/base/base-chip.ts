@@ -14,16 +14,7 @@ export default class BaseMdChip extends LitElement {
   @property({ type: Boolean, attribute: true, reflect: true })
   disabled = false;
 
-  @state() protected _focused = false;
   @state() protected _hasLeadingIcon = false;
-
-  protected _handleFocus() {
-    this._focused = true;
-  }
-
-  protected _handleBlur() {
-    this._focused = false;
-  }
 
   protected _handleClick(_e: Event) {
     // override in subclasses
@@ -41,11 +32,8 @@ export default class BaseMdChip extends LitElement {
         part="chip"
         class="chip ${classMap({
           chip_disabled: this.disabled,
-          chip_focused: this._focused,
         })}"
         ?disabled=${this.disabled}
-        @focus=${this._handleFocus}
-        @blur=${this._handleBlur}
         @click=${this._handleClick}
       >
         <md-ripple for="chip"></md-ripple>

@@ -11,62 +11,41 @@ export const FormAssociateMixin = <T extends Constructor<LitElement>>(
   class FormAssociate extends superClass {
     static formAssociated = true;
 
-    // constructor(...args) {
-    //   super(...args);
-    //   this[internals] = this.attachInternals();
-    // }
-    public [internals]: ElementInternals;
-    [privateInternals]: ElementInternals;
+    [privateInternals]: ElementInternals | undefined;
 
-    // [internals]: ElementInternals;
     get [internals](): ElementInternals {
       if (!this[privateInternals]) {
         this[privateInternals] = this.attachInternals();
       }
-      return this[privateInternals];
+      return this[privateInternals]!;
     }
 
-    formAssociatedCallback() {
-      // Called when the custom element is associated with a form
-      console.log("CustomRadio element is associated with a form");
-
-      // this[internals].setValidity(
-      //   this.input.validity,
-      //   this.input.validationMessage,
-      //   this.input
-      // );
-    }
+    formAssociatedCallback() {}
 
     formResetCallback() {
-      this.checked = false;
-      this[internals].setFormValue(this.value);
-    }
-    formDisabledCallback(disabled: boolean) {
-      this.disabled = disabled;
+      (this as any).checked = false;
+      this[internals].setFormValue(null);
     }
 
-    formStateRestoreCallback(_state: unknown, _mode: unknown) {
-      // Called when the form's state is restored
-      console.log("Form state is restored");
+    formDisabledCallback(disabled: boolean) {
+      (this as any).disabled = disabled;
     }
+
+    formStateRestoreCallback(_state: unknown, _mode: unknown) {}
 
     public checkValidity(): boolean {
-      console.log("check validity");
       return this[internals].checkValidity();
     }
 
-    public reportValidity(): void {
-      console.log("report validity");
+    public reportValidity(): boolean {
       return this[internals].reportValidity();
     }
 
     get willValidate() {
-      console.log("willValidate");
       return this[internals].willValidate;
     }
 
     public get validity(): ValidityState {
-      console.log(" validity");
       return this[internals].validity;
     }
 

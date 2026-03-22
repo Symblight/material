@@ -49,8 +49,7 @@ export default class Checkbox extends LitElement {
 
   updated(changedValues: Map<string, unknown>): void {
     if (changedValues.has("checked") || changedValues.has("value")) {
-      // set the value of the input
-      this[internals].setValidity({ customError: false });
+      this[internals].setValidity({});
     }
   }
 
@@ -99,10 +98,6 @@ export default class Checkbox extends LitElement {
 
   private handleClick(event: MouseEvent): void {
     if (this.disabled || !this.input) return;
-    if (event.currentTarget !== event.target) {
-      return;
-    }
-
     if (event.composedPath()[0] !== event.target) {
       return;
     }
@@ -125,7 +120,7 @@ export default class Checkbox extends LitElement {
 
   formResetCallback() {
     this.checked = false;
-    this[internals].setFormValue(this.value);
+    this[internals].setFormValue(null);
   }
 
   private handleFocus() {
@@ -139,21 +134,13 @@ export default class Checkbox extends LitElement {
     this.dispatchEvent(copy);
   }
 
-  onValidate(state: boolean) {
-    if (!state) {
-      this[internals].setValidity({ customError: true }, "required");
-    } else if (state === true) {
-      this[internals].setValidity({});
-    }
-  }
-
   render() {
     return html`
-      <md-ripple class="checkbox__ripple"></md-ripple>
+      <md-ripple class="checkbox__ripple" for="input"></md-ripple>
       <input
+        id="input"
         part="input"
         type="checkbox"
-        .id=${this.id}
         ?disabled=${this.disabled}
         ?required=${this.required}
         .checked=${this.checked}
@@ -191,7 +178,6 @@ export default class Checkbox extends LitElement {
               height="24px"
               viewBox="0 -960 960 960"
               width="24px"
-              fill="#5f6368"
             >
               <path d="M240-440v-80h480v80H240Z" />
             </svg>`,

@@ -1,1 +1,1 @@
-cd packages/ui && pnpm format && pnpm lint
+cd packages/ui && pnpm lint-staged

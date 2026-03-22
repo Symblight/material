@@ -5,7 +5,7 @@ import {
   LitElement,
   PropertyValues,
 } from "lit";
-import { customElement, property, query, state } from "lit/decorators.js";
+import { customElement, property, query } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 
 import { RadioSelectionController } from "./radio-selection";
@@ -43,9 +43,6 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
     super.connectedCallback();
     if (!isServer) {
       this.addEventListener("click", this.handleClick);
-
-      if (this.input) {
-      }
     }
   }
 
@@ -70,12 +67,6 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
   required: boolean = false;
 
   @property({ type: Boolean, reflect: true })
-  indeterminate: boolean = false;
-
-  @property({ type: Boolean, reflect: true })
-  error: boolean = false;
-
-  @property({ type: Boolean, reflect: true })
   checked: boolean = false;
 
   @query("input")
@@ -95,9 +86,6 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
   get type() {
     return this.localName;
   }
-
-  @state()
-  private focused: boolean = false;
 
   private handleClick(event: MouseEvent): void {
     if (this.disabled || !this.input) return;
@@ -127,11 +115,6 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
       }
     }
     this[internals].ariaChecked = String(this.checked);
-  }
-
-  private handleFocus() {
-    if (this.disabled) return;
-    this.focused = this.input?.matches(":focus") ?? false;
   }
 
   private handleChange(event: Event) {
@@ -168,8 +151,6 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
         .name=${this.name}
         .value=${this.value}
         .checked=${this.checked}
-        @focus=${this.handleFocus}
-        @blur=${this.handleFocus}
         @change=${this.handleChange}
         @input=${this.handleInput}
       />
