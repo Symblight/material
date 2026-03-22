@@ -43,6 +43,10 @@
   gap: 0.5rem;
 }
 
+.button__icon-wrapper {
+  display: flex;
+}
+
 .button:has(.button__icon-wrapper) {
   display: flex;
   align-items: center;
