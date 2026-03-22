@@ -99,12 +99,6 @@ export class TextField extends FormControlMixin(LitElement) {
   @state()
   dirty = false;
 
-  /**
-   * Indicates an active state (private).
-   */
-  @property({ type: Boolean, attribute: true })
-  private active = false;
-
   @state()
   private focused: boolean = false;
 
@@ -113,6 +107,10 @@ export class TextField extends FormControlMixin(LitElement) {
 
   @state()
   private ariaId = `${textFieldGeneratorKeys.next().value}-${this.id}`;
+
+  private get inputId() {
+    return `${this.ariaId}-control`;
+  }
 
   /**
    * Indicates whether the text field is disabled or not.
@@ -177,11 +175,11 @@ export class TextField extends FormControlMixin(LitElement) {
     this.dirty = true;
   }
 
-  private handleFocus() {
+  private handleFocus = () => {
     if (this.disabled) return;
     const control = this.customInputElement || this.inputOrTextArea;
     this.focused = control?.matches(":focus") ?? false;
-  }
+  };
 
   public override focus() {
     const control = this.customInputElement || this.inputOrTextArea;
@@ -203,6 +201,10 @@ export class TextField extends FormControlMixin(LitElement) {
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
+    if (this.customInputElement) {
+      this.customInputElement.removeEventListener("focus", this.handleFocus);
+      this.customInputElement.removeEventListener("blur", this.handleFocus);
+    }
   }
 
   private get renderLeading() {
@@ -249,13 +251,15 @@ export class TextField extends FormControlMixin(LitElement) {
   private updateSlottedInput(event: CustomEvent) {
     const [inputElement] = (event.target as HTMLSlotElement).assignedNodes();
 
-    if (inputElement) {
-      if (inputElement instanceof HTMLElement) {
-        this.customInputElement = inputElement;
+    if (this.customInputElement) {
+      this.customInputElement.removeEventListener("focus", this.handleFocus);
+      this.customInputElement.removeEventListener("blur", this.handleFocus);
+    }
 
-        inputElement.addEventListener("focus", this.handleFocus.bind(this));
-        inputElement.addEventListener("blur", this.handleFocus.bind(this));
-      }
+    if (inputElement instanceof HTMLElement) {
+      this.customInputElement = inputElement;
+      inputElement.addEventListener("focus", this.handleFocus);
+      inputElement.addEventListener("blur", this.handleFocus);
     } else {
       this.customInputElement = null;
     }
@@ -266,17 +270,16 @@ export class TextField extends FormControlMixin(LitElement) {
     return html`
       <input
         part="input"
+        id=${this.inputId}
         .type=${this.type}
-        .id=${this.id}
         .name=${this.name}
         .value=${live(this.value)}
         .placeholder=${this.placeholder}
         ?required=${this.required}
         ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
-        aria-describedby=${ariaId || ""}
-        ?aria-error=${this.hasValidation}
-        aria-label=${this.label}
+        aria-describedby=${ariaId || nothing}
+        ?aria-invalid=${this.hasValidation}
         @input=${this.handleChange}
         @focus=${this.handleFocus}
         @blur=${this.handleFocus}
@@ -292,16 +295,15 @@ export class TextField extends FormControlMixin(LitElement) {
     return html`
       <textarea
         part="input"
-        .id=${this.id}
+        id=${this.inputId}
         .name=${this.name}
         .value=${live(this.value)}
         .placeholder=${this.placeholder}
         ?required=${this.required}
         ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
-        aria-describedby=${ariaId || ""}
-        ?aria-error=${this.hasValidation}
-        aria-label=${this.label}
+        aria-describedby=${ariaId || nothing}
+        ?aria-invalid=${this.hasValidation}
         @input=${this.handleChange}
         @focus=${this.handleFocus}
         @blur=${this.handleFocus}
@@ -316,11 +318,11 @@ export class TextField extends FormControlMixin(LitElement) {
       this.label && this.variant === "filled",
       () => html`
         <label
+          for=${this.inputId}
           class="text-field__label text-field__filled-label ${classMap({
             "text-field__label_active": this.focused,
             "text-field__label_error": this.hasValidation,
             "text-field__filled-label_populated": this.populated,
-            "text-field__label_outlined": this.variant === "outlined",
           })}"
           >${this.label}</label
         >
@@ -343,7 +345,7 @@ export class TextField extends FormControlMixin(LitElement) {
       () =>
         html`<div
           class="text-field__indicator ${classMap({
-            "text-field__indicator_focused": this.focused || this.active,
+            "text-field__indicator_focused": this.focused,
             "text-field__indicator_error": this.hasValidation,
           })}"
         ></div>`,
@@ -358,8 +360,7 @@ export class TextField extends FormControlMixin(LitElement) {
         html`<fieldset
           aria-hidden="true"
           class="text-field__outlined-indicator ${classMap({
-            "text-field__outlined-indicator_focused":
-              this.focused || this.active,
+            "text-field__outlined-indicator_focused": this.focused,
             "text-field__outlined-indicator_error": this.hasValidation,
           })}"
         >
@@ -382,6 +383,7 @@ export class TextField extends FormControlMixin(LitElement) {
       () => html`
         <div>
           <label
+            for=${this.inputId}
             class="text-field__label text-field__outlined-label ${classMap({
               "text-field__label_active": this.focused,
               "text-field__label_error": this.hasValidation,
@@ -403,7 +405,7 @@ export class TextField extends FormControlMixin(LitElement) {
         "text-field__help-text_visible": this.hasValidation,
         "text-field__help-text_error": this.hasValidation,
       })}"
-      id=${ariaId}
+      id=${ariaId || nothing}
     >
       <slot name="help-text"></slot>
     </div>`;

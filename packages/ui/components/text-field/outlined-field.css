@@ -24,14 +24,6 @@
   visibility: visible;
 }
 
-.text-field__outlined {
-  display: flex;
-  align-items: center;
-  inset: 0px;
-  height: 100%;
-  inline-size: fit-content;
-}
-
 .text-field__outlined-label {
   position: absolute;
   transform: translate(1rem, calc(50% - 0.75rem));

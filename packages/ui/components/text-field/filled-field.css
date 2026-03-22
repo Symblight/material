@@ -50,10 +50,6 @@
   --md-filled-text-field-background-indicator: var(--md-text-field-error-color);
 }
 
-.text-field__filled-label-wrap {
-  inset: 0;
-}
-
 .text-field__filled-label {
   position: absolute;
   transform: translate(0rem, -0.5rem);

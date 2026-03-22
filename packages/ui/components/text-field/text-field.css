@@ -63,7 +63,7 @@
   --md-outlined-text-field-shape: 0.25rem;
 }
 
-:host([readonly="true"]) {
+:host([readonly]) {
   cursor: pointer;
 }
 
