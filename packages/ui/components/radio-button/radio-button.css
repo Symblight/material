@@ -103,7 +103,6 @@
   content: "";
 }
 
-
 .radio__box_checked {
   border-color: var(--_container-color);
 }

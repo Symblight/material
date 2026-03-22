@@ -14,23 +14,23 @@ A Material Design 3 radio button web component built with Lit.
 
 ## Properties
 
-| Property        | Attribute       | Type      | Default | Description                            |
-|-----------------|-----------------|-----------|---------|----------------------------------------|
-| `checked`       | `checked`       | `boolean` | `false` | Whether this radio is selected         |
-| `disabled`      | `disabled`      | `boolean` | `false` | Disables the radio button              |
-| `required`      | `required`      | `boolean` | `false` | Marks the field as required in a form  |
-| `indeterminate` | `indeterminate` | `boolean` | `false` | Indeterminate visual state             |
-| `error`         | `error`         | `boolean` | `false` | Applies error styling                  |
-| `value`         | `value`         | `string`  | `"on"`  | Value submitted with the form          |
-| `name`          | `name`          | `string`  | `""`    | Groups radio buttons together          |
-| `id`            | `id`            | `string`  | `""`    | Element id                             |
+| Property        | Attribute       | Type      | Default | Description                           |
+| --------------- | --------------- | --------- | ------- | ------------------------------------- |
+| `checked`       | `checked`       | `boolean` | `false` | Whether this radio is selected        |
+| `disabled`      | `disabled`      | `boolean` | `false` | Disables the radio button             |
+| `required`      | `required`      | `boolean` | `false` | Marks the field as required in a form |
+| `indeterminate` | `indeterminate` | `boolean` | `false` | Indeterminate visual state            |
+| `error`         | `error`         | `boolean` | `false` | Applies error styling                 |
+| `value`         | `value`         | `string`  | `"on"`  | Value submitted with the form         |
+| `name`          | `name`          | `string`  | `""`    | Groups radio buttons together         |
+| `id`            | `id`            | `string`  | `""`    | Element id                            |
 
 ## CSS Custom Properties
 
-| Variable                      | Default                                   | Description                         |
-|-------------------------------|-------------------------------------------|-------------------------------------|
-| `--md-radio-background-color` | `transparent`                             | Fill color of the radio control     |
-| `--md-radio-border-color`     | `var(--md-sys-color-on-surface-variant)`  | Border / ring color of the control  |
+| Variable                      | Default                                  | Description                        |
+| ----------------------------- | ---------------------------------------- | ---------------------------------- |
+| `--md-radio-background-color` | `transparent`                            | Fill color of the radio control    |
+| `--md-radio-border-color`     | `var(--md-sys-color-on-surface-variant)` | Border / ring color of the control |
 
 > `--md-radio-border-color` falls back to the MD3 system token `--md-sys-color-on-surface-variant`. Include the theme CSS or define the token manually.
 

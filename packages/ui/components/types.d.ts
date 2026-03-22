@@ -5,7 +5,6 @@ declare module "*.css?inline" {
 }
 
 declare module "*.svg?raw" {
-  import { SVGTemplateResult } from "lit";
   const content: string;
   export default content;
 }

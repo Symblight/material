@@ -20,27 +20,27 @@ A Material Design 3 icon button web component built with Lit.
 
 ## Properties
 
-| Property   | Attribute  | Type                                             | Default      | Description                                 |
-|------------|------------|--------------------------------------------------|--------------|---------------------------------------------|
-| `variant`  | `variant`  | `"standard" \| "filled" \| "outlined" \| "tonal"` | `"standard"` | Visual style variant                      |
-| `toggle`   | `toggle`   | `boolean`                                        | `false`      | Enables toggled (selected/unselected) mode  |
-| `selected` | `selected` | `boolean`                                        | `false`      | Selected state (used with `toggle`)         |
-| `disabled` | `disabled` | `boolean`                                        | `false`      | Disables the button                         |
-| `loading`  | `loading`  | `boolean`                                        | `false`      | Shows a loading indicator                   |
-| `href`     | `href`     | `boolean`                                        | `false`      | Renders as an anchor element                |
-| `type`     | `type`     | `"button" \| "submit" \| "reset"`               | `"button"`   | Native button type                          |
-| `form`     | `form`     | `string`                                         | —            | Associates button with a form `id`          |
+| Property   | Attribute  | Type                                              | Default      | Description                                |
+| ---------- | ---------- | ------------------------------------------------- | ------------ | ------------------------------------------ |
+| `variant`  | `variant`  | `"standard" \| "filled" \| "outlined" \| "tonal"` | `"standard"` | Visual style variant                       |
+| `toggle`   | `toggle`   | `boolean`                                         | `false`      | Enables toggled (selected/unselected) mode |
+| `selected` | `selected` | `boolean`                                         | `false`      | Selected state (used with `toggle`)        |
+| `disabled` | `disabled` | `boolean`                                         | `false`      | Disables the button                        |
+| `loading`  | `loading`  | `boolean`                                         | `false`      | Shows a loading indicator                  |
+| `href`     | `href`     | `boolean`                                         | `false`      | Renders as an anchor element               |
+| `type`     | `type`     | `"button" \| "submit" \| "reset"`                 | `"button"`   | Native button type                         |
+| `form`     | `form`     | `string`                                          | —            | Associates button with a form `id`         |
 
 ## CSS Custom Properties
 
-| Variable                                | Default       | Description                        |
-|-----------------------------------------|---------------|------------------------------------|
-| `--md-icon-button-foreground-color`     | `inherit`     | Icon color                         |
-| `--md-icon-button-background-color`     | `transparent` | Background fill                    |
-| `--md-icon-button-border-color`         | `transparent` | Border color                       |
-| `--md-icon-button-border-size`          | `0.063rem`    | Border width                       |
-| `--md-icon-button-font-size`            | `0.875rem`    | Icon font size                     |
-| `--md-icon-button-pressed-state-color`  | `transparent` | State-layer color on press         |
+| Variable                               | Default       | Description                |
+| -------------------------------------- | ------------- | -------------------------- |
+| `--md-icon-button-foreground-color`    | `inherit`     | Icon color                 |
+| `--md-icon-button-background-color`    | `transparent` | Background fill            |
+| `--md-icon-button-border-color`        | `transparent` | Border color               |
+| `--md-icon-button-border-size`         | `0.063rem`    | Border width               |
+| `--md-icon-button-font-size`           | `0.875rem`    | Icon font size             |
+| `--md-icon-button-pressed-state-color` | `transparent` | State-layer color on press |
 
 ## Examples
 

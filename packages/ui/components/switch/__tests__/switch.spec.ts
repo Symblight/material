@@ -36,37 +36,53 @@ describe("md-switch", () => {
     it("is unselected by default", async () => {
       const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
       expect(el.selected).to.be.false;
-      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.checked).to.be.false;
+      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.checked)
+        .to.be.false;
     });
 
     it("reflects selected attribute to the host", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch selected></md-switch>`);
+      const el = await fixture<MdSwitch>(
+        html`<md-switch selected></md-switch>`,
+      );
       expect(el.hasAttribute("selected")).to.be.true;
     });
 
     it("inner input is checked when selected is true", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch selected></md-switch>`);
-      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.checked).to.be.true;
+      const el = await fixture<MdSwitch>(
+        html`<md-switch selected></md-switch>`,
+      );
+      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.checked)
+        .to.be.true;
     });
 
     it("adds .switch__track_selected class when selected", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch selected></md-switch>`);
+      const el = await fixture<MdSwitch>(
+        html`<md-switch selected></md-switch>`,
+      );
       expect(
-        el.shadowRoot!.querySelector(".switch__track")!.classList.contains("switch__track_selected"),
+        el
+          .shadowRoot!.querySelector(".switch__track")!
+          .classList.contains("switch__track_selected"),
       ).to.be.true;
     });
 
     it("adds .switch__handle_selected class when selected", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch selected></md-switch>`);
+      const el = await fixture<MdSwitch>(
+        html`<md-switch selected></md-switch>`,
+      );
       expect(
-        el.shadowRoot!.querySelector(".switch__handle")!.classList.contains("switch__handle_selected"),
+        el
+          .shadowRoot!.querySelector(".switch__handle")!
+          .classList.contains("switch__handle_selected"),
       ).to.be.true;
     });
 
     it("does not add _selected classes when unselected", async () => {
       const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
       expect(
-        el.shadowRoot!.querySelector(".switch__track")!.classList.contains("switch__track_selected"),
+        el
+          .shadowRoot!.querySelector(".switch__track")!
+          .classList.contains("switch__track_selected"),
       ).to.be.false;
     });
 
@@ -74,7 +90,8 @@ describe("md-switch", () => {
       const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
       el.selected = true;
       await el.updateComplete;
-      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.checked).to.be.true;
+      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.checked)
+        .to.be.true;
     });
   });
 
@@ -84,28 +101,40 @@ describe("md-switch", () => {
     it("is not disabled by default", async () => {
       const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
       expect(el.disabled).to.be.false;
-      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.disabled).to.be.false;
+      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.disabled)
+        .to.be.false;
     });
 
     it("reflects disabled attribute to the host", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch disabled></md-switch>`);
+      const el = await fixture<MdSwitch>(
+        html`<md-switch disabled></md-switch>`,
+      );
       expect(el.hasAttribute("disabled")).to.be.true;
     });
 
     it("disables the inner input when disabled", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch disabled></md-switch>`);
-      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.disabled).to.be.true;
+      const el = await fixture<MdSwitch>(
+        html`<md-switch disabled></md-switch>`,
+      );
+      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.disabled)
+        .to.be.true;
     });
 
     it("adds .switch__track_disabled class when disabled", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch disabled></md-switch>`);
+      const el = await fixture<MdSwitch>(
+        html`<md-switch disabled></md-switch>`,
+      );
       expect(
-        el.shadowRoot!.querySelector(".switch__track")!.classList.contains("switch__track_disabled"),
+        el
+          .shadowRoot!.querySelector(".switch__track")!
+          .classList.contains("switch__track_disabled"),
       ).to.be.true;
     });
 
     it("does not toggle selected when clicked while disabled", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch disabled></md-switch>`);
+      const el = await fixture<MdSwitch>(
+        html`<md-switch disabled></md-switch>`,
+      );
       el.click();
       await el.updateComplete;
       expect(el.selected).to.be.false;
@@ -132,7 +161,9 @@ describe("md-switch", () => {
     });
 
     it("renders check icon when selected with icons", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch icons selected></md-switch>`);
+      const el = await fixture<MdSwitch>(
+        html`<md-switch icons selected></md-switch>`,
+      );
       const icon = el.shadowRoot!.querySelector(".switch__icon svg path")!;
       expect(icon).to.exist;
       // Check icon path contains "382" (check mark path)
@@ -142,7 +173,9 @@ describe("md-switch", () => {
     it("adds switch__handle_with-icon class when icons is set", async () => {
       const el = await fixture<MdSwitch>(html`<md-switch icons></md-switch>`);
       expect(
-        el.shadowRoot!.querySelector(".switch__handle")!.classList.contains("switch__handle_with-icon"),
+        el
+          .shadowRoot!.querySelector(".switch__handle")!
+          .classList.contains("switch__handle_with-icon"),
       ).to.be.true;
     });
   });
@@ -176,19 +209,27 @@ describe("md-switch", () => {
   describe("name and value", () => {
     it('defaults value to "on"', async () => {
       const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
-      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.value).to.equal("on");
+      expect(
+        el.shadowRoot!.querySelector<HTMLInputElement>("input")!.value,
+      ).to.equal("on");
     });
 
     it("passes name to the inner input", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch name="notifications"></md-switch>`);
-      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.name).to.equal(
-        "notifications",
+      const el = await fixture<MdSwitch>(
+        html`<md-switch name="notifications"></md-switch>`,
       );
+      expect(
+        el.shadowRoot!.querySelector<HTMLInputElement>("input")!.name,
+      ).to.equal("notifications");
     });
 
     it("passes value to the inner input", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch value="yes"></md-switch>`);
-      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.value).to.equal("yes");
+      const el = await fixture<MdSwitch>(
+        html`<md-switch value="yes"></md-switch>`,
+      );
+      expect(
+        el.shadowRoot!.querySelector<HTMLInputElement>("input")!.value,
+      ).to.equal("yes");
     });
   });
 
@@ -197,12 +238,16 @@ describe("md-switch", () => {
   describe("required", () => {
     it("is not required by default", async () => {
       const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
-      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.required).to.be.false;
+      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.required)
+        .to.be.false;
     });
 
     it("sets required on the inner input", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch required></md-switch>`);
-      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.required).to.be.true;
+      const el = await fixture<MdSwitch>(
+        html`<md-switch required></md-switch>`,
+      );
+      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.required)
+        .to.be.true;
     });
   });
 
@@ -210,7 +255,9 @@ describe("md-switch", () => {
 
   describe("formResetCallback", () => {
     it("resets selected to false", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch selected></md-switch>`);
+      const el = await fixture<MdSwitch>(
+        html`<md-switch selected></md-switch>`,
+      );
       expect(el.selected).to.be.true;
       el.formResetCallback();
       expect(el.selected).to.be.false;
@@ -252,7 +299,9 @@ describe("md-switch", () => {
     });
 
     it("aria-checked is true when selected", async () => {
-      const el = await fixture<MdSwitch>(html`<md-switch selected></md-switch>`);
+      const el = await fixture<MdSwitch>(
+        html`<md-switch selected></md-switch>`,
+      );
       const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
       expect(input.getAttribute("aria-checked")).to.equal("true");
     });

@@ -60,9 +60,8 @@ describe("md-avatar", () => {
 
     it("fills the circle with gray when no src is set", async () => {
       const el = await fixture<Avatar>(html`<md-avatar></md-avatar>`);
-      const circle = el.shadowRoot!.querySelector<SVGCircleElement>(
-        ".avatar__circle",
-      )!;
+      const circle =
+        el.shadowRoot!.querySelector<SVGCircleElement>(".avatar__circle")!;
       expect(circle.getAttribute("fill")).to.equal("gray");
     });
 
@@ -70,9 +69,8 @@ describe("md-avatar", () => {
       const el = await fixture<Avatar>(
         html`<md-avatar src="https://example.com/avatar.jpg"></md-avatar>`,
       );
-      const circle = el.shadowRoot!.querySelector<SVGCircleElement>(
-        ".avatar__circle",
-      )!;
+      const circle =
+        el.shadowRoot!.querySelector<SVGCircleElement>(".avatar__circle")!;
       expect(circle.getAttribute("fill")).to.equal("none");
     });
 
@@ -94,9 +92,8 @@ describe("md-avatar", () => {
       el.src = undefined;
       await el.updateComplete;
 
-      const circle = el.shadowRoot!.querySelector<SVGCircleElement>(
-        ".avatar__circle",
-      )!;
+      const circle =
+        el.shadowRoot!.querySelector<SVGCircleElement>(".avatar__circle")!;
       expect(circle.getAttribute("fill")).to.equal("gray");
     });
   });
@@ -106,9 +103,8 @@ describe("md-avatar", () => {
   describe("geometry", () => {
     it("circle cx, cy, r derive from --md-avatar-size CSS custom property", async () => {
       const el = await fixture<Avatar>(html`<md-avatar></md-avatar>`);
-      const circle = el.shadowRoot!.querySelector<SVGCircleElement>(
-        ".avatar__circle",
-      )!;
+      const circle =
+        el.shadowRoot!.querySelector<SVGCircleElement>(".avatar__circle")!;
       // Default --md-avatar-size is 26px → cx=cy=r=26
       const cx = Number(circle.getAttribute("cx"));
       const cy = Number(circle.getAttribute("cy"));

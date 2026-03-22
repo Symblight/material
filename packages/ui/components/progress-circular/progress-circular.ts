@@ -1,4 +1,10 @@
-import { CSSResultGroup, CSSResultOrNative, LitElement, html, nothing } from "lit";
+import {
+  CSSResultGroup,
+  CSSResultOrNative,
+  LitElement,
+  html,
+  nothing,
+} from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import styles from "./progress-circular.css?inline";
@@ -40,7 +46,9 @@ export default class MdProgressCircular extends LitElement {
 
     return html`<svg
       xmlns="http://www.w3.org/2000/svg"
-      class="progress-circular__svg${indeterminate ? " progress-circular__svg_indeterminate" : ""}"
+      class="progress-circular__svg${indeterminate
+        ? " progress-circular__svg_indeterminate"
+        : ""}"
       viewBox="0 0 100 100"
       focusable="false"
       width="1em"

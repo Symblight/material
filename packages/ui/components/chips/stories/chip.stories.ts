@@ -100,7 +100,9 @@ export const SuggestionChip: Story = {
         <span slot="leading-icon">${unsafeSVG(smartToyIcon)}</span>
         AI suggestion
       </md-suggestion-chip>
-      <md-suggestion-chip variant="outlined" disabled>Disabled</md-suggestion-chip>
+      <md-suggestion-chip variant="outlined" disabled
+        >Disabled</md-suggestion-chip
+      >
     </div>
   `,
 };
@@ -148,7 +150,9 @@ export const AllChips: Story = {
         </div>
       </div>
       <div>
-        <p style="font-size:0.75rem;color:#666;margin-bottom:0.5rem;">Suggestion</p>
+        <p style="font-size:0.75rem;color:#666;margin-bottom:0.5rem;">
+          Suggestion
+        </p>
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
           <md-suggestion-chip>Good morning!</md-suggestion-chip>
           <md-suggestion-chip>Set a timer</md-suggestion-chip>

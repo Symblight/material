@@ -14,6 +14,7 @@ pnpm format           # Prettier
 ```
 
 To run a single test file:
+
 ```bash
 pnpm web-test-runner components/button/__tests__/button.spec.ts --node-resolve
 ```
@@ -48,10 +49,12 @@ This is `@symblight/wc-material` — a Material Design 3 web components library 
 ### Build pipeline
 
 The build is orchestrated by **wireit**:
+
 1. `build-ts` — runs `vite build`, outputs JS/TS to `dist/`
 2. `build` — depends on `build-ts`, then runs `scripts/build-css.mjs` to bundle `theme.css` via esbuild and post-process with PostCSS into `dist/theme.css`
 
 The library entry point is `components/index.ts`, which side-effect-imports every component to register it. The package exports:
+
 - `.` → `dist/index.es.js` (ES module)
 - `./theme/theme.css` → `dist/theme.css`
 

@@ -84,7 +84,9 @@ export default class MdInputChip extends BaseMdChip {
           ? html`<span class="chip__avatar"><slot name="avatar"></slot></span>`
           : html`<slot
               name="leading-icon"
-              class="${classMap({ "chip__leading-icon": this._hasLeadingIcon })}"
+              class="${classMap({
+                "chip__leading-icon": this._hasLeadingIcon,
+              })}"
               @slotchange=${(e: Event) =>
                 this._onSlotChange(e, (v) => (this._hasLeadingIcon = v))}
             ></slot>`}

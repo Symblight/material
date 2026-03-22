@@ -2,7 +2,6 @@ import { html, LitElement } from "lit";
 import {
   property,
   customElement,
-  state,
   queryAssignedElements,
   query,
 } from "lit/decorators.js";

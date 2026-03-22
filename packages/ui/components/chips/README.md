@@ -6,12 +6,12 @@ Material Design 3 chip components built with Lit. Chips are compact elements tha
 
 ## Components
 
-| Tag | Description |
-|---|---|
-| `md-assist-chip` | Suggests smart or automated actions |
-| `md-filter-chip` | Toggleable tag for filtering content |
-| `md-input-chip` | Represents a piece of user-entered input (e.g. a tag or contact) |
-| `md-suggestion-chip` | Presents dynamically generated suggestions |
+| Tag                  | Description                                                      |
+| -------------------- | ---------------------------------------------------------------- |
+| `md-assist-chip`     | Suggests smart or automated actions                              |
+| `md-filter-chip`     | Toggleable tag for filtering content                             |
+| `md-input-chip`      | Represents a piece of user-entered input (e.g. a tag or contact) |
+| `md-suggestion-chip` | Presents dynamically generated suggestions                       |
 
 ## Usage
 
@@ -43,10 +43,10 @@ Suggests smart or automated actions. Not toggleable.
 
 ### Properties
 
-| Property  | Attribute | Type                       | Default      | Description          |
-|-----------|-----------|----------------------------|--------------|----------------------|
-| `variant` | `variant` | `"outlined" \| "elevated"` | `"outlined"` | Visual style variant |
-| `disabled`| `disabled`| `boolean`                  | `false`      | Disables the chip    |
+| Property   | Attribute  | Type                       | Default      | Description          |
+| ---------- | ---------- | -------------------------- | ------------ | -------------------- |
+| `variant`  | `variant`  | `"outlined" \| "elevated"` | `"outlined"` | Visual style variant |
+| `disabled` | `disabled` | `boolean`                  | `false`      | Disables the chip    |
 
 ---
 
@@ -70,24 +70,24 @@ Toggleable chip for filtering. Shows `leading-icon` slot when unselected, `selec
 
 ### Properties
 
-| Property  | Attribute | Type                       | Default      | Description                    |
-|-----------|-----------|----------------------------|--------------|--------------------------------|
-| `variant` | `variant` | `"outlined" \| "elevated"` | `"outlined"` | Visual style variant           |
-| `selected`| `selected`| `boolean`                  | `false`      | Whether the chip is toggled on |
-| `disabled`| `disabled`| `boolean`                  | `false`      | Disables the chip              |
+| Property   | Attribute  | Type                       | Default      | Description                    |
+| ---------- | ---------- | -------------------------- | ------------ | ------------------------------ |
+| `variant`  | `variant`  | `"outlined" \| "elevated"` | `"outlined"` | Visual style variant           |
+| `selected` | `selected` | `boolean`                  | `false`      | Whether the chip is toggled on |
+| `disabled` | `disabled` | `boolean`                  | `false`      | Disables the chip              |
 
 ### Slots
 
 | Slot            | Description                                  |
-|-----------------|----------------------------------------------|
-| *(default)*     | Label text                                   |
+| --------------- | -------------------------------------------- |
+| _(default)_     | Label text                                   |
 | `leading-icon`  | Icon shown when the chip is **not** selected |
 | `selected-icon` | Icon shown when the chip **is** selected     |
 
 ### Events
 
 | Event    | Description                             |
-|----------|-----------------------------------------|
+| -------- | --------------------------------------- |
 | `change` | Fired when `selected` toggles via click |
 
 ---
@@ -124,26 +124,26 @@ Represents a piece of user-entered information. Supports a leading icon or avata
 
 ### Properties
 
-| Property   | Attribute  | Type      | Default | Description                                                       |
-|------------|------------|-----------|---------|-------------------------------------------------------------------|
-| `removable`| `removable`| `boolean` | `false` | Shows a built-in close (×) button that fires the `remove` event  |
-| `selected` | `selected` | `boolean` | `false` | Whether the chip is selected                                      |
-| `avatar`   | `avatar`   | `boolean` | `false` | Renders the `avatar` slot instead of `leading-icon`              |
-| `disabled` | `disabled` | `boolean` | `false` | Disables the chip and the remove button                          |
+| Property    | Attribute   | Type      | Default | Description                                                     |
+| ----------- | ----------- | --------- | ------- | --------------------------------------------------------------- |
+| `removable` | `removable` | `boolean` | `false` | Shows a built-in close (×) button that fires the `remove` event |
+| `selected`  | `selected`  | `boolean` | `false` | Whether the chip is selected                                    |
+| `avatar`    | `avatar`    | `boolean` | `false` | Renders the `avatar` slot instead of `leading-icon`             |
+| `disabled`  | `disabled`  | `boolean` | `false` | Disables the chip and the remove button                         |
 
 ### Slots
 
 | Slot            | Description                                                                |
-|-----------------|----------------------------------------------------------------------------|
-| *(default)*     | Label text                                                                 |
-| `leading-icon`  | Leading icon (18dp). Not rendered when `avatar` is set                    |
-| `avatar`        | Circular avatar (24dp). Only rendered when `avatar` attribute is set      |
-| `trailing-icon` | Custom icon inside the remove button (only used when `removable` is unset)|
+| --------------- | -------------------------------------------------------------------------- |
+| _(default)_     | Label text                                                                 |
+| `leading-icon`  | Leading icon (18dp). Not rendered when `avatar` is set                     |
+| `avatar`        | Circular avatar (24dp). Only rendered when `avatar` attribute is set       |
+| `trailing-icon` | Custom icon inside the remove button (only used when `removable` is unset) |
 
 ### Events
 
 | Event    | Description                             |
-|----------|-----------------------------------------|
+| -------- | --------------------------------------- |
 | `change` | Fired when `selected` toggles via click |
 | `remove` | Fired when the remove button is clicked |
 
@@ -166,24 +166,24 @@ Presents AI-generated or dynamic suggestions. Not toggleable.
 
 ### Properties
 
-| Property  | Attribute | Type                       | Default      | Description          |
-|-----------|-----------|----------------------------|--------------|----------------------|
-| `variant` | `variant` | `"outlined" \| "elevated"` | `"outlined"` | Visual style variant |
-| `disabled`| `disabled`| `boolean`                  | `false`      | Disables the chip    |
+| Property   | Attribute  | Type                       | Default      | Description          |
+| ---------- | ---------- | -------------------------- | ------------ | -------------------- |
+| `variant`  | `variant`  | `"outlined" \| "elevated"` | `"outlined"` | Visual style variant |
+| `disabled` | `disabled` | `boolean`                  | `false`      | Disables the chip    |
 
 ---
 
 ## CSS Custom Properties
 
-| Variable                      | Default                                 | Description          |
-|-------------------------------|-----------------------------------------|----------------------|
-| `--md-chip-container-color`   | `--md-sys-color-surface-container-low`  | Background color     |
-| `--md-chip-label-color`       | `--md-sys-color-on-surface-variant`     | Label text color     |
-| `--md-chip-border-color`      | `--md-sys-color-outline`                | Border color         |
-| `--md-chip-border-width`      | `0.063rem`                              | Border width         |
-| `--md-chip-border-radius`     | `--md-sys-shape-corner-small`           | Corner radius        |
-| `--md-chip-height`            | `2rem`                                  | Chip height (32dp)   |
-| `--md-chip-icon-size`         | `1.125rem`                              | Icon size (18dp)     |
-| `--md-chip-icon-color`        | `--md-sys-color-primary`                | Icon color           |
-| `--md-chip-label-text-size`   | `--md-sys-typescale-label-large-size`   | Label font size      |
-| `--md-chip-label-text-weight` | `--md-sys-typescale-label-large-weight` | Label font weight    |
+| Variable                      | Default                                 | Description        |
+| ----------------------------- | --------------------------------------- | ------------------ |
+| `--md-chip-container-color`   | `--md-sys-color-surface-container-low`  | Background color   |
+| `--md-chip-label-color`       | `--md-sys-color-on-surface-variant`     | Label text color   |
+| `--md-chip-border-color`      | `--md-sys-color-outline`                | Border color       |
+| `--md-chip-border-width`      | `0.063rem`                              | Border width       |
+| `--md-chip-border-radius`     | `--md-sys-shape-corner-small`           | Corner radius      |
+| `--md-chip-height`            | `2rem`                                  | Chip height (32dp) |
+| `--md-chip-icon-size`         | `1.125rem`                              | Icon size (18dp)   |
+| `--md-chip-icon-color`        | `--md-sys-color-primary`                | Icon color         |
+| `--md-chip-label-text-size`   | `--md-sys-typescale-label-large-size`   | Label font size    |
+| `--md-chip-label-text-weight` | `--md-sys-typescale-label-large-weight` | Label font weight  |

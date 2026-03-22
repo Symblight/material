@@ -14,23 +14,23 @@ A Material Design 3 checkbox web component built with Lit.
 
 ## Properties
 
-| Property        | Attribute       | Type      | Default  | Description                              |
-|-----------------|-----------------|-----------|----------|------------------------------------------|
-| `checked`       | `checked`       | `boolean` | `false`  | Whether the checkbox is checked          |
-| `disabled`      | `disabled`      | `boolean` | `false`  | Disables the checkbox                    |
-| `indeterminate` | `indeterminate` | `boolean` | `false`  | Shows indeterminate (mixed) state        |
-| `required`      | `required`      | `boolean` | `false`  | Marks the field as required in a form    |
-| `error`         | `error`         | `boolean` | `false`  | Applies error styling                    |
-| `value`         | `value`         | `string`  | `"on"`   | Value submitted with the form            |
-| `name`          | `name`          | `string`  | `""`     | Form field name                          |
-| `id`            | `id`            | `string`  | `""`     | Element id                               |
+| Property        | Attribute       | Type      | Default | Description                           |
+| --------------- | --------------- | --------- | ------- | ------------------------------------- |
+| `checked`       | `checked`       | `boolean` | `false` | Whether the checkbox is checked       |
+| `disabled`      | `disabled`      | `boolean` | `false` | Disables the checkbox                 |
+| `indeterminate` | `indeterminate` | `boolean` | `false` | Shows indeterminate (mixed) state     |
+| `required`      | `required`      | `boolean` | `false` | Marks the field as required in a form |
+| `error`         | `error`         | `boolean` | `false` | Applies error styling                 |
+| `value`         | `value`         | `string`  | `"on"`  | Value submitted with the form         |
+| `name`          | `name`          | `string`  | `""`    | Form field name                       |
+| `id`            | `id`            | `string`  | `""`    | Element id                            |
 
 ## CSS Custom Properties
 
-| Variable                         | Default                               | Description                        |
-|----------------------------------|---------------------------------------|------------------------------------|
-| `--md-checkbox-background-color` | `transparent`                         | Background of the checkbox control |
-| `--md-checkbox-border-color`     | `var(--md-sys-color-on-surface-variant)` | Border color of the checkbox    |
+| Variable                         | Default                                  | Description                        |
+| -------------------------------- | ---------------------------------------- | ---------------------------------- |
+| `--md-checkbox-background-color` | `transparent`                            | Background of the checkbox control |
+| `--md-checkbox-border-color`     | `var(--md-sys-color-on-surface-variant)` | Border color of the checkbox       |
 
 > Both variables fall back to Material Design system tokens. Include the MD3 theme CSS (`@symblight/wc-material/theme/theme.css`) or define `--md-sys-color-on-surface-variant` yourself.
 

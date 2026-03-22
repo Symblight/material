@@ -73,16 +73,12 @@ describe("md-select", () => {
     });
 
     it("reflects disabled attribute to host", async () => {
-      const el = await fixture<Select>(
-        html`<md-select disabled></md-select>`,
-      );
+      const el = await fixture<Select>(html`<md-select disabled></md-select>`);
       expect(el.hasAttribute("disabled")).to.be.true;
     });
 
     it("passes disabled to the native select", async () => {
-      const el = await fixture<Select>(
-        html`<md-select disabled></md-select>`,
-      );
+      const el = await fixture<Select>(html`<md-select disabled></md-select>`);
       const tf = el.shadowRoot!.querySelector("md-text-field")!;
       const nativeSelect = tf.querySelector<HTMLSelectElement>("select")!;
       expect(nativeSelect.disabled).to.be.true;
@@ -116,9 +112,7 @@ describe("md-select", () => {
     });
 
     it("passes required to the native select", async () => {
-      const el = await fixture<Select>(
-        html`<md-select required></md-select>`,
-      );
+      const el = await fixture<Select>(html`<md-select required></md-select>`);
       const tf = el.shadowRoot!.querySelector("md-text-field")!;
       const nativeSelect = tf.querySelector<HTMLSelectElement>("select")!;
       expect(nativeSelect.required).to.be.true;

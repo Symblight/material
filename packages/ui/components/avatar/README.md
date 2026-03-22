@@ -17,16 +17,16 @@ A Material Design 3 avatar web component built with Lit.
 ## Properties
 
 | Property | Attribute | Type     | Description                  |
-|----------|-----------|----------|------------------------------|
+| -------- | --------- | -------- | ---------------------------- |
 | `src`    | `src`     | `string` | URL of the avatar image      |
 | `size`   | `size`    | `number` | Size hint (see CSS variable) |
 
 ## CSS Custom Properties
 
-| Variable                    | Default                                                                          | Description                                                    |
-|-----------------------------|----------------------------------------------------------------------------------|----------------------------------------------------------------|
-| `--md-avatar-size`          | `26px`                                                                           | Radius of the avatar circle. Rendered size is `2 × this value` (e.g. `26px` → `52px` diameter). |
-| `--md-avatar-stroke-color`  | `color-mix(in oklch, var(--md-sys-color-secondary-container), transparent 80%)` | Color of the circular border/stroke drawn around the avatar.   |
+| Variable                   | Default                                                                         | Description                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `--md-avatar-size`         | `26px`                                                                          | Radius of the avatar circle. Rendered size is `2 × this value` (e.g. `26px` → `52px` diameter). |
+| `--md-avatar-stroke-color` | `color-mix(in oklch, var(--md-sys-color-secondary-container), transparent 80%)` | Color of the circular border/stroke drawn around the avatar.                                    |
 
 > `--md-avatar-stroke-color` falls back to the Material Design system token `--md-sys-color-secondary-container`. Make sure your page includes the MD3 theme CSS (`@symblight/wc-material/theme/theme.css`) or define the token yourself.
 

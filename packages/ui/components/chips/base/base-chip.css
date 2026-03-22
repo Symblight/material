@@ -14,8 +14,10 @@
   --md-chip-label-text-font: var(--md-sys-typescale-label-large-font, inherit);
   --md-chip-label-text-size: var(--md-sys-typescale-label-large-size, 0.875rem);
   --md-chip-label-text-weight: var(--md-sys-typescale-label-large-weight, 500);
-  --md-chip-label-text-line-height: var(--md-sys-typescale-label-large-line-height,
-      1.25rem);
+  --md-chip-label-text-line-height: var(
+    --md-sys-typescale-label-large-line-height,
+    1.25rem
+  );
 
   /* ── Internal ── */
   --_container-color: var(--md-chip-container-color);

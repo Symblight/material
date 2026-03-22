@@ -33,7 +33,9 @@ export default class MdProgressLinear extends LitElement {
       return html`
         <div class="progress-linear">
           <div class="progress-linear__track"></div>
-          <div class="progress-linear__bar progress-linear__bar_secondary"></div>
+          <div
+            class="progress-linear__bar progress-linear__bar_secondary"
+          ></div>
           <div class="progress-linear__bar progress-linear__bar_primary"></div>
         </div>
       `;

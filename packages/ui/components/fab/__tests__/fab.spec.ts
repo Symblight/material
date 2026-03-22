@@ -33,9 +33,16 @@ describe("md-fab", () => {
       expect(el.variant).to.equal("surface");
     });
 
-    for (const variant of ["surface", "primary", "secondary", "tertiary"] as const) {
+    for (const variant of [
+      "surface",
+      "primary",
+      "secondary",
+      "tertiary",
+    ] as const) {
       it(`sets variant="${variant}" attribute`, async () => {
-        const el = await fixture<FAB>(html`<md-fab variant=${variant}></md-fab>`);
+        const el = await fixture<FAB>(
+          html`<md-fab variant=${variant}></md-fab>`,
+        );
         expect(el.getAttribute("variant")).to.equal(variant);
       });
     }
@@ -90,14 +97,16 @@ describe("md-fab", () => {
   describe("disabled", () => {
     it("is not disabled by default", async () => {
       const el = await fixture<FAB>(html`<md-fab></md-fab>`);
-      expect(el.shadowRoot!.querySelector<HTMLButtonElement>("button")!.disabled)
-        .to.be.false;
+      expect(
+        el.shadowRoot!.querySelector<HTMLButtonElement>("button")!.disabled,
+      ).to.be.false;
     });
 
     it("disables the inner button when disabled", async () => {
       const el = await fixture<FAB>(html`<md-fab disabled></md-fab>`);
-      expect(el.shadowRoot!.querySelector<HTMLButtonElement>("button")!.disabled)
-        .to.be.true;
+      expect(
+        el.shadowRoot!.querySelector<HTMLButtonElement>("button")!.disabled,
+      ).to.be.true;
     });
 
     it("adds button_disabled class when disabled", async () => {

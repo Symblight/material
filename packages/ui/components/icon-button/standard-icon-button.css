@@ -18,7 +18,6 @@
   );
 }
 
-
 :host([variant="standard"]:active:not([disabled])) {
   --md-icon-button-background-color: color-mix(
     in oklch,
@@ -54,7 +53,6 @@
     var(--md-sys-color-primary) 8%
   );
 }
-
 
 :host([variant="standard"]:active:where([selected]):not([disabled])) {
   --md-icon-button-background-color: color-mix(

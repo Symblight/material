@@ -134,9 +134,9 @@
 }
 
 .checkbox__box_disabled:where(
-    .checkbox__box_checked,
-    .checkbox__box_indeterminate
-  ) {
+  .checkbox__box_checked,
+  .checkbox__box_indeterminate
+) {
   --_box-container-color: color-mix(
     in oklch,
     transparent,

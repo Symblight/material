@@ -50,7 +50,9 @@ describe("md-radio", () => {
         html`<md-radio checked></md-radio>`,
       );
       expect(
-        el.shadowRoot!.querySelector(".radio__box")!.classList.contains("radio__box_checked"),
+        el
+          .shadowRoot!.querySelector(".radio__box")!
+          .classList.contains("radio__box_checked"),
       ).to.be.true;
     });
 
@@ -92,7 +94,9 @@ describe("md-radio", () => {
         html`<md-radio disabled></md-radio>`,
       );
       expect(
-        el.shadowRoot!.querySelector(".radio__box")!.classList.contains("radio__box_disabled"),
+        el
+          .shadowRoot!.querySelector(".radio__box")!
+          .classList.contains("radio__box_disabled"),
       ).to.be.true;
     });
 

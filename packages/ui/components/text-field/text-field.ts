@@ -84,8 +84,7 @@ export class TextField extends FormControlMixin(LitElement) {
   /**
    * Indicates an error state.
    */
-  @property({ type: Boolean, attribute: true, reflect: true }) error =
-    false;
+  @property({ type: Boolean, attribute: true, reflect: true }) error = false;
 
   /**
    * The placeholder text for the text field.

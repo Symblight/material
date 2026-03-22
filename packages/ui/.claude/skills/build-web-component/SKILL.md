@@ -8,13 +8,13 @@ description: >
 
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| Base class | `LitElement` (Lit 3.x) |
-| Language | TypeScript |
-| Styling | CSS files, BEM methodology, imported inline |
-| Design system | Material Design 3 — https://m3.material.io/ |
-| Tokens | MD3 sys/ref/comp tokens via CSS custom properties |
+| Layer         | Technology                                        |
+| ------------- | ------------------------------------------------- |
+| Base class    | `LitElement` (Lit 3.x)                            |
+| Language      | TypeScript                                        |
+| Styling       | CSS files, BEM methodology, imported inline       |
+| Design system | Material Design 3 — https://m3.material.io/       |
+| Tokens        | MD3 sys/ref/comp tokens via CSS custom properties |
 
 ---
 
@@ -27,6 +27,7 @@ src/components/<component-name>/
 ```
 
 Global token file (read-only, never edit):
+
 ```
 /theme.css            # --md-sys-color-*, --md-sys-typescale-*, etc.
 ```
@@ -119,13 +120,21 @@ Modifier: .<block>__<element>_<mod>   e.g. .checkbox__input_focused
 **No camelCase, no double underscores on modifiers.**
 
 ```css
-.checkbox { }
-.checkbox_disabled { opacity: 0.38; pointer-events: none; }
+.checkbox {
+}
+.checkbox_disabled {
+  opacity: 0.38;
+  pointer-events: none;
+}
 
-.checkbox__input { }
-.checkbox__input_focused { outline: 2px solid var(--md-sys-color-primary); }
+.checkbox__input {
+}
+.checkbox__input_focused {
+  outline: 2px solid var(--md-sys-color-primary);
+}
 
-.checkbox__icon { }
+.checkbox__icon {
+}
 ```
 
 ### 4. `:where()` for reusable / overridable rules
@@ -164,9 +173,15 @@ color-mix(in oklch, var(--md-sys-color-error), var(--md-sys-color-surface) 30%)
   pointer-events: none;
 }
 
-.checkbox:hover .checkbox__state-layer   { opacity: 0.08; }
-.checkbox:active .checkbox__state-layer  { opacity: 0.12; }
-.checkbox_focused .checkbox__state-layer { opacity: 0.12; }
+.checkbox:hover .checkbox__state-layer {
+  opacity: 0.08;
+}
+.checkbox:active .checkbox__state-layer {
+  opacity: 0.12;
+}
+.checkbox_focused .checkbox__state-layer {
+  opacity: 0.12;
+}
 ```
 
 ---

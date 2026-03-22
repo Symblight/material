@@ -21,9 +21,7 @@ describe("md-dialog", () => {
 
     it("has a named slot for headline", async () => {
       const el = await fixture<MdDialog>(html`<md-dialog></md-dialog>`);
-      expect(
-        el.shadowRoot!.querySelector('slot[name="headline"]'),
-      ).to.exist;
+      expect(el.shadowRoot!.querySelector('slot[name="headline"]')).to.exist;
     });
 
     it("has a named slot for footer", async () => {

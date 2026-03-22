@@ -71,9 +71,8 @@ describe("md-progress-linear", () => {
       const el = await fixture<MdProgressLinear>(
         html`<md-progress-linear .value=${1.5}></md-progress-linear>`,
       );
-      const container = el.shadowRoot!.querySelector<HTMLElement>(
-        ".progress-linear",
-      )!;
+      const container =
+        el.shadowRoot!.querySelector<HTMLElement>(".progress-linear")!;
       expect(container.style.getPropertyValue("--_progress")).to.equal("1");
     });
 
@@ -81,9 +80,8 @@ describe("md-progress-linear", () => {
       const el = await fixture<MdProgressLinear>(
         html`<md-progress-linear .value=${-0.5}></md-progress-linear>`,
       );
-      const container = el.shadowRoot!.querySelector<HTMLElement>(
-        ".progress-linear",
-      )!;
+      const container =
+        el.shadowRoot!.querySelector<HTMLElement>(".progress-linear")!;
       expect(container.style.getPropertyValue("--_progress")).to.equal("0");
     });
   });

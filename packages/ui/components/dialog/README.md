@@ -19,14 +19,14 @@ A Material Design 3 dialog web component built with Lit.
 <md-button id="open-btn">Open dialog</md-button>
 
 <script>
-  const dialog = document.getElementById('my-dialog');
-  document.getElementById('open-btn').addEventListener('click', () => {
+  const dialog = document.getElementById("my-dialog");
+  document.getElementById("open-btn").addEventListener("click", () => {
     dialog.open = true;
   });
-  document.getElementById('cancel-btn').addEventListener('click', () => {
+  document.getElementById("cancel-btn").addEventListener("click", () => {
     dialog.open = false;
   });
-  document.getElementById('confirm-btn').addEventListener('click', () => {
+  document.getElementById("confirm-btn").addEventListener("click", () => {
     dialog.open = false;
   });
 </script>
@@ -35,24 +35,24 @@ A Material Design 3 dialog web component built with Lit.
 ## Properties
 
 | Property | Attribute | Type      | Default | Description                         |
-|----------|-----------|-----------|---------|-------------------------------------|
+| -------- | --------- | --------- | ------- | ----------------------------------- |
 | `open`   | `open`    | `boolean` | `false` | Controls whether the dialog is open |
 
 ## Slots
 
-| Slot         | Description                                        |
-|--------------|----------------------------------------------------|
-| `headline`   | Dialog title / headline text                       |
-| `content`    | Main body content                                  |
-| `actions`    | Action buttons (placed at the bottom of the dialog)|
+| Slot       | Description                                         |
+| ---------- | --------------------------------------------------- |
+| `headline` | Dialog title / headline text                        |
+| `content`  | Main body content                                   |
+| `actions`  | Action buttons (placed at the bottom of the dialog) |
 
 ## CSS Custom Properties
 
-| Variable                                | Default                                     | Description                              |
-|-----------------------------------------|---------------------------------------------|------------------------------------------|
-| `--md-dialog-container-color`           | `var(--md-sys-color-surface-container-high)` | Dialog background color                 |
-| `--md-dialog-container-radius`          | `1.75rem`                                   | Corner radius of the dialog container   |
-| `--md-dialog-container-support-text-color` | `var(--md-sys-color-on-surface-variant)` | Color of the body / supporting text     |
+| Variable                                   | Default                                      | Description                           |
+| ------------------------------------------ | -------------------------------------------- | ------------------------------------- |
+| `--md-dialog-container-color`              | `var(--md-sys-color-surface-container-high)` | Dialog background color               |
+| `--md-dialog-container-radius`             | `1.75rem`                                    | Corner radius of the dialog container |
+| `--md-dialog-container-support-text-color` | `var(--md-sys-color-on-surface-variant)`     | Color of the body / supporting text   |
 
 > Variables fall back to Material Design system tokens. Include the MD3 theme CSS (`@symblight/wc-material/theme/theme.css`) or define the tokens manually.
 
@@ -74,7 +74,7 @@ A Material Design 3 dialog web component built with Lit.
 ### Open / close via JavaScript
 
 ```js
-const dialog = document.querySelector('md-dialog');
+const dialog = document.querySelector("md-dialog");
 
 // Open
 dialog.open = true;

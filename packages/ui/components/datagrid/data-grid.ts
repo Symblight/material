@@ -2,8 +2,6 @@ import { CSSResultGroup, CSSResultOrNative, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { createContext } from "@lit/context";
 import styles from "./data-grid.css?inline";
-import { HTMLForController } from "../html-for-controller/html-for-controller.ts";
-import { HTMLContainerController } from "./base/controller_container.ts";
 
 export const dataGridContext = createContext(Symbol("column-context"));
 
@@ -19,7 +17,7 @@ type Column = {
 @customElement("md-data-grid")
 export default class DataGrid extends LitElement {
   firstUpdated() {
-    const rootNode = this.getRootNode();
+    const _rootNode = this.getRootNode();
     const container = this.parentElement;
     const width = container.clientWidth;
     this.width = width;

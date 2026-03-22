@@ -19,35 +19,35 @@ A Material Design 3 Floating Action Button (FAB) web component built with Lit.
 
 ## Properties
 
-| Property   | Attribute  | Type                                             | Default     | Description                          |
-|------------|------------|--------------------------------------------------|-------------|--------------------------------------|
-| `variant`  | `variant`  | `"surface" \| "primary" \| "secondary" \| "tertiary"` | `"surface"` | Color variant                   |
-| `size`     | `size`     | `"s" \| "m" \| "l"`                             | `"m"`       | FAB size (small / medium / large)    |
-| `label`    | `label`    | `string`                                         | `""`        | Text label (creates an extended FAB) |
-| `disabled` | `disabled` | `boolean`                                        | `false`     | Disables the FAB                     |
-| `loading`  | `loading`  | `boolean`                                        | `false`     | Shows a loading indicator            |
-| `href`     | `href`     | `boolean`                                        | `false`     | Renders as an anchor element         |
-| `type`     | `type`     | `"button" \| "submit" \| "reset"`                | `"button"`  | Native button type                   |
-| `form`     | `form`     | `string`                                         | —           | Associates FAB with a form `id`      |
+| Property   | Attribute  | Type                                                  | Default     | Description                          |
+| ---------- | ---------- | ----------------------------------------------------- | ----------- | ------------------------------------ |
+| `variant`  | `variant`  | `"surface" \| "primary" \| "secondary" \| "tertiary"` | `"surface"` | Color variant                        |
+| `size`     | `size`     | `"s" \| "m" \| "l"`                                   | `"m"`       | FAB size (small / medium / large)    |
+| `label`    | `label`    | `string`                                              | `""`        | Text label (creates an extended FAB) |
+| `disabled` | `disabled` | `boolean`                                             | `false`     | Disables the FAB                     |
+| `loading`  | `loading`  | `boolean`                                             | `false`     | Shows a loading indicator            |
+| `href`     | `href`     | `boolean`                                             | `false`     | Renders as an anchor element         |
+| `type`     | `type`     | `"button" \| "submit" \| "reset"`                     | `"button"`  | Native button type                   |
+| `form`     | `form`     | `string`                                              | —           | Associates FAB with a form `id`      |
 
 ## CSS Custom Properties
 
-| Variable                          | Default       | Description                              |
-|-----------------------------------|---------------|------------------------------------------|
-| `--md-fab-background-color`       | `transparent` | FAB background fill                      |
-| `--md-button-foreground-color`    | `inherit`     | Icon / label color                       |
-| `--md-fab-border-radius`          | `1rem`        | Corner radius                            |
-| `--md-fab-icon-size`              | `1.5rem`      | Icon size                                |
-| `--md-fab-font-size`              | `1rem`        | Label font size (extended FAB)           |
-| `--md-fab-inline-start-space`     | `1rem`        | Leading (left) padding                   |
-| `--md-fab-inline-end-space`       | `1rem`        | Trailing (right) padding                 |
-| `--md-fab-block-start-space`      | `1rem`        | Top padding                              |
-| `--md-fab-block-end-space`        | `1rem`        | Bottom padding                           |
-| `--md-fab-border-size`            | `0`           | Border width                             |
-| `--md-fab-pressed-state-color`    | `transparent` | State-layer color on press               |
-| `--md-fab-pressed-state-opacity`  | `12%`         | Opacity of the pressed state layer       |
-| `--md-fab-hovered-state-opacity`  | `9%`          | Opacity of the hover state layer         |
-| `--md-elevation-level`            | *(per variant)* | Material elevation level (0–5)         |
+| Variable                         | Default         | Description                        |
+| -------------------------------- | --------------- | ---------------------------------- |
+| `--md-fab-background-color`      | `transparent`   | FAB background fill                |
+| `--md-button-foreground-color`   | `inherit`       | Icon / label color                 |
+| `--md-fab-border-radius`         | `1rem`          | Corner radius                      |
+| `--md-fab-icon-size`             | `1.5rem`        | Icon size                          |
+| `--md-fab-font-size`             | `1rem`          | Label font size (extended FAB)     |
+| `--md-fab-inline-start-space`    | `1rem`          | Leading (left) padding             |
+| `--md-fab-inline-end-space`      | `1rem`          | Trailing (right) padding           |
+| `--md-fab-block-start-space`     | `1rem`          | Top padding                        |
+| `--md-fab-block-end-space`       | `1rem`          | Bottom padding                     |
+| `--md-fab-border-size`           | `0`             | Border width                       |
+| `--md-fab-pressed-state-color`   | `transparent`   | State-layer color on press         |
+| `--md-fab-pressed-state-opacity` | `12%`           | Opacity of the pressed state layer |
+| `--md-fab-hovered-state-opacity` | `9%`            | Opacity of the hover state layer   |
+| `--md-elevation-level`           | _(per variant)_ | Material elevation level (0–5)     |
 
 ## Examples
 

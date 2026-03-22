@@ -16,14 +16,14 @@ A Material Design 3 select (dropdown) web component built with Lit.
 
 ## Properties
 
-| Property   | Attribute  | Type                         | Default    | Description                             |
-|------------|------------|------------------------------|------------|-----------------------------------------|
-| `variant`  | `variant`  | `"filled" \| "outlined"`    | `"filled"` | Visual style variant                    |
-| `disabled` | `disabled` | `boolean`                    | `false`    | Disables the select                     |
-| `required` | `required` | `boolean`                    | `false`    | Marks the field as required in a form   |
-| `value`    | `value`    | `string`                     | —          | Currently selected value                |
-| `name`     | `name`     | `string`                     | `""`       | Form field name                         |
-| `id`       | `id`       | `string`                     | `""`       | Element id                              |
+| Property   | Attribute  | Type                     | Default    | Description                           |
+| ---------- | ---------- | ------------------------ | ---------- | ------------------------------------- |
+| `variant`  | `variant`  | `"filled" \| "outlined"` | `"filled"` | Visual style variant                  |
+| `disabled` | `disabled` | `boolean`                | `false`    | Disables the select                   |
+| `required` | `required` | `boolean`                | `false`    | Marks the field as required in a form |
+| `value`    | `value`    | `string`                 | —          | Currently selected value              |
+| `name`     | `name`     | `string`                 | `""`       | Form field name                       |
+| `id`       | `id`       | `string`                 | `""`       | Element id                            |
 
 ## CSS Custom Properties
 
@@ -31,13 +31,13 @@ A Material Design 3 select (dropdown) web component built with Lit.
 
 Key variables most commonly overridden:
 
-| Variable                             | Default                                          | Description               |
-|--------------------------------------|--------------------------------------------------|---------------------------|
-| `--md-text-field-foreground-color`   | `var(--md-sys-color-on-surface-variant)`         | Label / text color        |
-| `--md-text-field-background-color`   | `var(--md-sys-color-surface-container-highest)`  | Background fill           |
-| `--md-text-field-border-color`       | `var(--md-sys-color-on-surface-variant)`         | Indicator / border color  |
-| `--md-text-field-primary-color`      | `var(--md-sys-color-primary)`                    | Focus ring / active color |
-| `--md-text-field-error-color`        | `var(--md-sys-color-error)`                      | Error state color         |
+| Variable                           | Default                                         | Description               |
+| ---------------------------------- | ----------------------------------------------- | ------------------------- |
+| `--md-text-field-foreground-color` | `var(--md-sys-color-on-surface-variant)`        | Label / text color        |
+| `--md-text-field-background-color` | `var(--md-sys-color-surface-container-highest)` | Background fill           |
+| `--md-text-field-border-color`     | `var(--md-sys-color-on-surface-variant)`        | Indicator / border color  |
+| `--md-text-field-primary-color`    | `var(--md-sys-color-primary)`                   | Focus ring / active color |
+| `--md-text-field-error-color`      | `var(--md-sys-color-error)`                     | Error state color         |
 
 ## Examples
 

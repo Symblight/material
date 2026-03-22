@@ -1,0 +1,1 @@
+cd packages/ui && pnpm test && pnpm build

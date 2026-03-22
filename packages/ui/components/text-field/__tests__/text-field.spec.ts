@@ -45,7 +45,9 @@ describe("md-text-field", () => {
         html`<md-text-field variant="filled"></md-text-field>`,
       );
       expect(
-        el.shadowRoot!.querySelector(".text-field")!.classList.contains("text-field_variant_filled"),
+        el
+          .shadowRoot!.querySelector(".text-field")!
+          .classList.contains("text-field_variant_filled"),
       ).to.be.true;
     });
 
@@ -54,7 +56,9 @@ describe("md-text-field", () => {
         html`<md-text-field variant="outlined"></md-text-field>`,
       );
       expect(
-        el.shadowRoot!.querySelector(".text-field")!.classList.contains("text-field_variant_outlined"),
+        el
+          .shadowRoot!.querySelector(".text-field")!
+          .classList.contains("text-field_variant_outlined"),
       ).to.be.true;
     });
 
@@ -62,9 +66,8 @@ describe("md-text-field", () => {
       const el = await fixture<TextField>(
         html`<md-text-field variant="outlined"></md-text-field>`,
       );
-      expect(
-        el.shadowRoot!.querySelector(".text-field__outlined-indicator"),
-      ).to.exist;
+      expect(el.shadowRoot!.querySelector(".text-field__outlined-indicator")).to
+        .exist;
     });
 
     it("renders the filled indicator when variant=filled", async () => {
@@ -87,12 +90,14 @@ describe("md-text-field", () => {
       expect(label!.textContent!.trim()).to.equal("Email");
     });
 
-    it("sets aria-label on the inner input", async () => {
+    it("associates label with input via for/id", async () => {
       const el = await fixture<TextField>(
         html`<md-text-field label="Email"></md-text-field>`,
       );
       const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
-      expect(input.getAttribute("aria-label")).to.equal("Email");
+      const label = el.shadowRoot!.querySelector("label")!;
+      expect(input.id).to.be.a("string").and.not.equal("");
+      expect(label.getAttribute("for")).to.equal(input.id);
     });
   });
 
@@ -147,7 +152,9 @@ describe("md-text-field", () => {
       const el = await fixture<TextField>(
         html`<md-text-field></md-text-field>`,
       );
-      expect(el.shadowRoot!.querySelector<HTMLInputElement>("input")!.type).to.equal("text");
+      expect(
+        el.shadowRoot!.querySelector<HTMLInputElement>("input")!.type,
+      ).to.equal("text");
     });
 
     it("passes type to the inner input", async () => {
@@ -184,7 +191,9 @@ describe("md-text-field", () => {
         html`<md-text-field disabled></md-text-field>`,
       );
       expect(
-        el.shadowRoot!.querySelector(".text-field")!.classList.contains("text-field_disabled"),
+        el
+          .shadowRoot!.querySelector(".text-field")!
+          .classList.contains("text-field_disabled"),
       ).to.be.true;
     });
 
@@ -260,7 +269,9 @@ describe("md-text-field", () => {
         html`<md-text-field error></md-text-field>`,
       );
       expect(
-        el.shadowRoot!.querySelector(".text-field")!.classList.contains("text-field_status_error"),
+        el
+          .shadowRoot!.querySelector(".text-field")!
+          .classList.contains("text-field_status_error"),
       ).to.be.true;
     });
 

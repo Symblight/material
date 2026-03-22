@@ -1,5 +1,5 @@
-export function createDataGrid(el: HTMLElement, options) {
-  const containerHeight = 0;
+export function createDataGrid(_el: HTMLElement, _options: unknown) {
+  const _containerHeight = 0;
 }
 
 import { ReactiveController, ReactiveControllerHost } from "lit";
@@ -18,7 +18,7 @@ export class HTMLContainerController implements ReactiveController {
   }
 
   hostConnected() {
-    const target = this.host.getRootNode();
+    const _target = this.host.getRootNode();
   }
 
   hostDisconnected() {

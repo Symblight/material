@@ -16,7 +16,7 @@ import textStyles from "./text-button.css?inline";
 import tonalStyles from "./tonal-button.css?inline";
 import { BaseButton } from "./base-button.ts";
 
-const VALID_VARIANTS = [
+export const VALID_VARIANTS = [
   "filled",
   "outlined",
   "text",
@@ -71,11 +71,7 @@ export default class Button extends BaseButton {
               class="button__progress-circular"
             ></md-progress-circular>
           </div>`,
-      )}
-      <slot
-        @slotchange=${this.updateChildren}
-        name="icon"
-      ></slot>`;
+      )} <slot @slotchange=${this.updateChildren} name="icon"></slot>`;
   }
 
   private renderChildrenContent() {

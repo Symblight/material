@@ -1,6 +1,6 @@
 import { LitElement } from "lit";
 
-type Constructor<T = {}> = new (...args: any[]) => T;
+type Constructor<T = object> = new (...args: any[]) => T;
 
 export const internals = Symbol("internals");
 const privateInternals = Symbol("privateInternals");
@@ -45,7 +45,7 @@ export const FormAssociateMixin = <T extends Constructor<LitElement>>(
       this.disabled = disabled;
     }
 
-    formStateRestoreCallback(state, mode) {
+    formStateRestoreCallback(_state: unknown, _mode: unknown) {
       // Called when the form's state is restored
       console.log("Form state is restored");
     }

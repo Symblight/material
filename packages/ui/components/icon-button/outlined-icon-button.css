@@ -19,7 +19,6 @@
   );
 }
 
-
 :host([variant="outlined"]:active:not([disabled])) {
   --md-icon-button-background-color: color-mix(
     in oklch,
@@ -60,7 +59,6 @@
     var(--md-sys-color-inverse-on-surface) 8%
   );
 }
-
 
 :host([variant="outlined"]:active:where([selected]):not([disabled])) {
   --md-icon-button-background-color: color-mix(

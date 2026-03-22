@@ -50,7 +50,10 @@ describe("md-assist-chip", () => {
       const el = await fixture<MdAssistChip>(
         html`<md-assist-chip>Label</md-assist-chip>`,
       );
-      expect(el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!.disabled).to.be.false;
+      expect(
+        el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!
+          .disabled,
+      ).to.be.false;
     });
 
     it("disables the inner button and reflects attribute", async () => {
@@ -58,7 +61,10 @@ describe("md-assist-chip", () => {
         html`<md-assist-chip disabled>Label</md-assist-chip>`,
       );
       expect(el.hasAttribute("disabled")).to.be.true;
-      expect(el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!.disabled).to.be.true;
+      expect(
+        el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!
+          .disabled,
+      ).to.be.true;
     });
   });
 });
@@ -120,7 +126,9 @@ describe("md-filter-chip", () => {
         html`<md-filter-chip selected>Label</md-filter-chip>`,
       );
       expect(
-        el.shadowRoot!.querySelector("button#chip")!.getAttribute("aria-pressed"),
+        el
+          .shadowRoot!.querySelector("button#chip")!
+          .getAttribute("aria-pressed"),
       ).to.equal("true");
     });
 
@@ -129,7 +137,9 @@ describe("md-filter-chip", () => {
         html`<md-filter-chip>Label</md-filter-chip>`,
       );
       let fired = false;
-      el.addEventListener("change", () => { fired = true; });
+      el.addEventListener("change", () => {
+        fired = true;
+      });
 
       el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!.click();
       await el.updateComplete;
@@ -154,7 +164,10 @@ describe("md-filter-chip", () => {
         html`<md-filter-chip disabled>Label</md-filter-chip>`,
       );
       expect(el.hasAttribute("disabled")).to.be.true;
-      expect(el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!.disabled).to.be.true;
+      expect(
+        el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!
+          .disabled,
+      ).to.be.true;
     });
 
     it("does not toggle selected when disabled", async () => {
@@ -171,7 +184,9 @@ describe("md-filter-chip", () => {
         html`<md-filter-chip disabled>Label</md-filter-chip>`,
       );
       let fired = false;
-      el.addEventListener("change", () => { fired = true; });
+      el.addEventListener("change", () => {
+        fired = true;
+      });
       el.click();
       expect(fired).to.be.false;
     });
@@ -217,7 +232,9 @@ describe("md-input-chip", () => {
         html`<md-input-chip>React</md-input-chip>`,
       );
       let fired = false;
-      el.addEventListener("change", () => { fired = true; });
+      el.addEventListener("change", () => {
+        fired = true;
+      });
 
       el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!.click();
       await el.updateComplete;
@@ -251,7 +268,9 @@ describe("md-input-chip", () => {
         html`<md-input-chip removable>React</md-input-chip>`,
       );
       let fired = false;
-      el.addEventListener("remove", () => { fired = true; });
+      el.addEventListener("remove", () => {
+        fired = true;
+      });
 
       el.shadowRoot!.querySelector<HTMLButtonElement>(".chip__remove")!.click();
       expect(fired).to.be.true;
@@ -262,7 +281,9 @@ describe("md-input-chip", () => {
         html`<md-input-chip removable>React</md-input-chip>`,
       );
       let changeFired = false;
-      el.addEventListener("change", () => { changeFired = true; });
+      el.addEventListener("change", () => {
+        changeFired = true;
+      });
 
       el.shadowRoot!.querySelector<HTMLButtonElement>(".chip__remove")!.click();
       expect(changeFired).to.be.false;
@@ -273,7 +294,9 @@ describe("md-input-chip", () => {
         html`<md-input-chip removable disabled>React</md-input-chip>`,
       );
       let fired = false;
-      el.addEventListener("remove", () => { fired = true; });
+      el.addEventListener("remove", () => {
+        fired = true;
+      });
 
       el.shadowRoot!.querySelector<HTMLButtonElement>(".chip__remove")!.click();
       expect(fired).to.be.false;
@@ -317,7 +340,10 @@ describe("md-input-chip", () => {
         html`<md-input-chip disabled>React</md-input-chip>`,
       );
       expect(el.hasAttribute("disabled")).to.be.true;
-      expect(el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!.disabled).to.be.true;
+      expect(
+        el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!
+          .disabled,
+      ).to.be.true;
     });
 
     it("does not toggle selected when disabled", async () => {
@@ -372,7 +398,10 @@ describe("md-suggestion-chip", () => {
         html`<md-suggestion-chip disabled>Label</md-suggestion-chip>`,
       );
       expect(el.hasAttribute("disabled")).to.be.true;
-      expect(el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!.disabled).to.be.true;
+      expect(
+        el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!
+          .disabled,
+      ).to.be.true;
     });
   });
 });

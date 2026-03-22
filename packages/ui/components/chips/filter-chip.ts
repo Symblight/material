@@ -74,18 +74,24 @@ export default class MdFilterChip extends BaseMdChip {
         <md-ripple for="chip"></md-ripple>
         ${when(
           this.selected,
-          () => html`<slot
-            name="selected-icon"
-            class="${classMap({ "chip__leading-icon": this._hasSelectedIcon })}"
-            @slotchange=${(e: Event) =>
-              this._onSlotChange(e, (v) => (this._hasSelectedIcon = v))}
-          ></slot>`,
-          () => html`<slot
-            name="leading-icon"
-            class="${classMap({ "chip__leading-icon": this._hasLeadingIcon })}"
-            @slotchange=${(e: Event) =>
-              this._onSlotChange(e, (v) => (this._hasLeadingIcon = v))}
-          ></slot>`,
+          () =>
+            html`<slot
+              name="selected-icon"
+              class="${classMap({
+                "chip__leading-icon": this._hasSelectedIcon,
+              })}"
+              @slotchange=${(e: Event) =>
+                this._onSlotChange(e, (v) => (this._hasSelectedIcon = v))}
+            ></slot>`,
+          () =>
+            html`<slot
+              name="leading-icon"
+              class="${classMap({
+                "chip__leading-icon": this._hasLeadingIcon,
+              })}"
+              @slotchange=${(e: Event) =>
+                this._onSlotChange(e, (v) => (this._hasLeadingIcon = v))}
+            ></slot>`,
         )}
         <span class="chip__label"><slot></slot></span>
       </button>

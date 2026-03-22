@@ -1,3 +1,3 @@
-export function createDataGrid(columns: any[], data: any[]) {
+export function createDataGrid(columns: any[], _data: any[]) {
   console.log(columns);
 }

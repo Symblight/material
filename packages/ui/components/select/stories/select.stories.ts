@@ -11,7 +11,12 @@ function Select({ variant, disabled }: SelectProps) {
     console.log(event.target.value);
   };
   return html`
-    <md-select label="Role" ?disabled=${disabled} variant=${variant} @change=${handleChange}>
+    <md-select
+      label="Role"
+      ?disabled=${disabled}
+      variant=${variant}
+      @change=${handleChange}
+    >
       <md-option value="">--Please choose an option--</md-option>
       <md-option value="tutor"> Tutor </md-option>
       <md-option value="student" selected> Student </md-option>

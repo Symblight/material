@@ -1,0 +1,1 @@
+cd packages/ui && pnpm format && pnpm lint

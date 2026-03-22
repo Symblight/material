@@ -50,7 +50,9 @@ describe("md-checkbox", () => {
         html`<md-checkbox checked></md-checkbox>`,
       );
       expect(
-        el.shadowRoot!.querySelector(".checkbox__box")!.classList.contains("checkbox__box_checked"),
+        el
+          .shadowRoot!.querySelector(".checkbox__box")!
+          .classList.contains("checkbox__box_checked"),
       ).to.be.true;
     });
 
@@ -90,7 +92,9 @@ describe("md-checkbox", () => {
         html`<md-checkbox indeterminate></md-checkbox>`,
       );
       expect(
-        el.shadowRoot!.querySelector(".checkbox__box")!.classList.contains("checkbox__box_indeterminate"),
+        el
+          .shadowRoot!.querySelector(".checkbox__box")!
+          .classList.contains("checkbox__box_indeterminate"),
       ).to.be.true;
     });
 
@@ -150,7 +154,9 @@ describe("md-checkbox", () => {
         html`<md-checkbox disabled></md-checkbox>`,
       );
       expect(
-        el.shadowRoot!.querySelector(".checkbox__box")!.classList.contains("checkbox__box_disabled"),
+        el
+          .shadowRoot!.querySelector(".checkbox__box")!
+          .classList.contains("checkbox__box_disabled"),
       ).to.be.true;
     });
 
@@ -172,10 +178,14 @@ describe("md-checkbox", () => {
         html`<md-checkbox error></md-checkbox>`,
       );
       expect(
-        el.shadowRoot!.querySelector(".checkbox__input")!.classList.contains("checkbox__input_error"),
+        el
+          .shadowRoot!.querySelector(".checkbox__input")!
+          .classList.contains("checkbox__input_error"),
       ).to.be.true;
       expect(
-        el.shadowRoot!.querySelector(".checkbox__box")!.classList.contains("checkbox__box_error"),
+        el
+          .shadowRoot!.querySelector(".checkbox__box")!
+          .classList.contains("checkbox__box_error"),
       ).to.be.true;
     });
   });

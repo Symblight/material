@@ -15,9 +15,9 @@ A Material Design 3 circular progress indicator web component built with Lit.
 
 `md-progress-circular` inherits its color from the standard CSS `color` property, which defaults to the MD3 system token `--md-sys-color-primary`.
 
-| Property / Variable           | Default                          | Description                         |
-|-------------------------------|----------------------------------|-------------------------------------|
-| `color` *(CSS property)*      | `var(--md-sys-color-primary)`    | Color of the spinning indicator arc |
+| Property / Variable      | Default                       | Description                         |
+| ------------------------ | ----------------------------- | ----------------------------------- |
+| `color` _(CSS property)_ | `var(--md-sys-color-primary)` | Color of the spinning indicator arc |
 
 > Include the MD3 theme CSS (`@symblight/wc-material/theme/theme.css`) to have `--md-sys-color-primary` resolve correctly, or set the `color` property directly on the element.
 
@@ -38,7 +38,9 @@ A Material Design 3 circular progress indicator web component built with Lit.
 ### Custom size via `width` / `height`
 
 ```html
-<md-progress-circular style="width: 64px; height: 64px; color: #6750a4;"></md-progress-circular>
+<md-progress-circular
+  style="width: 64px; height: 64px; color: #6750a4;"
+></md-progress-circular>
 ```
 
 ### Via CSS class
