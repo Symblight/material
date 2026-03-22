@@ -1,6 +1,11 @@
 :host {
   --md-radio-background-color: transparent;
   --md-radio-border-color: var(--md-sys-color-on-surface-variant);
+  --md-radio-active-state-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface) 12%
+  );
 
   --_container-color: var(--md-sys-color-primary);
   --_box-container-color: var(--md-radio-background-color);
@@ -49,11 +54,7 @@
 }
 
 .radio__input:active:not([disabled]) {
-  --_box-container-color: color-mix(
-    in oklch,
-    transparent,
-    var(--md-sys-color-on-surface) 12%
-  );
+  --_box-container-color: var(--md-radio-active-state-color);
 }
 
 .radio__box {

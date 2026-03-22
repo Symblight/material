@@ -5,6 +5,11 @@
   --md-dialog-container-support-text-color: var(
     --md-sys-color-on-surface-variant
   );
+  --md-dialog-scrim-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-scrim) 32%
+  );
 
   height: fit-content;
 }
@@ -16,11 +21,7 @@
 
 .dialog::backdrop {
   transition: backdrop-filter 0.4s ease;
-  background-color: color-mix(
-    in oklch,
-    transparent,
-    var(--md-sys-color-scrim) 32%
-  );
+  background-color: var(--md-dialog-scrim-color);
 }
 
 .dialog {

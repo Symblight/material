@@ -3,12 +3,13 @@
   --md-chip-container-color: transparent;
   --md-chip-border-color: var(--md-sys-color-outline);
   --md-chip-border-width: 0.063rem;
-}
-
-:host([variant="outlined"]:hover:not([disabled])) .chip {
-  background-color: color-mix(
+  --md-chip-outlined-hover-color: color-mix(
     in oklch,
     var(--md-sys-color-on-surface-variant) 8%,
     transparent
   );
+}
+
+:host([variant="outlined"]:hover:not([disabled])) .chip {
+  background-color: var(--md-chip-outlined-hover-color);
 }

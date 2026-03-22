@@ -1,13 +1,17 @@
+:host {
+  --md-text-field-filled-hover-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 88%
+  );
+}
+
 .text-field_variant_filled {
   border-radius: var(--md-filled-text-field-shape);
 }
 
 .text-field_variant_filled:hover:where(:not(.text-field_disabled)) {
-  --md-text-field-background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-surface),
-    transparent 88%
-  );
+  --md-text-field-background-color: var(--md-text-field-filled-hover-color);
 }
 
 .text-field__input-wrapper_variant_filled {

@@ -1,0 +1,54 @@
+:host {
+  --md-badge-color: var(--md-sys-color-error);
+  --md-badge-on-color: var(--md-sys-color-on-error);
+  --md-badge-border-radius: var(--md-sys-shape-corner-full, 9999px);
+  --md-badge-font-family: var(--md-sys-typescale-label-small-font, sans-serif);
+  --md-badge-font-size: var(--md-sys-typescale-label-small-size, 11px);
+  --md-badge-font-weight: var(--md-sys-typescale-label-small-weight, 500);
+  --md-badge-line-height: var(--md-sys-typescale-label-small-line-height, 16px);
+  --md-badge-letter-spacing: var(
+    --md-sys-typescale-label-small-tracking,
+    0.5px
+  );
+  --md-badge-small-size: 6px;
+  --md-badge-large-height: 16px;
+  --md-badge-large-min-width: 16px;
+  --md-badge-large-padding-inline: 4px;
+
+  display: inline-flex;
+  position: relative;
+  vertical-align: middle;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background-color: var(--md-badge-color);
+  color: var(--md-badge-on-color);
+  border-radius: var(--md-badge-border-radius);
+  font-family: var(--md-badge-font-family);
+  font-size: var(--md-badge-font-size);
+  font-weight: var(--md-badge-font-weight);
+  line-height: var(--md-badge-line-height);
+  letter-spacing: var(--md-badge-letter-spacing);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Small (dot) variant ──────────────────────────────────────────────────── */
+
+.badge_small {
+  width: var(--md-badge-small-size);
+  height: var(--md-badge-small-size);
+}
+
+/* ── Large (label) variant ───────────────────────────────────────────────── */
+
+:where(.badge_large) {
+  height: var(--md-badge-large-height);
+  min-width: var(--md-badge-large-min-width);
+  padding-inline: var(--md-badge-large-padding-inline);
+}

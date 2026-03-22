@@ -14,6 +14,23 @@
   /* Track — selected */
   --md-switch-selected-track-color: var(--md-sys-color-primary);
 
+  /* Track — disabled */
+  --md-switch-disabled-track-color: color-mix(
+    in oklch,
+    var(--md-sys-color-surface-container-highest),
+    transparent 88%
+  );
+  --md-switch-disabled-track-outline-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 88%
+  );
+  --md-switch-disabled-selected-track-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 88%
+  );
+
   /* Handle — unselected */
   --md-switch-unselected-handle-color: var(--md-sys-color-outline);
   --md-switch-unselected-handle-size: 16px;
@@ -33,6 +50,8 @@
 
   /* State layer */
   --md-switch-state-layer-size: 40px;
+  --md-switch-state-layer-color: var(--md-sys-color-on-surface);
+  --md-switch-selected-state-layer-color: var(--md-sys-color-primary);
 
   display: inline-flex;
   align-items: center;
@@ -44,6 +63,23 @@
 :host([disabled]) {
   cursor: not-allowed;
   pointer-events: none;
+
+  --md-switch-disabled-handle-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 62%
+  );
+  --md-switch-disabled-selected-handle-color: var(--md-sys-color-surface);
+  --md-switch-disabled-icon-color: color-mix(
+    in oklch,
+    var(--md-sys-color-surface-container-highest),
+    transparent 62%
+  );
+  --md-switch-disabled-selected-icon-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 62%
+  );
 }
 
 /* ── Hidden native input (covers full touch target) ─────────────────────── */
@@ -87,25 +123,13 @@
 
 /* Disabled — unselected */
 .switch__track_disabled {
-  background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-surface-container-highest),
-    transparent 88%
-  );
-  border-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-surface),
-    transparent 88%
-  );
+  background-color: var(--md-switch-disabled-track-color);
+  border-color: var(--md-switch-disabled-track-outline-color);
 }
 
 /* Disabled — selected */
 .switch__track_disabled.switch__track_selected {
-  background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-surface),
-    transparent 88%
-  );
+  background-color: var(--md-switch-disabled-selected-track-color);
   border-color: transparent;
 }
 
@@ -152,14 +176,14 @@
   width: var(--md-switch-state-layer-size);
   height: var(--md-switch-state-layer-size);
   border-radius: 50%;
-  background-color: var(--md-sys-color-on-surface);
+  background-color: var(--md-switch-state-layer-color);
   opacity: 0;
   transition: opacity 200ms linear;
   pointer-events: none;
 }
 
 .switch__track_selected .switch__state-layer {
-  background-color: var(--md-sys-color-primary);
+  background-color: var(--md-switch-selected-state-layer-color);
 }
 
 /* Hover */
@@ -204,15 +228,11 @@
 
 /* Disabled */
 :host([disabled]) .switch__handle {
-  background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-surface),
-    transparent 62%
-  );
+  background-color: var(--md-switch-disabled-handle-color);
 }
 
 :host([disabled]) .switch__handle_selected {
-  background-color: var(--md-sys-color-surface);
+  background-color: var(--md-switch-disabled-selected-handle-color);
 }
 
 /* Pressed — handle grows slightly */
@@ -240,13 +260,9 @@
 }
 
 :host([disabled]) .switch__icon svg {
-  fill: color-mix(
-    in oklch,
-    var(--md-sys-color-surface-container-highest),
-    transparent 62%
-  );
+  fill: var(--md-switch-disabled-icon-color);
 }
 
 :host([disabled]) .switch__handle_selected .switch__icon svg {
-  fill: color-mix(in oklch, var(--md-sys-color-on-surface), transparent 62%);
+  fill: var(--md-switch-disabled-selected-icon-color);
 }

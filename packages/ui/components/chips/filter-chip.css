@@ -3,6 +3,22 @@
    Toggleable: selected-icon slot is shown when selected, leading-icon otherwise.
    ─────────────────────────────────────────────────────────────────────────── */
 
+:host([variant="outlined"]:not([selected])) {
+  --md-chip-filter-hover-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface-variant) 8%,
+    transparent
+  );
+}
+
+:host([selected]) {
+  --md-chip-filter-selected-hover-color: color-mix(
+    in oklch,
+    var(--md-sys-color-secondary-container) 92%,
+    var(--md-sys-color-on-secondary-container) 8%
+  );
+}
+
 /* Tighten start padding when checkmark or leading icon is present */
 :where(.chip_selected) {
   padding-inline-start: 0.5rem;
@@ -10,18 +26,10 @@
 
 /* Hover state for unselected */
 :host([variant="outlined"]:not([selected])) .chip:hover:not(.chip_disabled) {
-  background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-surface-variant) 8%,
-    transparent
-  );
+  background-color: var(--md-chip-filter-hover-color);
 }
 
 /* Hover state for selected */
 :host([selected]) .chip:hover:not(.chip_disabled) {
-  background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-secondary-container) 92%,
-    var(--md-sys-color-on-secondary-container) 8%
-  );
+  background-color: var(--md-chip-filter-selected-hover-color);
 }

@@ -108,6 +108,51 @@ overrides that a parent theme can easily beat.
 }
 ```
 
+### 2a. Token scoping rule — STRICTLY ENFORCED
+
+**`--md-sys-*` tokens may only appear inside `:host` or `:host([selector])` blocks.**
+Class selectors — including compound rules like `:host([disabled]) .class` — must only
+reference `--md-<component>-*` variables. Never inline a `--md-sys-*` token directly
+in a class rule.
+
+This keeps the component's public theming API explicit and centralized.
+
+```css
+/* ✅ Correct */
+:host {
+  --md-button-color: var(--md-sys-color-primary);
+}
+:host([disabled]) {
+  --md-button-disabled-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 62%
+  );
+}
+
+.button {
+  background-color: var(--md-button-color); /* only --md-* vars */
+}
+:host([disabled]) .button {
+  background-color: var(--md-button-disabled-color); /* only --md-* vars */
+}
+
+/* ❌ Wrong — --md-sys-* used directly in a class rule */
+.button {
+  background-color: var(--md-sys-color-primary);
+}
+:host([disabled]) .button {
+  background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 62%
+  );
+}
+```
+
+The same applies to `color-mix()` expressions: compute them in `:host` as a named
+`--md-<component>-*` variable, then reference that variable in the class rule.
+
 ### 3. BEM naming
 
 ```
@@ -221,6 +266,7 @@ Full token list: https://m3.material.io/foundations/design-tokens/overview
 
 - [ ] `:host` declares all internal `--md-<name>-*` custom properties
 - [ ] Every color references a `--md-sys-color-*` token (no raw hex)
+- [ ] `--md-sys-*` tokens appear **only** in `:host` / `:host([selector])` — never in class rules or compound `:host([...]) .class` bodies
 - [ ] BEM class names — no camelCase, no inline styles
 - [ ] `?inline` import, `static get styles()` returns array
 - [ ] State layers for hover / focus / pressed / dragged

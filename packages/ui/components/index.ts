@@ -1,3 +1,4 @@
+import "./badge/badge";
 import "./button/button";
 import "./chips/index.ts";
 import "./icon/icon";

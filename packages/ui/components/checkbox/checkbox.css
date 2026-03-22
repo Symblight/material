@@ -1,6 +1,26 @@
 :host {
   --md-checkbox-background-color: transparent;
   --md-checkbox-border-color: var(--md-sys-color-on-surface-variant);
+  --md-checkbox-active-state-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface) 12%
+  );
+  --md-checkbox-active-error-state-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-error) 12%
+  );
+  --md-checkbox-disabled-border-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface) 38%
+  );
+  --md-checkbox-disabled-checked-color: color-mix(
+    in oklch,
+    transparent,
+    var(--md-sys-color-on-surface) 38%
+  );
 
   --_container-color: var(--md-sys-color-primary);
   --_box-container-color: var(--md-checkbox-background-color);
@@ -62,11 +82,7 @@
 }
 
 .checkbox__input:active:not([disabled]) {
-  --_box-container-color: color-mix(
-    in oklch,
-    transparent,
-    var(--md-sys-color-on-surface) 12%
-  );
+  --_box-container-color: var(--md-checkbox-active-state-color);
 }
 
 .checkbox__box {
@@ -108,20 +124,12 @@
 }
 
 .checkbox__input:active:not([disabled]):where(.checkbox__input_error) {
-  --_box-container-color: color-mix(
-    in oklch,
-    transparent,
-    var(--md-sys-color-error) 12%
-  );
+  --_box-container-color: var(--md-checkbox-active-error-state-color);
 }
 
 .checkbox__box_disabled {
   --_box-container-color: transparent;
-  --_box-border-color: color-mix(
-    in oklch,
-    transparent,
-    var(--md-sys-color-on-surface) 38%
-  );
+  --_box-border-color: var(--md-checkbox-disabled-border-color);
   cursor: not-allowed;
 }
 
@@ -137,10 +145,6 @@
   .checkbox__box_checked,
   .checkbox__box_indeterminate
 ) {
-  --_box-container-color: color-mix(
-    in oklch,
-    transparent,
-    var(--md-sys-color-on-surface) 38%
-  );
+  --_box-container-color: var(--md-checkbox-disabled-checked-color);
   --_box-border-color: transparent;
 }

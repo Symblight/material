@@ -9,7 +9,25 @@
   --md-chip-border-color: var(--md-sys-color-outline);
   --md-input-chip-avatar-size: 1.5rem; /* 24dp */
   --md-input-chip-remove-icon-size: 1.125rem; /* 18dp */
+  --md-input-chip-remove-hover-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface-variant) 12%,
+    transparent
+  );
+  --md-input-chip-unselected-hover-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface-variant) 8%,
+    transparent
+  );
   --_ripple-color: var(--md-sys-color-on-surface-variant);
+}
+
+:host([selected]) {
+  --md-input-chip-selected-hover-color: color-mix(
+    in oklch,
+    var(--md-sys-color-secondary-container) 92%,
+    var(--md-sys-color-on-secondary-container) 8%
+  );
 }
 
 /* Trailing remove button — reset + layout */
@@ -36,11 +54,7 @@
 }
 
 .chip__remove:hover:not(:disabled) {
-  background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-surface-variant) 12%,
-    transparent
-  );
+  background-color: var(--md-input-chip-remove-hover-color);
 }
 
 .chip__remove-icon {
@@ -87,18 +101,10 @@
 
 /* Hover (unselected) */
 :host(:not([selected])) .chip:hover:not(.chip_disabled) {
-  background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-surface-variant) 8%,
-    transparent
-  );
+  background-color: var(--md-input-chip-unselected-hover-color);
 }
 
 /* Hover (selected) */
 :host([selected]) .chip:hover:not(.chip_disabled) {
-  background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-secondary-container) 92%,
-    var(--md-sys-color-on-secondary-container) 8%
-  );
+  background-color: var(--md-input-chip-selected-hover-color);
 }

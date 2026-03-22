@@ -36,6 +36,7 @@ import "@symblight/wc-material/text-field";
 | Import path                                | Components                                                                        |
 | ------------------------------------------ | --------------------------------------------------------------------------------- |
 | `@symblight/wc-material/avatar`            | `<md-avatar>`                                                                     |
+| `@symblight/wc-material/badge`             | `<md-badge>`                                                                      |
 | `@symblight/wc-material/button`            | `<md-button>`                                                                     |
 | `@symblight/wc-material/checkbox`          | `<md-checkbox>`                                                                   |
 | `@symblight/wc-material/chips`             | `<md-assist-chip>`, `<md-filter-chip>`, `<md-input-chip>`, `<md-suggestion-chip>` |

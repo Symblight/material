@@ -3,6 +3,7 @@
 
   --md-ripple-pressed-opacity: 0.12;
   --md-ripple-hover-opacity: 0.08;
+  --md-ripple-hover-color: var(--md-sys-color-on-surface);
   --md-ripple-pressed-color: var(--md-sys-color-on-surface);
 }
 
@@ -16,10 +17,7 @@
 }
 
 .surface::before {
-  background-color: var(
-    --md-ripple-hover-color,
-    var(--md-sys-color-on-surface, #1d1b20)
-  );
+  background-color: var(--md-ripple-hover-color);
   inset: 0;
   transition:
     opacity 15ms linear,
@@ -37,8 +35,7 @@
 .surface::after {
   background: radial-gradient(
     closest-side,
-    var(--md-ripple-pressed-color, var(--md-sys-color-on-surface, #1d1b20))
-      max(100% - 70px, 65%),
+    var(--md-ripple-pressed-color) max(100% - 70px, 65%),
     transparent 100%
   );
   transition: opacity 175ms linear;

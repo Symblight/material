@@ -1,3 +1,7 @@
+:host {
+  --md-shadow-color: #000;
+}
+
 :host,
 .shadow,
 .shadow::after,
@@ -14,10 +18,8 @@
 .shadow::before,
 .shadow::after {
   content: "";
-  --md-elevation-shadow-color: #000;
-  --md-sys-color-shadow: #000;
   --_level: var(--md-elevation-level);
-  --_shadow-color: var(--md-sys-color-shadow);
+  --_shadow-color: var(--md-shadow-color);
 }
 
 .shadow::before {
