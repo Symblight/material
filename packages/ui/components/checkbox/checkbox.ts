@@ -5,6 +5,8 @@ import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { classMap } from "lit/directives/class-map.js";
 import check from "@material-design-icons/svg/filled/check.svg?raw";
 
+import "../ripple/ripple.ts";
+
 import styles from "./checkbox.css?inline";
 
 /**
@@ -147,6 +149,7 @@ export default class Checkbox extends LitElement {
 
   render() {
     return html`
+      <md-ripple class="checkbox__ripple"></md-ripple>
       <input
         part="input"
         type="checkbox"

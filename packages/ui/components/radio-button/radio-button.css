@@ -40,27 +40,11 @@
   );
 }
 
-:where(:hover:not([disabled])) .radio__input {
-  --_box-container-color: color-mix(
-    in oklch,
-    transparent,
-    var(--_container-color) 8%
-  );
-}
-
 :where(:focus-visible) .radio__input {
-  ---_box-container-color: color-mix(
+  --_box-container-color: color-mix(
     in oklch,
     transparent,
     var(--_container-color) 12%
-  );
-}
-
-:where(:active:not([disabled])) .radio__input {
-  --_box-container-color: color-mix(
-    in oklch,
-    transparent,
-    var(--md-sys-color-on-surface) 12%
   );
 }
 
@@ -73,7 +57,7 @@
 }
 
 .radio__input_focused {
-  ---_box-container-color: color-mix(
+  --_box-container-color: color-mix(
     in oklch,
     transparent,
     var(--_container-color) 12%
@@ -119,20 +103,6 @@
   content: "";
 }
 
-.radio__box_active {
-  border-color: var(--_container-color);
-  transition:
-    all 0s,
-    outline 0s;
-}
-
-.radio__box_focus {
-  outline: 2px solid var(--_container-color);
-  outline-offset: 1px;
-  transition:
-    outline-offset 0s,
-    outline 0s;
-}
 
 .radio__box_checked {
   border-color: var(--_container-color);
@@ -155,6 +125,14 @@
 
 .radio__box_disabled {
   cursor: not-allowed;
+}
+
+.radio__ripple {
+  --md-ripple-pressed-color: var(--_container-color);
+}
+
+:host([disabled]) .radio__ripple {
+  display: none;
 }
 
 .radio__input {

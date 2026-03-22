@@ -11,6 +11,8 @@ import { classMap } from "lit/directives/class-map.js";
 import { RadioSelectionController } from "./radio-selection";
 import { FormAssociateMixin, internals } from "./form-associate";
 
+import "../ripple/ripple.ts";
+
 import styles from "./radio-button.css?inline";
 
 /**
@@ -156,6 +158,7 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
 
   render() {
     return html`
+      <md-ripple class="radio__ripple"></md-ripple>
       <input
         part="input"
         type="radio"

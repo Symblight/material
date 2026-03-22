@@ -1,9 +1,5 @@
 :host {
-  --md-button-foreground-color: inherit;
-
   --md-fab-background-color: transparent;
-
-  --md-fab-rounded-border-radius: 2rem;
 
   --md-fab-font-size: 1rem;
 
@@ -20,10 +16,6 @@
   --md-fab-border-size: 0;
 
   --md-fab-pressed-state-color: transparent;
-  --md-fab-pressed-state-opacity: 0.12;
-
-  --md-fab-pressed-state-opacity: 12%;
-  --md-fab-hovered-state-opacity: 9%;
 
   --md-fab-border-radius: 1rem;
   --md-fab-icon-size: 1.5rem;
@@ -90,4 +82,8 @@
 
 .button_label {
   gap: 0.5rem;
+}
+
+:host([disabled]) .button__ripple {
+  display: none;
 }

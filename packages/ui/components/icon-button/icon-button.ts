@@ -115,7 +115,7 @@ export default class IconButton extends BaseButton {
 
   override render() {
     return html`
-      <!-- <md-ripple class="icon-button__ripple" for="button"></md-ripple> -->
+      <md-ripple class="icon-button__ripple" for="button"></md-ripple>
       ${this.renderButtonOrLink()}
     `;
   }

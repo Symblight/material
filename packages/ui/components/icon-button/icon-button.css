@@ -49,7 +49,6 @@
   box-sizing: border-box;
   appearance: none;
   color: var(--md-icon-button-foreground-color);
-  font-size: var(--md-icon-button-font-size);
   line-height: 1.125rem;
   padding: calc(0.5rem - 0.063rem);
   font-size: 1.5rem;
@@ -83,4 +82,8 @@
 .icon-button__ripple {
   --md-ripple-pressed-color: var(--md-icon-button-pressed-state-color);
   --md-ripple-pressed-opacity: 1;
+}
+
+:host([disabled]) .icon-button__ripple {
+  display: none;
 }

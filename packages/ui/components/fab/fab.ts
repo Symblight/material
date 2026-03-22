@@ -4,6 +4,8 @@ import { customElement, property } from "lit/decorators.js";
 
 import { BaseButton } from "../button/base-button.ts";
 
+import "../ripple/ripple.ts";
+
 import styles from "./fab.css?inline";
 import buttonStyles from "../button/base-button.css?inline";
 import surfaceStyles from "./surface-fab.css?inline";
@@ -135,7 +137,7 @@ export default class FAB extends BaseButton {
   override render() {
     return html`
       <md-shadow></md-shadow>
-      <!-- <md-ripple class="button__ripple" for="button"></md-ripple> -->
+      <md-ripple class="button__ripple" for="button"></md-ripple>
       ${this.renderButtonOrLink()}
     `;
   }
