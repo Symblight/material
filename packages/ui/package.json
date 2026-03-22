@@ -1,7 +1,7 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "type": "module",
@@ -96,18 +96,18 @@
     "./theme/theme.css": "./dist/theme.css"
   },
   "peerDependencies": {
-    "lit": ">=3.0.0"
+    "lit": ">=3.0.0",
+    "@open-wc/form-control": "^1.0.0",
+    "@open-wc/form-helpers": "^1.0.0"
   },
   "dependencies": {
     "@lit-labs/observers": "^2.1.0",
     "@lit/context": "^1.1.6",
-    "@material-design-icons/svg": "^0.14.15",
-    "@open-wc/form-control": "^1.0.0",
-    "@open-wc/form-helpers": "^1.0.0",
-    "@open-wc/testing": "4.0.0",
     "rollup-plugin-postcss-lit": "^2.2.0"
   },
   "devDependencies": {
+    "@material-design-icons/svg": "^0.14.15",
+    "@open-wc/testing": "4.0.0",
     "@babel/plugin-proposal-decorators": "^7.29.0",
     "@chromatic-com/storybook": "^5.0.2",
     "@remcovaes/web-test-runner-vite-plugin": "^1.4.0",

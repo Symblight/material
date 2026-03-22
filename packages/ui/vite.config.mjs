@@ -10,26 +10,25 @@ export default defineConfig({
   esbuild: {
     target: "esnext",
     minifyIdentifiers: false,
+    minifySyntax: true,
   },
   build: {
-    lib: {
-      name: "wc-material",
-      entry: "components/index.ts",
-      formats: ["es"],
-    },
     target: "esnext",
     rollupOptions: {
+      input: "components/index.ts",
       external: [
         "lit",
         /^lit\/.*/,
         /^@lit\/.*/,
         /^@lit-labs\/.*/,
-        "@open-wc/testing",
+        /^@open-wc\/.*/,
       ],
       output: {
+        format: "es",
         preserveModules: true,
         preserveModulesRoot: "components",
         entryFileNames: "[name].js",
+        dir: "dist",
       },
     },
   },
