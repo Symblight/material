@@ -45,6 +45,10 @@
   transform-origin: center center 0;
 }
 
+.surface_hovered::before {
+  opacity: var(--md-ripple-hover-opacity, 0.08);
+}
+
 .surface_pressed:after {
   opacity: var(--md-ripple-pressed-opacity, 0.12);
   transition-duration: 105ms;

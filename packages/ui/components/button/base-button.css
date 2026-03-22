@@ -35,7 +35,7 @@
 }
 
 .button_disabled {
-  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .button__content {

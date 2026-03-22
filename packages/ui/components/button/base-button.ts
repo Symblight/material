@@ -5,12 +5,8 @@ import { submit } from "@open-wc/form-helpers";
 
 import MdRipple from "../ripple/ripple";
 
-import "../progress-circular/progress-circular.ts";
-import "../shadow/shadow.ts";
-import "../ripple/ripple.ts";
-
 export abstract class BaseButton extends LitElement {
-  public _observer;
+  private _observer;
 
   static override shadowRootOptions: ShadowRootInit = {
     ...LitElement.shadowRootOptions,
@@ -61,7 +57,7 @@ export abstract class BaseButton extends LitElement {
    * The href link for the button.
    */
   @property({ type: String, attribute: true })
-  href: boolean = false;
+  href: string | undefined = undefined;
 
   /**
    * Indicates whether the button is disabled.
@@ -76,22 +72,16 @@ export abstract class BaseButton extends LitElement {
   slotHasContent = false;
 
   /**
-   * The icon associated with the button.
+   * Whether an icon is slotted into the button.
    */
   @state()
-  icon: Node | null = null;
+  hasIcon: boolean = false;
 
   @query(".button")
   buttonOrAnchor: HTMLButtonElement | HTMLAnchorElement | undefined;
 
   @query("md-ripple")
   ripple: MdRipple | undefined;
-
-  /**
-   * The focused state.
-   */
-  @state()
-  focused: boolean = false;
 
   @state()
   childrenContent: Node | null | string = null;
@@ -112,7 +102,12 @@ export abstract class BaseButton extends LitElement {
     }
   }
 
-  handleClick() {
+  handleClick(event: Event) {
+    if (this.disabled) {
+      event.preventDefault();
+      return;
+    }
+
     if (this.type === "submit") {
       let targetForm: HTMLFormElement;
 
@@ -126,11 +121,6 @@ export abstract class BaseButton extends LitElement {
         submit(targetForm);
       }
     }
-  }
-
-  handleFocus() {
-    if (this.disabled) return;
-    this.focused = this.buttonOrAnchor?.matches(":focus") ?? false;
   }
 
   handleSlotChange(e: Event) {
@@ -169,17 +159,9 @@ export abstract class BaseButton extends LitElement {
     const iconSlot = this.shadowRoot?.querySelector(
       'slot[name="icon"]',
     ) as HTMLSlotElement;
-    const icon = !iconSlot
-      ? []
-      : iconSlot.assignedElements().map((element) => {
-          const newElement = element.cloneNode(true) as HTMLElement;
-          newElement.removeAttribute("slot");
-          return newElement;
-        });
 
+    this.hasIcon = iconSlot ? iconSlot.assignedElements().length > 0 : false;
     this.manageTextObservedSlot();
-    const [iconEl] = icon;
-    this.icon = iconEl;
   }
 
   firstUpdated(changes: any) {

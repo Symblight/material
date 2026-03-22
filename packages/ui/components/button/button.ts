@@ -16,13 +16,15 @@ import textStyles from "./text-button.css?inline";
 import tonalStyles from "./tonal-button.css?inline";
 import { BaseButton } from "./base-button.ts";
 
-export type ButtonVariant =
-  | "filled"
-  | "outlined"
-  | "text"
-  | "elevated"
-  | "tonal";
-const VALID_VARIANTS = ["filled", "outlined", "text", "elevated", "tonal"];
+const VALID_VARIANTS = [
+  "filled",
+  "outlined",
+  "text",
+  "elevated",
+  "tonal",
+] as const;
+
+export type ButtonVariant = (typeof VALID_VARIANTS)[number];
 
 /**
  * @tag md-button
@@ -33,22 +35,8 @@ export default class Button extends BaseButton {
   /*
    * The variant style of the button.
    */
-  private _variant: ButtonVariant = "filled";
-
-  public get variant(): ButtonVariant {
-    return this._variant;
-  }
-
-  @property()
-  public set variant(variant: ButtonVariant) {
-    if (variant === this.variant) return;
-
-    if (!VALID_VARIANTS.includes(variant)) {
-      this._variant = "filled";
-      return;
-    }
-    this.setAttribute("variant", variant);
-  }
+  @property({ reflect: true })
+  variant: ButtonVariant = "filled";
 
   static get styles(): CSSResultGroup {
     return [
@@ -62,20 +50,11 @@ export default class Button extends BaseButton {
     ] as unknown as CSSResultOrNative[];
   }
 
-  firstUpdated(changes: any) {
-    super.firstUpdated(changes);
-
-    if (!this.hasAttribute("variant")) {
-      this.setAttribute("variant", this.variant);
-    }
-  }
-
   private get classes() {
     return classMap({
       button_disabled: this.disabled,
       button_loading: this.loading,
-      button_icon: !!this.icon,
-      button_focused: this.focused,
+      button_icon: this.hasIcon,
     });
   }
 
@@ -85,7 +64,7 @@ export default class Button extends BaseButton {
         () =>
           html`<div
             class="button__loading ${classMap({
-              button__icon: !!this.childrenContent,
+              "button__icon-wrapper": !!this.childrenContent,
             })}"
           >
             <md-progress-circular
@@ -93,7 +72,10 @@ export default class Button extends BaseButton {
             ></md-progress-circular>
           </div>`,
       )}
-      <slot ?icon-only=${this.slotHasContent} name="icon"> </slot> `;
+      <slot
+        @slotchange=${this.updateChildren}
+        name="icon"
+      ></slot>`;
   }
 
   private renderChildrenContent() {
@@ -117,22 +99,20 @@ export default class Button extends BaseButton {
         part="button"
         class="button ${this.classes}"
         href=${this.href}
+        aria-disabled=${this.disabled}
+        tabindex=${this.disabled ? -1 : 0}
         ?aria-busy=${this.loading}
-        @focus=${this.handleFocus}
-        @blur=${this.handleFocus}
       >
         ${this.renderChildrenContent()}
       </a>`;
     }
-    return html` <button
+    return html`<button
       part="button"
       type=${this.type}
       id="button"
       class="button ${this.classes}"
       ?disabled=${this.disabled}
       aria-busy=${this.loading}
-      @focus=${this.handleFocus}
-      @blur=${this.handleFocus}
     >
       ${this.renderChildrenContent()}
     </button>`;
@@ -141,7 +121,7 @@ export default class Button extends BaseButton {
   override render() {
     return html`
       <md-shadow></md-shadow>
-      <!-- <md-ripple class="button__ripple" for="button"></md-ripple> -->
+      <md-ripple class="button__ripple" for="button"></md-ripple>
       ${this.renderButtonOrLink()}
     `;
   }

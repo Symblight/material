@@ -7,15 +7,15 @@ import logout from "@material-design-icons/svg/filled/logout.svg?raw";
 import "../button.ts";
 import "../../icon/icon.ts";
 
-import type PvButtonProps from "../button.ts";
+import type Button from "../button.ts";
 
-function Button({
+function ButtonStory({
   variant = "filled",
   children,
   disabled = false,
   loading = false,
   href,
-}: PvButtonProps) {
+}: Button) {
   return html`
     <md-button
       variant=${variant}
@@ -32,7 +32,7 @@ const meta = {
   title: "Button",
   component: "md-button",
   tags: ["autodocs"],
-  render: Button,
+  render: ButtonStory,
   argTypes: {
     variant: {
       options: ["filled", "outlined", "text", "elevated", "tonal"],
@@ -47,31 +47,91 @@ const meta = {
     loading: {
       control: { type: "boolean" },
     },
-    children: {
-      control: { type: "text" },
-      type: "string",
-      defaultValue: unsafeHTML(`Button`) as HTMLCollection,
-    },
   },
-} satisfies Meta<PvButtonProps>;
+} satisfies Meta<Button>;
 export default meta;
 
-type Story = StoryObj<PvButtonProps>;
+type Story = StoryObj<Button>;
 
 export const Regular: Story = {
   args: {
     children: unsafeHTML(`Label`) as HTMLCollection,
     disabled: false,
-    href: undefined,
   },
 };
 
-export const WithIconContent: Story = {
-  args: {
-    children: html`Sign out
-      <md-icon slot="icon" name="logout"
-        >${unsafeSVG(logout)}</md-icon
-      >` as unknown as HTMLCollection,
-    variant: "filled",
-  },
+export const AllVariants: Story = {
+  render: () => html`
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <md-button variant="filled">Filled</md-button>
+      <md-button variant="outlined">Outlined</md-button>
+      <md-button variant="text">Text</md-button>
+      <md-button variant="elevated">Elevated</md-button>
+      <md-button variant="tonal">Tonal</md-button>
+    </div>
+  `,
+};
+
+export const AllVariantsDisabled: Story = {
+  render: () => html`
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <md-button variant="filled" disabled>Filled</md-button>
+      <md-button variant="outlined" disabled>Outlined</md-button>
+      <md-button variant="text" disabled>Text</md-button>
+      <md-button variant="elevated" disabled>Elevated</md-button>
+      <md-button variant="tonal" disabled>Tonal</md-button>
+    </div>
+  `,
+};
+
+export const AllVariantsLoading: Story = {
+  render: () => html`
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <md-button variant="filled" loading>Filled</md-button>
+      <md-button variant="outlined" loading>Outlined</md-button>
+      <md-button variant="text" loading>Text</md-button>
+      <md-button variant="elevated" loading>Elevated</md-button>
+      <md-button variant="tonal" loading>Tonal</md-button>
+    </div>
+  `,
+};
+
+export const WithIcon: Story = {
+  render: () => html`
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <md-button variant="filled">
+        Sign out
+        <md-icon slot="icon">${unsafeSVG(logout)}</md-icon>
+      </md-button>
+      <md-button variant="outlined">
+        Sign out
+        <md-icon slot="icon">${unsafeSVG(logout)}</md-icon>
+      </md-button>
+      <md-button variant="text">
+        Sign out
+        <md-icon slot="icon">${unsafeSVG(logout)}</md-icon>
+      </md-button>
+      <md-button variant="elevated">
+        Sign out
+        <md-icon slot="icon">${unsafeSVG(logout)}</md-icon>
+      </md-button>
+      <md-button variant="tonal">
+        Sign out
+        <md-icon slot="icon">${unsafeSVG(logout)}</md-icon>
+      </md-button>
+    </div>
+  `,
+};
+
+export const AsLink: Story = {
+  render: () => html`
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <md-button variant="filled" href="https://m3.material.io">
+        Open link
+      </md-button>
+      <md-button variant="outlined" href="https://m3.material.io" disabled>
+        Disabled link
+      </md-button>
+    </div>
+  `,
 };

@@ -20,14 +20,6 @@
   --_container-space-right: 0.75rem;
 }
 
-:host([variant="text"]:hover:not([disabled])) {
-  --md-button-background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-primary) 8%,
-    transparent
-  );
-}
-
 :host([variant="text"]:focus-visible:not([disabled])) {
   --md-button-background-color: color-mix(
     in oklch,
@@ -36,15 +28,7 @@
   );
 }
 
-:host([variant="text"]:active:not([disabled])) {
-  --md-button-background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-primary) 12%,
-    transparent
-  );
-}
-
-:host([disabled]:where(:host([variant="text"]))) {
+:host([variant="text"][disabled]) {
   --md-button-foreground-color: color-mix(
     in oklch,
     var(--md-sys-color-on-surface),

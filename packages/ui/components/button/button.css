@@ -43,7 +43,7 @@
   gap: 0.5rem;
 }
 
-.button:has(.button__icon) {
+.button:has(.button__icon-wrapper) {
   display: flex;
   align-items: center;
 
@@ -69,4 +69,8 @@
   min-height: var(--_container-height);
 
   line-height: 1.25rem;
+}
+
+:host([disabled]) {
+  cursor: not-allowed;
 }

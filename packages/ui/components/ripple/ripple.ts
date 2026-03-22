@@ -87,6 +87,7 @@ export default class MdRipple extends LitElement {
       <div
         class="surface ${classMap({
           ["surface_pressed"]: this.pressed,
+          ["surface_hovered"]: this.hovered,
         })}"
       ></div>
     `;
@@ -100,12 +101,27 @@ export default class MdRipple extends LitElement {
     if (event.type === "pointerup") {
       this.endRipple();
     }
+
+    if (event.type === "pointerenter") {
+      this.hovered = true;
+    }
+
+    if (event.type === "pointerleave") {
+      this.hovered = false;
+    }
   }
 
   private onControlChange(prev: HTMLElement | null, next: HTMLElement | null) {
-    // prev?.addEventListener('click', this)
+    if (prev) {
+      prev.removeEventListener("pointerup", this);
+      prev.removeEventListener("pointerdown", this);
+      prev.removeEventListener("pointerenter", this);
+      prev.removeEventListener("pointerleave", this);
+    }
     next?.addEventListener("pointerup", this);
     next?.addEventListener("pointerdown", this);
+    next?.addEventListener("pointerenter", this);
+    next?.addEventListener("pointerleave", this);
   }
 }
 

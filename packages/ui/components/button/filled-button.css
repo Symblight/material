@@ -12,11 +12,6 @@
 }
 
 :host([variant="filled"]:hover:not([disabled])) {
-  --md-button-background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-primary),
-    var(--md-sys-color-on-primary) 8%
-  );
   --md-elevation-level: 2;
 }
 
@@ -29,15 +24,10 @@
 }
 
 :host([variant="filled"]:active:not([disabled])) {
-  --md-button-background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-primary),
-    var(--md-sys-color-on-primary) 12%
-  );
   --md-elevation-level: 1;
 }
 
-:host([disabled]:where(:host([variant="filled"]))) {
+:host([variant="filled"][disabled]) {
   --md-button-background-color: color-mix(
     in oklch,
     var(--md-sys-color-on-surface),

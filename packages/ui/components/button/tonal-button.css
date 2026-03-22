@@ -13,11 +13,6 @@
 }
 
 :host([variant="tonal"]:hover:not([disabled])) {
-  --md-button-background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-secondary-container) 8%,
-    var(--md-sys-color-secondary-container)
-  );
   --md-elevation-level: 1;
 }
 
@@ -30,15 +25,10 @@
 }
 
 :host([variant="tonal"]:active:not([disabled])) {
-  --md-button-background-color: color-mix(
-    in oklch,
-    var(--md-sys-color-on-secondary-container) 12%,
-    var(--md-sys-color-secondary-container)
-  );
   --md-elevation-level: 0;
 }
 
-:host([disabled]:where(:host([variant="tonal"]))) {
+:host([variant="tonal"][disabled]) {
   --md-button-background-color: color-mix(
     in oklch,
     var(--md-sys-color-on-surface),

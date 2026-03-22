@@ -60,6 +60,9 @@ function cssInlinePlugin() {
 export default {
   nodeResolve: true,
   coverage: true,
+  coverageConfig: {
+    exclude: ["**/node_modules/**", "**/dist/**"],
+  },
   files: ["components/**/*.spec.ts", "!node_modules/", "!.wireit/"],
   plugins: [
     svgRawPlugin(),
