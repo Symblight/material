@@ -11,7 +11,7 @@ function Select({ variant, disabled }: SelectProps) {
     console.log(event.target.value);
   };
   return html`
-    <md-select ?disabled=${disabled} variant=${variant} @change=${handleChange}>
+    <md-select label="Role" ?disabled=${disabled} variant=${variant} @change=${handleChange}>
       <md-option value="">--Please choose an option--</md-option>
       <md-option value="tutor"> Tutor </md-option>
       <md-option value="student" selected> Student </md-option>
@@ -83,19 +83,57 @@ export const Form: Story = {
   },
 };
 
+export const Outlined: Story = {
+  args: { variant: "outlined" },
+};
+
+export const Disabled: Story = {
+  args: { disabled: true },
+};
+
+export const Required: Story = {
+  args: {},
+  render: () => html`
+    <form
+      @submit=${(e: Event) => {
+        e.preventDefault();
+        console.log(new FormData(e.target as HTMLFormElement));
+      }}
+    >
+      <md-select label="Role" name="role" required>
+        <md-option value="">--Please choose an option--</md-option>
+        <md-option value="tutor">Tutor</md-option>
+        <md-option value="student">Student</md-option>
+      </md-select>
+      <md-button type="submit">Submit</md-button>
+    </form>
+  `,
+};
+
+export const Multiple: Story = {
+  args: {},
+  render: () => html`
+    <md-select label="Roles" name="roles" multiple size=${4}>
+      <md-option value="tutor">Tutor</md-option>
+      <md-option value="student" selected>Student</md-option>
+      <md-option value="classroom">Classroom</md-option>
+      <md-option value="online">Online</md-option>
+    </md-select>
+  `,
+};
+
 export const Group: Story = {
   args: {},
   render: () => {
     return html`
-      <md-select name="my-select">
+      <md-select label="Location" name="my-select">
         <md-option value="">--Please choose an option--</md-option>
-        <md-option value="test"><div>TEST NESTED DIV</div></md-option>
-        <md-optgroup label="person">
+        <md-optgroup label="Person">
           <md-option value="tutor"> Tutor </md-option>
           <md-option value="student"> Student </md-option>
         </md-optgroup>
         <md-hr></md-hr>
-        <md-optgroup label="place">
+        <md-optgroup label="Place">
           <md-option value="classroom"> Classroom </md-option>
           <md-option value="online"> Online </md-option>
         </md-optgroup>

@@ -46,8 +46,6 @@ export const selectContext: ContextSelect = createContext(Symbol("select"));
  * @summary Material Select web component
  */
 
-// TODO
-// grouping options
 type MenuElementItem = MdOption | MdOptGroup | MdHr;
 type MenuItem = {
   type: "option" | "optgroup" | "hr";
@@ -96,9 +94,6 @@ export default class Select extends LitElement {
   disabled: boolean = false;
 
   @property({ type: String, attribute: true })
-  id: string = "";
-
-  @property({ type: String, attribute: true })
   value: string | undefined;
 
   @property({ type: Boolean, reflect: true })
@@ -106,11 +101,21 @@ export default class Select extends LitElement {
 
   @property({ type: String, attribute: true })
   name: string = "";
+
+  @property({ type: String, attribute: true })
+  label: string = "";
+
   /**
    * The variant style of the textField.
    */
   @property()
   variant: TextFieldVariant = "filled";
+
+  @property({ type: Boolean, reflect: true })
+  multiple: boolean = false;
+
+  @property({ type: Number })
+  size: number = 0;
 
   @queryAssignedElements()
   menu!: (MdOption | MdOptGroup | MdHr)[];
@@ -124,6 +129,13 @@ export default class Select extends LitElement {
 
   formResetCallback() {
     this.setValue(this.firstOptionValue);
+    if (this.multiple) {
+      this.options.forEach((item) => {
+        if (item.type === "option") {
+          (item.element as MdOption).selected = false;
+        }
+      });
+    }
   }
 
   setValue(value: string) {
@@ -131,10 +143,24 @@ export default class Select extends LitElement {
     this[internals].setFormValue(value);
   }
 
-  handleChange(event: MouseEvent) {
+  handleChange(event: Event) {
     const value = ((event.target as HTMLSelectElement) || null)?.value;
     this.setValue(value);
-    this.dispatchEvent(new Event("change"));
+    this.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    this.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+  }
+
+  private collectFirstOptionValue(items: MenuItem[]): string {
+    for (const item of items) {
+      if (item.type === "option") {
+        return (item.element as MdOption).value;
+      }
+      if (item.type === "optgroup" && item.children.length) {
+        const found = this.collectFirstOptionValue(item.children);
+        if (found !== "") return found;
+      }
+    }
+    return "";
   }
 
   private convertAndMoveOptions(items: Element[], options: MenuItem[] = []) {
@@ -170,7 +196,23 @@ export default class Select extends LitElement {
   private updateSlottedOptions() {
     this.options = [];
     this.convertAndMoveOptions(this.menu, this.options);
+
+    // Determine the reset value: first selected option, fallback to first option
+    const selectedOption = this.options.find(
+      (item) => item.type === "option" && (item.element as MdOption).selected,
+    );
+    this.firstOptionValue = selectedOption
+      ? (selectedOption.element as MdOption).value
+      : this.collectFirstOptionValue(this.options);
+
     this.requestUpdate();
+
+    // After render, imperatively sync select.value if value prop is set
+    this.updateComplete.then(() => {
+      if (this.value !== undefined && this.select) {
+        this.select.value = this.value;
+      }
+    });
   }
 
   private renderMenu(items: MenuItem[]): TemplateResult<1> {
@@ -200,19 +242,25 @@ export default class Select extends LitElement {
   }
 
   render() {
+    const ariaLabel = this.getAttribute("aria-label");
+    const ariaLabelledBy = this.getAttribute("aria-labelledby");
+
     return html`
       <md-text-field
-        label="Username"
+        .label="${this.label}"
         part="text-field"
         ?disabled=${this.disabled}
         .variant="${this.variant}"
       >
         <select
-          .id=${this.id}
           .name=${this.name}
           .value=${live(this.value)}
           ?required=${this.required}
           ?disabled=${this.disabled}
+          ?multiple=${this.multiple}
+          .size=${this.size}
+          aria-label=${ariaLabel ?? ""}
+          aria-labelledby=${ariaLabelledBy ?? ""}
           part="select"
           @change=${this.handleChange}
           class="select__native-control"

@@ -1,29 +1,46 @@
 :host {
-  color: var(--md-sys-color-primary);
+  --md-progress-circular-active-indicator-color: var(--md-sys-color-primary);
+  --md-progress-circular-track-color: var(--md-sys-color-secondary-container);
 
-  display: flex;
+  display: inline-flex;
   position: relative;
-  overflow: hidden;
 }
 
 .progress-circular__svg {
   display: inline-block;
-  animation: progress-circular 2s linear infinite;
+  width: 1em;
+  height: 1em;
+}
+
+.progress-circular__svg_indeterminate {
+  animation: progress-circular-rotate 1.5s linear infinite;
+}
+
+:where(.progress-circular__svg:not(.progress-circular__svg_indeterminate)) {
+  transform: rotate(-90deg);
+}
+
+.progress-circular__track {
+  stroke: var(--md-progress-circular-track-color);
 }
 
 .progress-circular__circle {
-  stroke: currentColor;
-  animation: dash 1.5s ease-in-out infinite;
-  border-radius: 50%;
+  stroke: var(--md-progress-circular-active-indicator-color);
+  stroke-linecap: round;
+  transition: stroke-dasharray 500ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes progress-circular {
+.progress-circular__svg_indeterminate .progress-circular__circle {
+  animation: progress-circular-dash 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-circular-rotate {
   100% {
     transform: rotate(1turn);
   }
 }
 
-@keyframes dash {
+@keyframes progress-circular-dash {
   0% {
     stroke-dasharray: 1, 282.743;
     stroke-dashoffset: 0;

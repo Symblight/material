@@ -1,0 +1,95 @@
+:host {
+  --md-progress-linear-track-height: 4px;
+  --md-progress-linear-active-indicator-color: var(--md-sys-color-primary);
+  --md-progress-linear-track-color: var(--md-sys-color-secondary-container);
+  --md-progress-linear-stop-indicator-color: var(--md-sys-color-primary);
+
+  display: block;
+  width: 100%;
+}
+
+.progress-linear {
+  position: relative;
+  width: 100%;
+  height: var(--md-progress-linear-track-height);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+/* Track — Non-text contrast: secondary-container gives visible background */
+.progress-linear__track {
+  position: absolute;
+  inset: 0;
+  background: var(--md-progress-linear-track-color);
+}
+
+/* Stop indicator (Expressive) — sits at the trailing end, covered at 100% */
+.progress-linear__stop-indicator {
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  width: var(--md-progress-linear-track-height);
+  background: var(--md-progress-linear-stop-indicator-color);
+}
+
+/* Active indicator — determinate */
+.progress-linear__active-indicator {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: calc(100% * var(--_progress, 0));
+  background: var(--md-progress-linear-active-indicator-color);
+  border-radius: 9999px;
+  transition: width 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Indeterminate bars */
+.progress-linear__bar {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  right: 0;
+  background: var(--md-progress-linear-active-indicator-color);
+}
+
+.progress-linear__bar_primary {
+  animation: progress-linear-primary 2s linear infinite;
+}
+
+.progress-linear__bar_secondary {
+  animation: progress-linear-secondary 2s linear 0.5s infinite;
+}
+
+@keyframes progress-linear-primary {
+  0% {
+    left: -35%;
+    right: 100%;
+  }
+
+  60% {
+    left: 100%;
+    right: -90%;
+  }
+
+  100% {
+    left: 100%;
+    right: -90%;
+  }
+}
+
+@keyframes progress-linear-secondary {
+  0% {
+    left: -200%;
+    right: 100%;
+  }
+
+  60% {
+    left: 107%;
+    right: -8%;
+  }
+
+  100% {
+    left: 107%;
+    right: -8%;
+  }
+}

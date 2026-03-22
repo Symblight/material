@@ -73,6 +73,10 @@
       "import": "./dist/progress-circular/progress-circular.js",
       "types": "./dist/progress-circular/progress-circular.d.ts"
     },
+    "./progress-linear": {
+      "import": "./dist/progress-linear/progress-linear.js",
+      "types": "./dist/progress-linear/progress-linear.d.ts"
+    },
     "./radio-button": {
       "import": "./dist/radio-button/radio-button.js",
       "types": "./dist/radio-button/radio-button.d.ts"

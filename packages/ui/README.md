@@ -44,8 +44,10 @@ import '@symblight/wc-material/text-field';
 | `@symblight/wc-material/icon` | `<md-icon>` |
 | `@symblight/wc-material/icon-button` | `<md-icon-button>` |
 | `@symblight/wc-material/progress-circular` | `<md-progress-circular>` |
+| `@symblight/wc-material/progress-linear` | `<md-progress-linear>` |
 | `@symblight/wc-material/radio-button` | `<md-radio-button>` |
 | `@symblight/wc-material/select` | `<md-select>` |
+| `@symblight/wc-material/switch` | `<md-switch>` |
 | `@symblight/wc-material/text-field` | `<md-text-field>` |
 
 ### Theme

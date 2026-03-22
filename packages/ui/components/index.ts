@@ -3,6 +3,7 @@ import "./chips/index.ts";
 import "./icon/icon";
 import "./icon-button/icon-button";
 import "./progress-circular/progress-circular";
+import "./progress-linear/progress-linear";
 import "./text-field/text-field";
 import "./dialog/dialog";
 import "./checkbox/checkbox";
