@@ -1,0 +1,218 @@
+/* ── MD3 Switch ──────────────────────────────────────────────────────────── */
+:host {
+  /* Public API — consumer-overridable */
+  --md-switch-track-width: 52px;
+  --md-switch-track-height: 32px;
+  --md-switch-track-shape: var(--md-sys-shape-corner-full, 9999px);
+
+  /* Track — unselected */
+  --md-switch-unselected-track-color: var(--md-sys-color-surface-container-highest);
+  --md-switch-unselected-track-outline-color: var(--md-sys-color-outline);
+
+  /* Track — selected */
+  --md-switch-selected-track-color: var(--md-sys-color-primary);
+
+  /* Handle — unselected */
+  --md-switch-unselected-handle-color: var(--md-sys-color-outline);
+  --md-switch-unselected-handle-size: 16px;
+
+  /* Handle — selected */
+  --md-switch-selected-handle-color: var(--md-sys-color-on-primary);
+  --md-switch-selected-handle-size: 24px;
+
+  /* Handle with icon always shows full size */
+  --md-switch-handle-icon-size: 24px;
+
+  /* Icon */
+  --md-switch-selected-icon-color: var(--md-sys-color-on-primary-container);
+  --md-switch-unselected-icon-color: var(--md-sys-color-surface-container-highest);
+
+  /* State layer */
+  --md-switch-state-layer-size: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  cursor: pointer;
+  position: relative;
+}
+
+:host([disabled]) {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Hidden native input (covers full touch target) ─────────────────────── */
+.switch__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+  appearance: none;
+  z-index: 1;
+}
+
+/* ── Track ───────────────────────────────────────────────────────────────── */
+.switch__track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: var(--md-switch-track-width);
+  height: var(--md-switch-track-height);
+  border-radius: var(--md-switch-track-shape);
+  background-color: var(--md-switch-unselected-track-color);
+  box-sizing: border-box;
+  border: 2px solid var(--md-switch-unselected-track-outline-color);
+  transition:
+    background-color 67ms linear,
+    border-color 67ms linear;
+  flex-shrink: 0;
+}
+
+.switch__track_selected {
+  background-color: var(--md-switch-selected-track-color);
+  border-color: transparent;
+}
+
+.switch__track_focused .switch__state-layer {
+  opacity: 0.12;
+}
+
+/* Disabled — unselected */
+.switch__track_disabled {
+  background-color: color-mix(
+    in oklch,
+    var(--md-sys-color-surface-container-highest),
+    transparent 88%
+  );
+  border-color: color-mix(in oklch, var(--md-sys-color-on-surface), transparent 88%);
+}
+
+/* Disabled — selected */
+.switch__track_disabled.switch__track_selected {
+  background-color: color-mix(in oklch, var(--md-sys-color-on-surface), transparent 88%);
+  border-color: transparent;
+}
+
+/* ── Handle container (drives the translate) ─────────────────────────────── */
+.switch__handle-container {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  left: calc((var(--md-switch-state-layer-size) - var(--md-switch-unselected-handle-size)) / 2 - 2px);
+  transition: left 300ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.switch__handle-container_selected {
+  left: calc(
+    var(--md-switch-track-width) -
+    (var(--md-switch-state-layer-size) + var(--md-switch-selected-handle-size)) / 2 -
+    2px
+  );
+}
+
+/* When icons are shown, the unselected handle is full icon size — shift left to compensate */
+.switch__handle-container:has(.switch__handle_with-icon):not(.switch__handle-container_selected) {
+  left: calc((var(--md-switch-state-layer-size) - var(--md-switch-handle-icon-size)) / 2 - 2px);
+}
+
+/* ── State layer (hover / focus / press) ─────────────────────────────────── */
+.switch__state-layer {
+  position: absolute;
+  width: var(--md-switch-state-layer-size);
+  height: var(--md-switch-state-layer-size);
+  border-radius: 50%;
+  background-color: var(--md-sys-color-on-surface);
+  opacity: 0;
+  transition: opacity 200ms linear;
+  pointer-events: none;
+}
+
+.switch__track_selected .switch__state-layer {
+  background-color: var(--md-sys-color-primary);
+}
+
+/* Hover */
+:host(:hover:not([disabled])) .switch__state-layer {
+  opacity: 0.08;
+}
+
+/* Active / press */
+:host(:active:not([disabled])) .switch__state-layer {
+  opacity: 0.12;
+}
+
+/* ── Handle ──────────────────────────────────────────────────────────────── */
+.switch__handle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: var(--md-switch-unselected-handle-size);
+  height: var(--md-switch-unselected-handle-size);
+  background-color: var(--md-switch-unselected-handle-color);
+  transition:
+    width 300ms cubic-bezier(0.2, 0, 0, 1),
+    height 300ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 67ms linear;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.switch__handle_selected {
+  width: var(--md-switch-selected-handle-size);
+  height: var(--md-switch-selected-handle-size);
+  background-color: var(--md-switch-selected-handle-color);
+}
+
+/* Grow to full size when icons are shown (even unselected) */
+.switch__handle_with-icon {
+  width: var(--md-switch-handle-icon-size);
+  height: var(--md-switch-handle-icon-size);
+}
+
+/* Disabled */
+:host([disabled]) .switch__handle {
+  background-color: color-mix(in oklch, var(--md-sys-color-on-surface), transparent 62%);
+}
+
+:host([disabled]) .switch__handle_selected {
+  background-color: var(--md-sys-color-surface);
+}
+
+/* Pressed — handle grows slightly */
+:host(:active:not([disabled])) .switch__handle {
+  width: var(--md-switch-selected-handle-size);
+  height: var(--md-switch-selected-handle-size);
+}
+
+/* ── Icon ────────────────────────────────────────────────────────────────── */
+.switch__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.switch__icon svg {
+  fill: var(--md-switch-unselected-icon-color);
+  transition: fill 67ms linear;
+}
+
+.switch__handle_selected .switch__icon svg {
+  fill: var(--md-switch-selected-icon-color);
+}
+
+:host([disabled]) .switch__icon svg {
+  fill: color-mix(in oklch, var(--md-sys-color-surface-container-highest), transparent 62%);
+}
+
+:host([disabled]) .switch__handle_selected .switch__icon svg {
+  fill: color-mix(in oklch, var(--md-sys-color-on-surface), transparent 62%);
+}

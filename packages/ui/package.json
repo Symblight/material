@@ -85,6 +85,10 @@
       "import": "./dist/text-field/text-field.js",
       "types": "./dist/text-field/text-field.d.ts"
     },
+    "./switch": {
+      "import": "./dist/switch/switch.js",
+      "types": "./dist/switch/switch.d.ts"
+    },
     "./theme/theme.css": "./dist/theme.css"
   },
   "peerDependencies": {

@@ -3,21 +3,19 @@
   --md-chip-container-color: var(--md-sys-color-surface-container-low);
   --md-chip-label-color: var(--md-sys-color-on-surface-variant);
   --md-chip-border-color: var(--md-sys-color-outline);
-  --md-chip-border-width: 0.063rem; /* 1px */
+  --md-chip-border-width: 0.063rem;
+  /* 1px */
   --md-chip-border-radius: var(--md-sys-shape-corner-small, 0.5rem);
-  --md-chip-height: 2rem; /* 32dp */
-  --md-chip-icon-size: 1.125rem; /* 18dp */
+  --md-chip-height: 2rem;
+  /* 32dp */
+  --md-chip-icon-size: 1.125rem;
+  /* 18dp */
   --md-chip-icon-color: var(--md-sys-color-primary);
   --md-chip-label-text-font: var(--md-sys-typescale-label-large-font, inherit);
   --md-chip-label-text-size: var(--md-sys-typescale-label-large-size, 0.875rem);
-  --md-chip-label-text-weight: var(
-    --md-sys-typescale-label-large-weight,
-    500
-  );
-  --md-chip-label-text-line-height: var(
-    --md-sys-typescale-label-large-line-height,
-    1.25rem
-  );
+  --md-chip-label-text-weight: var(--md-sys-typescale-label-large-weight, 500);
+  --md-chip-label-text-line-height: var(--md-sys-typescale-label-large-line-height,
+      1.25rem);
 
   /* ── Internal ── */
   --_container-color: var(--md-chip-container-color);
