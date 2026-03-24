@@ -77,6 +77,10 @@
       "import": "./dist/icon-button/icon-button.js",
       "types": "./dist/icon-button/icon-button.d.ts"
     },
+    "./list": {
+      "import": "./dist/list/index.js",
+      "types": "./dist/list/index.d.ts"
+    },
     "./progress-circular": {
       "import": "./dist/progress-circular/progress-circular.js",
       "types": "./dist/progress-circular/progress-circular.d.ts"

@@ -53,14 +53,18 @@ Every component declares itself in the global `HTMLElementTagNameMap` at the bot
 
 ## Slot naming convention
 
-Observed across button and planned card:
+Observed across button, card, and list:
 
-- `icon` — leading icon in buttons
+- `icon` — leading icon in buttons (single slot, not split)
 - `header` — card headline/subhead/avatar area
 - `media` — full-bleed image/video
 - `actions` — bottom row of action buttons
-  No "leading-icon" / "trailing-icon" split has been used yet; button uses a single `icon` slot.
+- `leading` / `trailing` — generic leading/trailing zones in `md-list-item` (current source)
+- `overline` — small metadata text above label in list items
+- `supporting-text` — secondary text below label in list items
 
-**Why:** Documented after reading badge, button, base-button, shadow, and ripple source during card README authoring.
+**Note — list slot API divergence:** The `list-item.spec.ts` test file expects granular named slots (`leading-icon`, `leading-avatar`, `leading-media`, `leading-selection`, `trailing-icon`, `trailing-text`, `trailing-selection`) that do NOT yet exist in `list-item.ts`. The current source only implements `leading` and `trailing`. The tests reflect a planned future API, not the shipped implementation. Document only what the source implements; flag the gap.
 
-**How to apply:** Follow these patterns exactly when implementing new components or writing documentation.
+**Why:** Discovered during md-list README authoring (2026-03-24).
+
+**How to apply:** Follow these patterns exactly when implementing new components or writing documentation. When the list-item source is updated to add granular slots, the README will need updating too.

@@ -47,6 +47,7 @@ import "@symblight/wc-material/text-field";
 | FAB                 | `@symblight/wc-material/fab`               | `<md-fab>`                                                                        | [README](./components/fab/README.md)               |
 | Icon                | `@symblight/wc-material/icon`              | `<md-icon>`                                                                       | [README](./components/icon/README.md)              |
 | Icon Button         | `@symblight/wc-material/icon-button`       | `<md-icon-button>`                                                                | [README](./components/icon-button/README.md)       |
+| List                | `@symblight/wc-material/list`              | `<md-list>`, `<md-list-item>`                                                     | [README](./components/list/README.md)              |
 | Progress (circular) | `@symblight/wc-material/progress-circular` | `<md-progress-circular>`                                                          | [README](./components/progress-circular/README.md) |
 | Progress (linear)   | `@symblight/wc-material/progress-linear`   | `<md-progress-linear>`                                                            | [README](./components/progress-linear/README.md)   |
 | Radio Button        | `@symblight/wc-material/radio-button`      | `<md-radio-button>`                                                               | [README](./components/radio-button/README.md)      |
@@ -95,7 +96,7 @@ import "@symblight/wc-material/checkbox";
 
 ## Roadmap
 
-- [ ] List
+- [x] List
 - [ ] Carousel
 - [ ] Tabs
 - [ ] Menu
