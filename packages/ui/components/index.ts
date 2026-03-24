@@ -1,5 +1,6 @@
 import "./badge/badge";
 import "./button/button";
+import "./card/card";
 import "./chips/index.ts";
 import "./icon/icon";
 import "./icon-button/icon-button";

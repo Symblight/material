@@ -1,7 +1,7 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.0.10",
+  "version": "0.0.11",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "type": "module",
@@ -44,6 +44,10 @@
     "./badge": {
       "import": "./dist/badge/badge.js",
       "types": "./dist/badge/badge.d.ts"
+    },
+    "./card": {
+      "import": "./dist/card/card.js",
+      "types": "./dist/card/card.d.ts"
     },
     "./button": {
       "import": "./dist/button/button.js",

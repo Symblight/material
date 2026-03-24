@@ -1,0 +1,98 @@
+:host {
+  --md-card-container-color: var(--md-sys-color-surface-container-low);
+  --md-card-outline-color: var(--md-sys-color-outline-variant);
+  --md-card-shape: var(--md-sys-shape-corner-medium, 1rem);
+  --md-card-state-layer-color: var(--md-sys-color-on-surface);
+  --md-card-hover-state-layer-opacity: var(
+    --md-sys-state-hover-state-layer-opacity,
+    0.08
+  );
+  --md-card-pressed-state-layer-opacity: var(
+    --md-sys-state-pressed-state-layer-opacity,
+    0.12
+  );
+  --md-card-focus-state-layer-opacity: var(
+    --md-sys-state-focus-state-layer-opacity,
+    0.12
+  );
+  --md-card-focus-ring-color: var(--md-sys-color-primary);
+  --md-elevation-level: 1;
+
+  display: block;
+  position: relative;
+  border-radius: var(--md-card-shape);
+  background-color: var(--md-card-container-color);
+  overflow: visible; /* allow md-shadow box-shadow to escape the card boundary */
+}
+
+/* ── Inner surface (div / a) — full-bleed state layer ───────────────────── */
+
+.md-card__surface {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  text-decoration: none;
+  color: inherit;
+  background-color: transparent; /* must not paint over the md-ripple state layer */
+  overflow: hidden; /* confine ripple clipping to the inner surface */
+}
+
+/* ── Content wrapper — sits above the surface overlay ───────────────────── */
+
+.md-card__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.md-card__media {
+  border-radius: var(--md-card-shape);
+  overflow: hidden;
+}
+
+/* ── Slot layout ─────────────────────────────────────────────────────────── */
+
+::slotted([slot="media"]) {
+  width: 100%;
+  display: block;
+}
+
+::slotted([slot="actions"]) {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem 1rem;
+}
+
+/* ── Interactive states ──────────────────────────────────────────────────── */
+
+:host([interactive]) .md-card__surface {
+  cursor: pointer;
+}
+
+:host([interactive]) md-ripple {
+  --md-ripple-hover-color: var(--md-card-state-layer-color);
+  --md-ripple-pressed-color: var(--md-card-state-layer-color);
+  --md-ripple-hover-opacity: var(--md-card-hover-state-layer-opacity);
+  --md-ripple-pressed-opacity: var(--md-card-pressed-state-layer-opacity);
+}
+
+:host([interactive][disabled]) {
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+:host([interactive]) .md-card__surface:focus-visible {
+  outline: 3px solid var(--md-card-focus-ring-color);
+  outline-offset: -3px;
+}
+
+/* card_interactive / card_disabled are applied via classMap in card.ts */
+.card_interactive {
+  cursor: pointer;
+}
+
+.card_disabled {
+  pointer-events: none;
+}

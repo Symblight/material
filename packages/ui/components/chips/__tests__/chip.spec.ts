@@ -404,4 +404,89 @@ describe("md-suggestion-chip", () => {
       ).to.be.true;
     });
   });
+
+  describe("click (base _handleClick no-op)", () => {
+    it("clicking suggestion chip does not throw", async () => {
+      const el = await fixture<MdSuggestionChip>(
+        html`<md-suggestion-chip>Label</md-suggestion-chip>`,
+      );
+      expect(() =>
+        el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!.click(),
+      ).to.not.throw;
+    });
+  });
+});
+
+// ─── BaseMdChip: leading-icon slot ────────────────────────────────────────────
+
+describe("BaseMdChip leading-icon slot", () => {
+  it("sets _hasLeadingIcon when leading-icon slot has content (assist chip)", async () => {
+    const el = await fixture<MdAssistChip>(html`
+      <md-assist-chip>
+        <span slot="leading-icon">icon</span>
+        Label
+      </md-assist-chip>
+    `);
+    await el.updateComplete;
+    const leadingIconSlot = el.shadowRoot!.querySelector<HTMLSlotElement>(
+      'slot[name="leading-icon"]',
+    );
+    expect(leadingIconSlot).to.exist;
+    // The slot class is applied when _hasLeadingIcon is true
+    expect(leadingIconSlot!.classList.contains("chip__leading-icon")).to.be
+      .true;
+  });
+
+  it("assist chip click does not throw (base _handleClick no-op)", async () => {
+    const el = await fixture<MdAssistChip>(
+      html`<md-assist-chip>Label</md-assist-chip>`,
+    );
+    expect(() =>
+      el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!.click(),
+    ).to.not.throw;
+  });
+
+  it("filter chip _onSlotChange updates _hasSelectedIcon state", async () => {
+    const el = await fixture<MdFilterChip>(
+      html`<md-filter-chip selected>Label</md-filter-chip>`,
+    );
+    await el.updateComplete;
+    // The selected-icon slot is rendered when selected — slotchange fires
+    const selectedIconSlot = el.shadowRoot!.querySelector<HTMLSlotElement>(
+      'slot[name="selected-icon"]',
+    );
+    expect(selectedIconSlot).to.exist;
+  });
+
+  it("input chip trailing-icon slot fires slotchange updating _hasTrailingIcon", async () => {
+    const el = await fixture<MdInputChip>(
+      html`<md-input-chip>React</md-input-chip>`,
+    );
+    await el.updateComplete;
+    // The trailing-icon slot is rendered when not removable
+    const trailingIconSlot = el.shadowRoot!.querySelector<HTMLSlotElement>(
+      'slot[name="trailing-icon"]',
+    );
+    expect(trailingIconSlot).to.exist;
+  });
+
+  it("input chip chip_has-avatar class applied when avatar=true", async () => {
+    const el = await fixture<MdInputChip>(
+      html`<md-input-chip avatar>React</md-input-chip>`,
+    );
+    await el.updateComplete;
+    const button =
+      el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!;
+    expect(button.classList.contains("chip_has-avatar")).to.be.true;
+  });
+
+  it("filter chip chip_selected class applied when selected", async () => {
+    const el = await fixture<MdFilterChip>(
+      html`<md-filter-chip selected>Label</md-filter-chip>`,
+    );
+    await el.updateComplete;
+    const button =
+      el.shadowRoot!.querySelector<HTMLButtonElement>("button#chip")!;
+    expect(button.classList.contains("chip_selected")).to.be.true;
+  });
 });

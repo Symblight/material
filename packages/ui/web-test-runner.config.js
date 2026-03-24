@@ -2,22 +2,17 @@ import { playwrightLauncher } from "@web/test-runner-playwright";
 import { esbuildPlugin } from "@web/dev-server-esbuild";
 
 // Transforms `import icon from "./foo.svg?raw"` → plain string default export
+// Note: nodeResolve strips ?raw from NPM package paths, so we match on .svg extension alone
 function svgRawPlugin() {
   return {
     name: "svg-raw",
     resolveMimeType(context) {
-      if (
-        context.path.endsWith(".svg") &&
-        context.querystring.includes("raw")
-      ) {
+      if (context.path.endsWith(".svg")) {
         return "js";
       }
     },
     async transform(context) {
-      if (
-        context.path.endsWith(".svg") &&
-        context.querystring.includes("raw")
-      ) {
+      if (context.path.endsWith(".svg")) {
         const escaped = context.body
           .replace(/\\/g, "\\\\")
           .replace(/`/g, "\\`")
@@ -61,7 +56,14 @@ export default {
   nodeResolve: true,
   coverage: true,
   coverageConfig: {
-    exclude: ["**/node_modules/**", "**/dist/**"],
+    include: ["components/**/*.ts"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/*.spec.ts", "**/*.stories.ts"],
+    threshold: {
+      statements: 70,
+      branches: 70,
+      functions: 70,
+      lines: 70,
+    },
   },
   files: ["components/**/*.spec.ts", "!node_modules/", "!.wireit/"],
   plugins: [

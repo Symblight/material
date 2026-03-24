@@ -1,0 +1,9 @@
+:host([variant="outlined"]) {
+  --md-card-container-color: var(--md-sys-color-surface);
+  --md-elevation-level: 0;
+  border: 1px solid var(--md-card-outline-color);
+}
+
+:host([variant="outlined"]) md-shadow {
+  display: none;
+}
