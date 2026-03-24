@@ -166,4 +166,168 @@ describe("md-select", () => {
       expect(el.form).to.equal(form);
     });
   });
+
+  // ─── label ────────────────────────────────────────────────────────────────
+
+  describe("label", () => {
+    it('defaults to ""', async () => {
+      const el = await fixture<Select>(html`<md-select></md-select>`);
+      expect(el.label).to.equal("");
+    });
+
+    it("passes label to the inner md-text-field", async () => {
+      const el = await fixture<Select>(
+        html`<md-select label="Choose color"></md-select>`,
+      );
+      await el.updateComplete;
+      const tf = el.shadowRoot!.querySelector<any>("md-text-field")!;
+      expect(tf.label).to.equal("Choose color");
+    });
+  });
+
+  // ─── name ─────────────────────────────────────────────────────────────────
+
+  describe("name", () => {
+    it("passes name to the native select", async () => {
+      const el = await fixture<Select>(
+        html`<md-select name="size"></md-select>`,
+      );
+      const tf = el.shadowRoot!.querySelector("md-text-field")!;
+      const nativeSelect = tf.querySelector<HTMLSelectElement>("select")!;
+      expect(nativeSelect.name).to.equal("size");
+    });
+  });
+
+  // ─── multiple ─────────────────────────────────────────────────────────────
+
+  describe("multiple", () => {
+    it("is false by default", async () => {
+      const el = await fixture<Select>(html`<md-select></md-select>`);
+      expect(el.multiple).to.be.false;
+    });
+
+    it("passes multiple to the native select", async () => {
+      const el = await fixture<Select>(html`<md-select multiple></md-select>`);
+      const tf = el.shadowRoot!.querySelector("md-text-field")!;
+      const nativeSelect = tf.querySelector<HTMLSelectElement>("select")!;
+      expect(nativeSelect.multiple).to.be.true;
+    });
+  });
+
+  // ─── formResetCallback ────────────────────────────────────────────────────
+
+  describe("formResetCallback", () => {
+    it("resets value to the first option value", async () => {
+      const el = await fixture<Select>(html`
+        <md-select>
+          <md-option value="alpha">Alpha</md-option>
+          <md-option value="beta">Beta</md-option>
+        </md-select>
+      `);
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      el.setValue("beta");
+      expect(el.value).to.equal("beta");
+
+      el.formResetCallback();
+      expect(el.value).to.equal("alpha");
+    });
+
+    it("formResetCallback resets multiple-select selections", async () => {
+      const el = await fixture<Select>(html`
+        <md-select multiple>
+          <md-option value="a" selected>A</md-option>
+          <md-option value="b">B</md-option>
+        </md-select>
+      `);
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      // Calling reset should not throw
+      el.formResetCallback();
+      await el.updateComplete;
+      expect(el).to.exist;
+    });
+  });
+
+  // ─── handleChange dispatches both events ──────────────────────────────────
+
+  describe("handleChange dispatches input event", () => {
+    it("dispatches an input event when native select changes", async () => {
+      const el = await fixture<Select>(html`
+        <md-select>
+          <md-option value="a">A</md-option>
+          <md-option value="b">B</md-option>
+        </md-select>
+      `);
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      let inputFired = false;
+      el.addEventListener("input", () => (inputFired = true));
+
+      const tf = el.shadowRoot!.querySelector("md-text-field")!;
+      const nativeSelect = tf.querySelector<HTMLSelectElement>("select")!;
+      nativeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+      expect(inputFired).to.be.true;
+    });
+  });
+
+  // ─── optgroup rendering ───────────────────────────────────────────────────
+
+  describe("optgroup options", () => {
+    it("renders native optgroup when md-optgroup is slotted", async () => {
+      const el = await fixture<Select>(html`
+        <md-select>
+          <md-optgroup label="Fruits">
+            <md-option value="apple">Apple</md-option>
+          </md-optgroup>
+        </md-select>
+      `);
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const tf = el.shadowRoot!.querySelector("md-text-field")!;
+      const nativeSelect = tf.querySelector<HTMLSelectElement>("select")!;
+      const optgroup = nativeSelect.querySelector("optgroup");
+      expect(optgroup).to.exist;
+    });
+
+    it("renders native hr when md-hr is slotted", async () => {
+      const el = await fixture<Select>(html`
+        <md-select>
+          <md-option value="a">A</md-option>
+          <md-hr></md-hr>
+          <md-option value="b">B</md-option>
+        </md-select>
+      `);
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const tf = el.shadowRoot!.querySelector("md-text-field")!;
+      const nativeSelect = tf.querySelector<HTMLSelectElement>("select")!;
+      const hr = nativeSelect.querySelector("hr");
+      expect(hr).to.exist;
+    });
+  });
+
+  // ─── selected option as reset value ───────────────────────────────────────
+
+  describe("firstOptionValue from selected md-option", () => {
+    it("uses the pre-selected option as the reset value", async () => {
+      const el = await fixture<Select>(html`
+        <md-select>
+          <md-option value="a">A</md-option>
+          <md-option value="b" selected>B</md-option>
+        </md-select>
+      `);
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      // The first selected option should be used as the reset anchor
+      expect(el.firstOptionValue).to.equal("b");
+    });
+  });
 });

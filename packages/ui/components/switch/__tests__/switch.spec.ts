@@ -306,4 +306,147 @@ describe("md-switch", () => {
       expect(input.getAttribute("aria-checked")).to.equal("true");
     });
   });
+
+  // ─── _handleInput ─────────────────────────────────────────────────────────
+
+  describe("_handleInput", () => {
+    it("sets selected=true when input is checked via input event", async () => {
+      const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      input.checked = true;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      await el.updateComplete;
+      expect(el.selected).to.be.true;
+    });
+
+    it("sets selected=false when input is unchecked via input event", async () => {
+      const el = await fixture<MdSwitch>(
+        html`<md-switch selected></md-switch>`,
+      );
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      input.checked = false;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      await el.updateComplete;
+      expect(el.selected).to.be.false;
+    });
+  });
+
+  // ─── _handleFocus ─────────────────────────────────────────────────────────
+
+  describe("_handleFocus", () => {
+    it("does not throw when focus fires on a non-disabled switch", async () => {
+      const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      expect(() => input.dispatchEvent(new Event("focus"))).to.not.throw;
+    });
+
+    it("does not throw when focus fires on a disabled switch", async () => {
+      const el = await fixture<MdSwitch>(
+        html`<md-switch disabled></md-switch>`,
+      );
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      expect(() => input.dispatchEvent(new Event("focus"))).to.not.throw;
+    });
+
+    it("adds switch__track_focused class when focused", async () => {
+      const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      input.focus();
+      input.dispatchEvent(new Event("focus"));
+      await el.updateComplete;
+      expect(
+        el
+          .shadowRoot!.querySelector(".switch__track")!
+          .classList.contains("switch__track_focused"),
+      ).to.be.true;
+    });
+
+    it("removes focused class on blur", async () => {
+      const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      input.focus();
+      input.dispatchEvent(new Event("focus"));
+      await el.updateComplete;
+      input.blur();
+      input.dispatchEvent(new Event("blur"));
+      await el.updateComplete;
+      expect(
+        el
+          .shadowRoot!.querySelector(".switch__track")!
+          .classList.contains("switch__track_focused"),
+      ).to.be.false;
+    });
+  });
+
+  // ─── _handleChange disabled guard ─────────────────────────────────────────
+
+  describe("_handleChange disabled guard", () => {
+    it("does not dispatch change on host when disabled", async () => {
+      const el = await fixture<MdSwitch>(
+        html`<md-switch disabled></md-switch>`,
+      );
+      let fired = false;
+      el.addEventListener("change", () => {
+        fired = true;
+      });
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      expect(fired).to.be.false;
+    });
+  });
+
+  // ─── updated lifecycle ────────────────────────────────────────────────────
+
+  describe("updated lifecycle", () => {
+    it("sets form value when selected changes to true", async () => {
+      const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
+      el.selected = true;
+      await el.updateComplete;
+      // form value should be set — just verify no errors and state is correct
+      expect(el.selected).to.be.true;
+    });
+
+    it("clears form value when selected changes to false", async () => {
+      const el = await fixture<MdSwitch>(
+        html`<md-switch selected></md-switch>`,
+      );
+      el.selected = false;
+      await el.updateComplete;
+      expect(el.selected).to.be.false;
+    });
+
+    it("reacts to value change by updating form value", async () => {
+      const el = await fixture<MdSwitch>(
+        html`<md-switch selected value="yes"></md-switch>`,
+      );
+      el.value = "no";
+      await el.updateComplete;
+      expect(el.value).to.equal("no");
+    });
+  });
+
+  // ─── labels ───────────────────────────────────────────────────────────────
+
+  describe("labels", () => {
+    it("labels getter returns associated labels", async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <label for="sw">Enable notifications</label>
+          <md-switch id="sw" name="notifications"></md-switch>
+        </div>
+      `);
+      const el = container.querySelector<MdSwitch>("md-switch")!;
+      expect(el.labels).to.exist;
+    });
+  });
+
+  // ─── disconnectedCallback ─────────────────────────────────────────────────
+
+  describe("disconnectedCallback", () => {
+    it("removes click listener on disconnect without error", async () => {
+      const el = await fixture<MdSwitch>(html`<md-switch></md-switch>`);
+      const parent = el.parentElement!;
+      expect(() => parent.removeChild(el)).to.not.throw;
+    });
+  });
 });

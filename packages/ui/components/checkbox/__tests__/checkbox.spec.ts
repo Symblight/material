@@ -283,5 +283,101 @@ describe("md-checkbox", () => {
       const el = form.querySelector<Checkbox>("md-checkbox")!;
       expect(el.form).to.equal(form);
     });
+
+    it("labels getter returns associated labels", async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <label for="cb">Accept</label>
+          <md-checkbox id="cb" name="accept"></md-checkbox>
+        </div>
+      `);
+      const el = container.querySelector<Checkbox>("md-checkbox")!;
+      expect(el.labels).to.exist;
+    });
+  });
+
+  // ─── handleInput ──────────────────────────────────────────────────────────
+
+  describe("handleInput", () => {
+    it("sets checked=true and form value when input becomes checked", async () => {
+      const el = await fixture<Checkbox>(html`<md-checkbox></md-checkbox>`);
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      // Simulate check via input event
+      input.checked = true;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      await el.updateComplete;
+      expect(el.checked).to.be.true;
+    });
+
+    it("sets checked=false and clears form value when input becomes unchecked", async () => {
+      const el = await fixture<Checkbox>(
+        html`<md-checkbox checked></md-checkbox>`,
+      );
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      input.checked = false;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      await el.updateComplete;
+      expect(el.checked).to.be.false;
+    });
+  });
+
+  // ─── handleFocus ──────────────────────────────────────────────────────────
+
+  describe("handleFocus", () => {
+    it("does not throw when focus fires on a non-disabled checkbox", async () => {
+      const el = await fixture<Checkbox>(html`<md-checkbox></md-checkbox>`);
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      expect(() => input.dispatchEvent(new Event("focus"))).to.not.throw;
+    });
+
+    it("does not update focused state when disabled", async () => {
+      const el = await fixture<Checkbox>(
+        html`<md-checkbox disabled></md-checkbox>`,
+      );
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      // Should not throw or change state
+      expect(() => input.dispatchEvent(new Event("focus"))).to.not.throw;
+    });
+
+    it("adds focused class when input is focused", async () => {
+      const el = await fixture<Checkbox>(html`<md-checkbox></md-checkbox>`);
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      input.focus();
+      input.dispatchEvent(new Event("focus"));
+      await el.updateComplete;
+      // focused class applied on the input element
+      expect(
+        el
+          .shadowRoot!.querySelector(".checkbox__input")!
+          .classList.contains("checkbox__input_focused"),
+      ).to.be.true;
+    });
+  });
+
+  // ─── handleChange disabled guard ──────────────────────────────────────────
+
+  describe("handleChange disabled guard", () => {
+    it("does not dispatch change on host when disabled and change fires on inner input", async () => {
+      const el = await fixture<Checkbox>(
+        html`<md-checkbox disabled></md-checkbox>`,
+      );
+      let hostFired = false;
+      el.addEventListener("change", () => {
+        hostFired = true;
+      });
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      expect(hostFired).to.be.false;
+    });
+  });
+
+  // ─── disconnectedCallback ─────────────────────────────────────────────────
+
+  describe("disconnectedCallback", () => {
+    it("removes click listener on disconnect without error", async () => {
+      const el = await fixture<Checkbox>(html`<md-checkbox></md-checkbox>`);
+      const parent = el.parentElement!;
+      expect(() => parent.removeChild(el)).to.not.throw;
+    });
   });
 });

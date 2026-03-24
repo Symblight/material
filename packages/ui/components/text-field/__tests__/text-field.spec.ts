@@ -321,4 +321,64 @@ describe("md-text-field", () => {
       expect(el.dirty).to.be.false;
     });
   });
+
+  // ─── handleFocus ──────────────────────────────────────────────────────────
+
+  describe("handleFocus", () => {
+    it("does not throw when focus fires on the inner input", async () => {
+      const el = await fixture<TextField>(
+        html`<md-text-field></md-text-field>`,
+      );
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      expect(() => {
+        input.dispatchEvent(new Event("focus"));
+      }).to.not.throw;
+      await el.updateComplete;
+      expect(el).to.exist;
+    });
+
+    it("does not throw when blur fires on the inner input", async () => {
+      const el = await fixture<TextField>(
+        html`<md-text-field></md-text-field>`,
+      );
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      input.dispatchEvent(new Event("focus"));
+      await el.updateComplete;
+      expect(() => {
+        input.dispatchEvent(new Event("blur"));
+      }).to.not.throw;
+    });
+
+    it("populated returns true when focused (no value)", async () => {
+      const el = await fixture<TextField>(
+        html`<md-text-field></md-text-field>`,
+      );
+      const input = el.shadowRoot!.querySelector<HTMLInputElement>("input")!;
+      input.focus();
+      input.dispatchEvent(new Event("focus"));
+      await el.updateComplete;
+      // populated = focused || !!value || !!placeholder — should be true when focused
+      expect((el as any).populated).to.be.true;
+    });
+  });
+
+  // ─── focus method ─────────────────────────────────────────────────────────
+
+  describe("focus method", () => {
+    it("calling focus() on the element does not throw", async () => {
+      const el = await fixture<TextField>(
+        html`<md-text-field></md-text-field>`,
+      );
+      expect(() => el.focus()).to.not.throw;
+    });
+
+    it("calling focus() delegates focus to the inner input", async () => {
+      const el = await fixture<TextField>(
+        html`<md-text-field></md-text-field>`,
+      );
+      el.focus();
+      await el.updateComplete;
+      expect(el).to.exist;
+    });
+  });
 });

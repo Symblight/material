@@ -61,7 +61,8 @@ export default {
   nodeResolve: true,
   coverage: true,
   coverageConfig: {
-    exclude: ["**/node_modules/**", "**/dist/**"],
+    include: ["components/**/*.ts"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/*.spec.ts", "**/*.stories.ts"],
     threshold: {
       statements: 70,
       branches: 70,
