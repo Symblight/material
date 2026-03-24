@@ -1,0 +1,17 @@
+:host {
+  --md-list-container-color: var(--md-sys-color-surface);
+  --md-list-divider-color: var(--md-sys-color-outline-variant);
+
+  display: block;
+  background-color: var(--md-list-container-color);
+  padding-block: 0.5rem;
+  margin: 0;
+}
+
+ul.md-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}

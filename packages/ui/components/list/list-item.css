@@ -1,0 +1,217 @@
+:host {
+  --md-list-item-container-color: var(--md-sys-color-surface);
+  --md-list-item-label-text-color: var(--md-sys-color-on-surface);
+  --md-list-item-overline-color: var(--md-sys-color-on-surface-variant);
+  --md-list-item-supporting-text-color: var(--md-sys-color-on-surface-variant);
+  --md-list-item-trailing-text-color: var(--md-sys-color-on-surface-variant);
+  --md-list-item-leading-icon-color: var(--md-sys-color-on-surface-variant);
+  --md-list-item-trailing-icon-color: var(--md-sys-color-on-surface-variant);
+
+  --md-list-item-label-text-size: var(--md-sys-typescale-body-large-size, 1rem);
+  --md-list-item-label-text-line-height: var(
+    --md-sys-typescale-body-large-line-height,
+    1.5rem
+  );
+  --md-list-item-label-text-weight: var(
+    --md-sys-typescale-body-large-weight,
+    400
+  );
+  --md-list-item-overline-text-size: var(
+    --md-sys-typescale-label-small-size,
+    0.6875rem
+  );
+  --md-list-item-supporting-text-size: var(
+    --md-sys-typescale-body-medium-size,
+    0.875rem
+  );
+  --md-list-item-trailing-text-size: var(
+    --md-sys-typescale-label-small-size,
+    0.6875rem
+  );
+
+  --md-list-item-hover-state-layer-color: var(--md-sys-color-on-surface);
+  --md-list-item-hover-state-layer-opacity: var(
+    --md-sys-state-hover-state-layer-opacity,
+    0.08
+  );
+  --md-list-item-pressed-state-layer-color: var(--md-sys-color-on-surface);
+  --md-list-item-pressed-state-layer-opacity: var(
+    --md-sys-state-pressed-state-layer-opacity,
+    0.12
+  );
+  --md-list-item-focus-ring-color: var(--md-sys-color-primary);
+
+  --md-list-item-leading-avatar-size: 2.5rem; /* 40dp */
+  --md-list-item-leading-icon-size: 1.5rem; /* 24dp */
+  --md-list-item-leading-media-width: 4.5rem; /* 72dp */
+  --md-list-item-leading-media-height: 3.5rem; /* 56dp */
+
+  display: block;
+  background-color: var(--md-list-item-container-color);
+  position: relative;
+}
+
+/* ── List item <li> ─────────────────────────────────────────────────────── */
+
+li.md-list-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  padding-inline: 1rem;
+  padding-block: 0.5rem;
+  min-block-size: 3.5rem; /* 56dp */
+  box-sizing: border-box;
+  list-style: none;
+  position: relative;
+  background-color: transparent;
+}
+
+/* ── Interactive inner container (button / a) ───────────────────────────── */
+
+.md-list-item__interactive {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  inline-size: 100%;
+  min-block-size: 3.5rem;
+  padding-inline: 1rem;
+  padding-block: 0.5rem;
+  box-sizing: border-box;
+
+  /* Reset button/a styles */
+  appearance: none;
+  background: transparent;
+  border: none;
+  margin: 0;
+  padding-block: 0;
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
+  text-align: start;
+  cursor: pointer;
+
+  /* Relative + overflow for ripple containment */
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+.md-list-item__interactive:focus {
+  outline: none;
+}
+
+.md-list-item__interactive:focus-visible {
+  outline: 3px solid var(--md-list-item-focus-ring-color);
+  outline-offset: -3px;
+}
+
+/* ── Ripple inside interactive ──────────────────────────────────────────── */
+
+md-ripple {
+  --md-ripple-hover-color: var(--md-list-item-hover-state-layer-color);
+  --md-ripple-hover-opacity: var(--md-list-item-hover-state-layer-opacity);
+  --md-ripple-pressed-color: var(--md-list-item-pressed-state-layer-color);
+  --md-ripple-pressed-opacity: var(--md-list-item-pressed-state-layer-opacity);
+}
+
+/* ── Zones ──────────────────────────────────────────────────────────────── */
+
+.md-list-item__leading,
+.md-list-item__trailing {
+  display: contents;
+}
+
+.md-list-item__text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-inline-size: 0;
+  justify-content: center;
+}
+
+/* ── Text zone slots ────────────────────────────────────────────────────── */
+
+.md-list-item__label {
+  font-size: var(--md-list-item-label-text-size);
+  line-height: var(--md-list-item-label-text-line-height);
+  font-weight: var(--md-list-item-label-text-weight);
+  color: var(--md-list-item-label-text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-list-item__overline {
+  font-size: var(--md-list-item-overline-text-size);
+  color: var(--md-list-item-overline-color);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.md-list-item__supporting-text {
+  font-size: var(--md-list-item-supporting-text-size);
+  color: var(--md-list-item-supporting-text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Slot visibility: hide wrapper when slot is empty ───────────────────── */
+
+.md-list-item__overline-wrapper:not(.has-content),
+.md-list-item__supporting-text-wrapper:not(.has-content) {
+  display: none;
+}
+
+.md-list-item__leading-wrapper:not(.has-content),
+.md-list-item__trailing-wrapper:not(.has-content) {
+  display: none;
+}
+
+/* ── Leading wrapper ────────────────────────────────────────────────────── */
+
+.md-list-item__leading-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem; /* 40dp */
+  block-size: 2.5rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* ── Trailing wrapper ───────────────────────────────────────────────────── */
+
+.md-list-item__trailing-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Slotted images fill their containers ───────────────────────────────── */
+
+::slotted(img) {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Adjust padding when interactive: container handles padding ─────────── */
+
+:host([button]) li.md-list-item,
+:host([href]) li.md-list-item {
+  padding-inline: 0;
+  padding-block: 0;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-list-item__interactive {
+    transition: none;
+  }
+}

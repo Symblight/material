@@ -4,6 +4,7 @@ import "./card/card";
 import "./chips/index.ts";
 import "./icon/icon";
 import "./icon-button/icon-button";
+import "./list/index.ts";
 import "./progress-circular/progress-circular";
 import "./progress-linear/progress-linear";
 import "./text-field/text-field";
