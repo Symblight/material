@@ -1,0 +1,5 @@
+:host([variant="elevated"]),
+:host(:not([variant])) {
+  --md-card-container-color: var(--md-sys-color-surface-container-low);
+  --md-elevation-level: 2;
+}
