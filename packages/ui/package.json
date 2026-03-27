@@ -1,7 +1,21 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.0.13",
+  "version": "0.0.15",
+  "description": "Material Design 3 web components library built with Lit",
+  "author": "Aleksei Tkachenko <leshtkachenko@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "material-design",
+    "material-design-3",
+    "md3",
+    "web-components",
+    "custom-elements",
+    "lit",
+    "lit-element",
+    "ui-components",
+    "design-system"
+  ],
   "main": "dist/index.js",
   "module": "dist/index.js",
   "type": "module",
@@ -38,71 +52,71 @@
       "types": "./dist/index.d.ts"
     },
     "./avatar": {
-      "import": "./dist/avatar/avatar.js",
+      "import": "./dist/avatar/avatar2.js",
       "types": "./dist/avatar/avatar.d.ts"
     },
     "./badge": {
-      "import": "./dist/badge/badge.js",
+      "import": "./dist/badge/badge2.js",
       "types": "./dist/badge/badge.d.ts"
     },
     "./card": {
-      "import": "./dist/card/card.js",
+      "import": "./dist/card/card2.js",
       "types": "./dist/card/card.d.ts"
     },
     "./button": {
-      "import": "./dist/button/button.js",
+      "import": "./dist/button/button2.js",
       "types": "./dist/button/button.d.ts"
     },
     "./checkbox": {
-      "import": "./dist/checkbox/checkbox.js",
+      "import": "./dist/checkbox/checkbox2.js",
       "types": "./dist/checkbox/checkbox.d.ts"
     },
     "./chips": {
-      "import": "./dist/chips/index.js",
+      "import": "./dist/chips/index2.js",
       "types": "./dist/chips/index.d.ts"
     },
     "./dialog": {
-      "import": "./dist/dialog/dialog.js",
+      "import": "./dist/dialog/dialog2.js",
       "types": "./dist/dialog/dialog.d.ts"
     },
     "./fab": {
-      "import": "./dist/fab/fab.js",
+      "import": "./dist/fab/fab2.js",
       "types": "./dist/fab/fab.d.ts"
     },
     "./icon": {
-      "import": "./dist/icon/icon.js",
+      "import": "./dist/icon/icon2.js",
       "types": "./dist/icon/icon.d.ts"
     },
     "./icon-button": {
-      "import": "./dist/icon-button/icon-button.js",
+      "import": "./dist/icon-button/icon-button2.js",
       "types": "./dist/icon-button/icon-button.d.ts"
     },
     "./list": {
-      "import": "./dist/list/index.js",
+      "import": "./dist/list/index2.js",
       "types": "./dist/list/index.d.ts"
     },
     "./progress-circular": {
-      "import": "./dist/progress-circular/progress-circular.js",
+      "import": "./dist/progress-circular/progress-circular2.js",
       "types": "./dist/progress-circular/progress-circular.d.ts"
     },
     "./progress-linear": {
-      "import": "./dist/progress-linear/progress-linear.js",
+      "import": "./dist/progress-linear/progress-linear2.js",
       "types": "./dist/progress-linear/progress-linear.d.ts"
     },
     "./radio-button": {
-      "import": "./dist/radio-button/radio-button.js",
+      "import": "./dist/radio-button/radio-button2.js",
       "types": "./dist/radio-button/radio-button.d.ts"
     },
     "./select": {
-      "import": "./dist/select/index.js",
+      "import": "./dist/select/index2.js",
       "types": "./dist/select/index.d.ts"
     },
     "./text-field": {
-      "import": "./dist/text-field/text-field.js",
+      "import": "./dist/text-field/text-field2.js",
       "types": "./dist/text-field/text-field.d.ts"
     },
     "./switch": {
-      "import": "./dist/switch/switch.js",
+      "import": "./dist/switch/switch2.js",
       "types": "./dist/switch/switch.d.ts"
     },
     "./theme/theme.css": "./dist/theme.css"
@@ -118,11 +132,12 @@
     "rollup-plugin-postcss-lit": "^2.2.0"
   },
   "devDependencies": {
-    "@material-design-icons/svg": "^0.14.15",
-    "@open-wc/testing": "4.0.0",
     "@babel/plugin-proposal-decorators": "^7.29.0",
     "@chromatic-com/storybook": "^5.0.2",
+    "@material-design-icons/svg": "^0.14.15",
+    "@open-wc/testing": "4.0.0",
     "@remcovaes/web-test-runner-vite-plugin": "^1.4.0",
+    "@storybook/addon-docs": "^10.3.3",
     "@storybook/web-components": "^10.3.1",
     "@storybook/web-components-vite": "^10.3.1",
     "@types/mocha": "^10.0.10",
