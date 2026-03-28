@@ -63,12 +63,6 @@ Apply the base MD3 theme stylesheet in your app's entry CSS:
 @import "@symblight/wc-material/theme/theme.css";
 ```
 
-Or in JavaScript:
-
-```js
-import "@symblight/wc-material/theme/theme.css";
-```
-
 #### Dynamic color theming
 
 To generate and apply a custom color palette at runtime, use [`@symblight/md-colors`](https://www.npmjs.com/package/@symblight/md-colors):
@@ -85,45 +79,8 @@ generateTheme({ sourceColor: "#6750A4", scheme: "dark" });
 
 This injects `--md-sys-color-*` tokens directly onto `:root`, which the component styles pick up automatically.
 
-You can also pre-generate a static `colors.css` file and import it alongside `theme.css`:
-
-```bash
-npx md-colors --sourceColor="#6750A4" --scheme=light --output=./src/colors.css
-```
-
-```css
-@import "@symblight/wc-material/theme/theme.css";
-@import "./colors.css";
-```
-
-## Example
-
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <link
-      rel="stylesheet"
-      href="node_modules/@symblight/wc-material/theme/theme.css"
-    />
-  </head>
-  <body>
-    <md-button variant="filled">Click me</md-button>
-    <md-text-field label="Name"></md-text-field>
-    <md-checkbox></md-checkbox>
-  </body>
-</html>
-```
-
 ```js
 import "@symblight/wc-material/button";
 import "@symblight/wc-material/text-field";
 import "@symblight/wc-material/checkbox";
 ```
-
-## Roadmap
-
-- [x] List
-- [ ] Carousel
-- [ ] Tabs
-- [ ] Menu
