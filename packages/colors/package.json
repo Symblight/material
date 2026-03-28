@@ -1,20 +1,46 @@
 {
   "name": "@symblight/md-colors",
-  "version": "1.0.0",
-  "description": "Material Design 3 color token generator",
+  "version": "0.1.1",
+  "description": "Material Design 3 color token generator — CSS custom property output in oklch format",
   "type": "module",
-  "exports": {
-    ".": "./client.mjs"
+  "private": false,
+  "main": "./dist/index.js",
+  "bin": {
+    "md-colors": "./dist/cli.js"
   },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "import": "./dist/client.esm.js",
+      "default": "./dist/client.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
-    "generate-theme": "node create-theme-file.mjs",
+    "build": "node build.mjs",
+    "generate-theme": "node cli.mjs",
+    "prepublishOnly": "npm run build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "jest": {
     "testEnvironment": "node",
     "transform": {}
   },
-  "keywords": [],
+  "keywords": [
+    "material-design",
+    "material-design-3",
+    "md3",
+    "color-tokens",
+    "css-variables",
+    "oklch",
+    "design-system"
+  ],
   "author": "Aleksei Tkachenko <leshtkachenko@gmail.com>",
   "license": "MIT",
   "dependencies": {
@@ -22,6 +48,7 @@
     "culori": "^4.0.2"
   },
   "devDependencies": {
+    "esbuild": "^0.27.4",
     "jest": "^30.3.0"
   }
 }

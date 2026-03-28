@@ -1,5 +1,5 @@
 import type { Preview, Decorator } from "@storybook/web-components";
-import "@symblight/md-colors";
+import { generateTheme } from "@symblight/md-colors/client";
 
 const STORAGE_KEY_COLOR = "md-theme-color";
 const STORAGE_KEY_SCHEME = "md-theme-scheme";
@@ -52,11 +52,7 @@ const themeToolDecorator: Decorator = (story) => {
     `;
     document.body.appendChild(panel);
 
-    // Apply saved (or default) theme immediately on load
-    (window as any).generateTheme({
-      sourceColor: savedColor,
-      scheme: savedScheme,
-    });
+    generateTheme({ sourceColor: savedColor, scheme: savedScheme });
 
     const applyTheme = () => {
       const color = (
@@ -67,7 +63,7 @@ const themeToolDecorator: Decorator = (story) => {
       ).value;
       localStorage.setItem(STORAGE_KEY_COLOR, color);
       localStorage.setItem(STORAGE_KEY_SCHEME, scheme);
-      (window as any).generateTheme({ sourceColor: color, scheme });
+      generateTheme({ sourceColor: color, scheme });
     };
 
     document

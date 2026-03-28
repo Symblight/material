@@ -57,7 +57,7 @@ import "@symblight/wc-material/text-field";
 
 ### Theme
 
-Apply the MD3 theme tokens in your app's entry CSS:
+Apply the base MD3 theme stylesheet in your app's entry CSS:
 
 ```css
 @import "@symblight/wc-material/theme/theme.css";
@@ -67,6 +67,33 @@ Or in JavaScript:
 
 ```js
 import "@symblight/wc-material/theme/theme.css";
+```
+
+#### Dynamic color theming
+
+To generate and apply a custom color palette at runtime, use [`@symblight/md-colors`](https://www.npmjs.com/package/@symblight/md-colors):
+
+```bash
+npm install @symblight/md-colors
+```
+
+```js
+import { generateTheme } from "@symblight/md-colors/client";
+
+generateTheme({ sourceColor: "#6750A4", scheme: "dark" });
+```
+
+This injects `--md-sys-color-*` tokens directly onto `:root`, which the component styles pick up automatically.
+
+You can also pre-generate a static `colors.css` file and import it alongside `theme.css`:
+
+```bash
+npx md-colors --sourceColor="#6750A4" --scheme=light --output=./src/colors.css
+```
+
+```css
+@import "@symblight/wc-material/theme/theme.css";
+@import "./colors.css";
 ```
 
 ## Example

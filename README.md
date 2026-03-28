@@ -4,10 +4,10 @@ A Material Design 3 component library built with Lit web components.
 
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| [`packages/ui`](./packages/ui) | Material Design 3 web components (`@symblight/wc-material`) |
-| [`packages/colors`](./packages/colors) | Color token palette generator (`@symblight/md-colors`) |
+| Package | Version | Description |
+|---------|---------|-------------|
+| [`packages/ui`](./packages/ui) | `@symblight/wc-material` | Material Design 3 web components |
+| [`packages/colors`](./packages/colors) | `@symblight/md-colors` | Color token palette generator |
 
 ---
 
@@ -24,8 +24,8 @@ npm install @symblight/wc-material lit
 **Usage**
 
 ```js
-import '@symblight/wc-material';
-import '@symblight/wc-material/theme/theme.css';
+import "@symblight/wc-material";
+import "@symblight/wc-material/theme/theme.css";
 ```
 
 ```html
@@ -38,9 +38,14 @@ import '@symblight/wc-material/theme/theme.css';
 
 ### `packages/colors` — `@symblight/md-colors`
 
-Generates Material Design 3 color token palettes as CSS custom properties.
+Generates Material Design 3 color token palettes as CSS custom properties in oklch format.
 
-Takes a source color and uses `@material/material-color-utilities` to derive a full MD3 tonal palette, then outputs `--md-sys-color-*` tokens in oklch format.
+Two builds ship in the package:
+
+| Build | Path | Use case |
+|---|---|---|
+| Node / bundler | `dist/index.js` | Programmatic API, CSS file generation |
+| Browser client | `dist/client.js` | Runtime `window.generateTheme` injection |
 
 **Install**
 
@@ -48,28 +53,7 @@ Takes a source color and uses `@material/material-color-utilities` to derive a f
 npm install @symblight/md-colors
 ```
 
-**Generate a CSS file**
-
-Run the following to write a `colors.css` file to the package directory:
-
-```bash
-pnpm generate-theme
-```
-
-This generates `colors.css` with `:root` scoped CSS custom properties:
-
-```css
-:root {
-  --md-sys-color-primary: oklch(...);
-  --md-sys-color-on-primary: oklch(...);
-  --md-sys-color-primary-container: oklch(...);
-  /* ...all MD3 system color tokens */
-}
-```
-
-The source color and scheme (`light` / `dark`) are configured directly in `create-theme-file.mjs`. The generated `colors.css` is consumed by the `ui` package theme.
-
-**Programmatic API**
+**Node — programmatic API**
 
 ```js
 import { generateTokens } from "@symblight/md-colors";
@@ -78,23 +62,40 @@ const tokens = generateTokens({ sourceColor: "#6750A4", scheme: "dark" });
 // { "--md-sys-color-primary": "oklch(…)", … }
 ```
 
-**Browser (runtime theming)**
-
-The `client.mjs` entry exposes `window.generateTheme`, which applies tokens directly to `:root` at runtime:
+**Browser — runtime theming**
 
 ```html
-<script type="module" src="node_modules/@symblight/md-colors/client.mjs"></script>
+<script src="node_modules/@symblight/md-colors/dist/client.js"></script>
 <script>
   window.generateTheme({ sourceColor: "#6750A4", scheme: "dark" });
 </script>
 ```
+
+See [`packages/colors/README.md`](./packages/colors/README.md) for full API docs.
+
+---
 
 ## Development
 
 This is a pnpm monorepo.
 
 ```bash
-pnpm install        # Install all dependencies
+pnpm install          # Install all dependencies
 ```
 
-See each package's `README.md` for package-specific commands.
+**Colors package**
+
+```bash
+cd packages/colors
+pnpm build            # Build dist/index.js and dist/client.js
+pnpm generate-theme   # Write colors.css
+pnpm test             # Run Jest tests
+```
+
+**UI package**
+
+```bash
+cd packages/ui
+pnpm build            # Build component library
+pnpm sb               # Start Storybook dev server
+```
