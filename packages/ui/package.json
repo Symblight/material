@@ -72,7 +72,7 @@
       "types": "./dist/checkbox/checkbox.d.ts"
     },
     "./chips": {
-      "import": "./dist/chips/index2.js",
+      "import": "./dist/chips/index.js",
       "types": "./dist/chips/index.d.ts"
     },
     "./dialog": {
@@ -92,7 +92,7 @@
       "types": "./dist/icon-button/icon-button.d.ts"
     },
     "./list": {
-      "import": "./dist/list/index2.js",
+      "import": "./dist/list/index.js",
       "types": "./dist/list/index.d.ts"
     },
     "./progress-circular": {
@@ -108,7 +108,7 @@
       "types": "./dist/radio-button/radio-button.d.ts"
     },
     "./select": {
-      "import": "./dist/select/index2.js",
+      "import": "./dist/select/index.js",
       "types": "./dist/select/index.d.ts"
     },
     "./text-field": {
@@ -132,6 +132,7 @@
     "rollup-plugin-postcss-lit": "^2.2.0"
   },
   "devDependencies": {
+    "@symblight/md-colors": "workspace:*",
     "@babel/plugin-proposal-decorators": "^7.29.0",
     "@chromatic-com/storybook": "^5.0.2",
     "@material-design-icons/svg": "^0.14.15",

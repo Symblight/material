@@ -7,7 +7,7 @@ A Material Design 3 component library built with Lit web components.
 | Package | Description |
 |---------|-------------|
 | [`packages/ui`](./packages/ui) | Material Design 3 web components (`@symblight/wc-material`) |
-| [`packages/colors`](./packages/colors) | Color token palette generator (`md-colors`) |
+| [`packages/colors`](./packages/colors) | Color token palette generator (`@symblight/md-colors`) |
 
 ---
 
@@ -36,16 +36,24 @@ import '@symblight/wc-material/theme/theme.css';
 
 ---
 
-### `packages/colors` — `md-colors`
+### `packages/colors` — `@symblight/md-colors`
 
 Generates Material Design 3 color token palettes as CSS custom properties.
 
-Takes a source color and uses `@material/material-color-utilities` to derive a full MD3 tonal palette, then outputs `--md-sys-color-*` tokens in oklch format to a `colors.css` file.
+Takes a source color and uses `@material/material-color-utilities` to derive a full MD3 tonal palette, then outputs `--md-sys-color-*` tokens in oklch format.
 
-**Run**
+**Install**
 
 ```bash
-node index.mjs
+npm install @symblight/md-colors
+```
+
+**Generate a CSS file**
+
+Run the following to write a `colors.css` file to the package directory:
+
+```bash
+pnpm generate-theme
 ```
 
 This generates `colors.css` with `:root` scoped CSS custom properties:
@@ -59,7 +67,27 @@ This generates `colors.css` with `:root` scoped CSS custom properties:
 }
 ```
 
-The source color and scheme (`light` / `dark`) are configured directly in `index.mjs`. The generated `colors.css` is consumed by the `ui` package theme.
+The source color and scheme (`light` / `dark`) are configured directly in `create-theme-file.mjs`. The generated `colors.css` is consumed by the `ui` package theme.
+
+**Programmatic API**
+
+```js
+import { generateTokens } from "@symblight/md-colors";
+
+const tokens = generateTokens({ sourceColor: "#6750A4", scheme: "dark" });
+// { "--md-sys-color-primary": "oklch(…)", … }
+```
+
+**Browser (runtime theming)**
+
+The `client.mjs` entry exposes `window.generateTheme`, which applies tokens directly to `:root` at runtime:
+
+```html
+<script type="module" src="node_modules/@symblight/md-colors/client.mjs"></script>
+<script>
+  window.generateTheme({ sourceColor: "#6750A4", scheme: "dark" });
+</script>
+```
 
 ## Development
 

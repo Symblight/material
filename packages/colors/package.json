@@ -1,17 +1,27 @@
 {
-  "name": "md-colors",
+  "name": "@symblight/md-colors",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Material Design 3 color token generator",
   "type": "module",
+  "exports": {
+    ".": "./client.mjs"
+  },
   "scripts": {
-    "start": "node index.mjs"
+    "generate-theme": "node create-theme-file.mjs",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {}
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Aleksei Tkachenko <leshtkachenko@gmail.com>",
+  "license": "MIT",
   "dependencies": {
-    "@material/material-color-utilities": "^0.2.7",
-    "culori": "^4.0.1"
+    "@material/material-color-utilities": "^0.3.0",
+    "culori": "^4.0.2"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0"
   }
 }
