@@ -57,6 +57,14 @@
 .text-field__filled-label {
   position: absolute;
   transform: translate(0rem, -0.5rem);
+  max-width: calc(100% - 32px);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  user-select: none;
+  pointer-events: auto;
+  z-index: 1;
+  width: 100%;
+  overflow: hidden;
 }
 
 .text-field__filled-label_populated {

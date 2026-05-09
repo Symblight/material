@@ -380,18 +380,17 @@ export class TextField extends FormControlMixin(LitElement) {
     return when(
       this.label && this.variant === "outlined",
       () => html`
-        <div>
-          <label
-            for=${this.inputId}
-            class="text-field__label text-field__outlined-label ${classMap({
-              "text-field__label_active": this.focused,
-              "text-field__label_error": this.hasValidation,
-              "text-field__outlined-label_populated": this.populated,
-              "text-field__outlined-label_leading": this.leadingSlot,
-            })}"
-            >${this.label}</label
-          >
-        </div>
+        <label
+          for=${this.inputId}
+          class="text-field__label text-field__outlined-label ${classMap({
+            "text-field__label_active": this.focused,
+            "text-field__label_error": this.hasValidation,
+            "text-field__outlined-label_populated": this.populated,
+            "text-field__outlined-label_leading": this.leadingSlot,
+          })}"
+        >
+          ${this.label}
+        </label>
       `,
       () => nothing,
     );
@@ -452,8 +451,9 @@ export class TextField extends FormControlMixin(LitElement) {
         })}"
       >
         <div part="prefix" class="text-field__leading-wrapper">
-          ${this.renderLeading} ${this.renderOutlinedLabel}
+          ${this.renderLeading}
         </div>
+        ${this.renderOutlinedLabel}
         <div
           part="wrapper"
           class="text-field__input-wrapper ${classMap({
