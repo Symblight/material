@@ -22,6 +22,7 @@ import outlinedStyles from "./outlined-field.css?inline";
 import styles from "./text-field.css?inline";
 
 export type TextFieldVariant = "filled" | "outlined";
+const VALID_VARIANTS = ["filled", "outlined"];
 
 const textFieldGeneratorKeys = generateUniqueKey("text-field-");
 
@@ -62,8 +63,26 @@ export class TextField extends FormControlMixin(LitElement) {
   /**
    * The variant style of the textfield.
    */
+  private _variant: TextFieldVariant = "filled";
+
+  public get variant(): TextFieldVariant {
+    return this._variant;
+  }
+
   @property()
-  variant: TextFieldVariant = "filled";
+  public set variant(variant: TextFieldVariant) {
+    if (variant === this.variant) return;
+
+    this.requestUpdate("variant", this.variant);
+
+    if (!VALID_VARIANTS.includes(variant)) {
+      this._variant = "filled";
+      return;
+    }
+    this._variant = variant;
+
+    this.setAttribute("variant", this.variant);
+  }
 
   /**
    * The name associated with the text field.
