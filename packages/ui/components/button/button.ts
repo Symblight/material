@@ -35,8 +35,19 @@ export default class Button extends BaseButton {
   /*
    * The variant style of the button.
    */
-  @property({ reflect: true })
-  variant: ButtonVariant = "filled";
+
+  private _variant: ButtonVariant = "filled";
+
+  @property({ attribute: "variant", noAccessor: true })
+  set variant(value: ButtonVariant) {
+    this._variant = VALID_VARIANTS.includes(value) ? value : "filled";
+    this.setAttribute("variant", this._variant);
+    this.requestUpdate("variant", this._variant);
+  }
+
+  get variant(): ButtonVariant {
+    return this._variant;
+  }
 
   static get styles(): CSSResultGroup {
     return [
@@ -56,6 +67,13 @@ export default class Button extends BaseButton {
       button_loading: this.loading,
       button_icon: this.hasIcon,
     });
+  }
+
+  protected override firstUpdated(changes: PropertyValues<this>): void {
+    super.firstUpdated(changes);
+    if (!this.hasAttribute("variant")) {
+      this.setAttribute("variant", this.variant);
+    }
   }
 
   private renderIcon() {
