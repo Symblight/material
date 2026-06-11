@@ -14,3 +14,4 @@ import "./radio-button/radio-button";
 import "./avatar/avatar";
 import "./fab/fab";
 import "./switch/switch";
+import "./tabs/index.ts";

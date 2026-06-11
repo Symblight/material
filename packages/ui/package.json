@@ -119,6 +119,18 @@
       "import": "./dist/switch/switch2.js",
       "types": "./dist/switch/switch.d.ts"
     },
+    "./tabs": {
+      "import": "./dist/tabs/index.js",
+      "types": "./dist/tabs/index.d.ts"
+    },
+    "./tab": {
+      "import": "./dist/tabs/tab2.js",
+      "types": "./dist/tabs/tab.d.ts"
+    },
+    "./tab-panel": {
+      "import": "./dist/tabs/tab-panel2.js",
+      "types": "./dist/tabs/tab-panel.d.ts"
+    },
     "./theme/theme.css": "./dist/theme.css"
   },
   "peerDependencies": {

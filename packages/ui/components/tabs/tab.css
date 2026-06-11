@@ -1,0 +1,150 @@
+:host {
+  display: inline-flex;
+  flex: 1;
+  min-width: 48px;
+
+  --md-tab-label-color: var(--md-sys-color-on-surface-variant);
+  --md-tab-active-label-color: var(--md-sys-color-primary);
+  --md-tab-icon-color: var(--md-sys-color-on-surface-variant);
+  --md-tab-active-icon-color: var(--md-sys-color-primary);
+  --md-tab-active-indicator-color: var(--md-sys-color-primary);
+  --md-tab-disabled-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 62%
+  );
+  --md-tab-state-layer-color: var(--md-sys-color-on-surface-variant);
+  --md-tab-active-state-layer-color: var(--md-sys-color-primary);
+
+  --md-tab-label-font: var(--md-sys-typescale-title-small-font, sans-serif);
+  --md-tab-label-size: var(--md-sys-typescale-title-small-size, 0.875rem);
+  --md-tab-label-weight: var(--md-sys-typescale-title-small-weight, 500);
+  --md-tab-label-tracking: var(
+    --md-sys-typescale-title-small-tracking,
+    0.00625rem
+  );
+  --md-tab-label-line-height: var(
+    --md-sys-typescale-title-small-line-height,
+    1.25rem
+  );
+}
+
+:host([disabled]) {
+  --md-tab-label-color: var(--md-tab-disabled-color);
+  --md-tab-active-label-color: var(--md-tab-disabled-color);
+  --md-tab-icon-color: var(--md-tab-disabled-color);
+  --md-tab-active-icon-color: var(--md-tab-disabled-color);
+  --md-tab-active-indicator-color: var(--md-tab-disabled-color);
+}
+
+:where(.tab) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 48px;
+  min-width: 48px;
+  padding: 0 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  overflow: visible;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.tab_icon-and-label {
+  height: 64px;
+}
+
+.tab_disabled {
+  pointer-events: none;
+  cursor: default;
+}
+
+.tab__state-layer {
+  position: absolute;
+  inset: 0;
+  background: var(--md-tab-state-layer-color);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+:where(.tab:hover) .tab__state-layer {
+  opacity: 0.08;
+}
+
+:where(.tab:active) .tab__state-layer {
+  opacity: 0.12;
+}
+
+:where(.tab_active) .tab__state-layer {
+  background: var(--md-tab-active-state-layer-color);
+}
+
+:where(.tab_active:hover) .tab__state-layer {
+  opacity: 0.08;
+}
+
+.tab__icon {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--md-tab-icon-color);
+  flex-shrink: 0;
+  transition: color 200ms ease;
+}
+
+:where(.tab__icon) ::slotted(*) {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+:where(.tab_active) .tab__icon {
+  color: var(--md-tab-active-icon-color);
+}
+
+.tab_has-icon .tab__icon {
+  display: flex;
+}
+
+.tab__label {
+  font-family: var(--md-tab-label-font);
+  font-size: var(--md-tab-label-size);
+  font-weight: var(--md-tab-label-weight);
+  letter-spacing: var(--md-tab-label-tracking);
+  line-height: var(--md-tab-label-line-height);
+  color: var(--md-tab-label-color);
+  transition: color 200ms ease;
+  user-select: none;
+}
+
+:where(.tab_active) .tab__label {
+  color: var(--md-tab-active-label-color);
+}
+
+.tab__indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--md-tab-active-indicator-color);
+  opacity: 0;
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+:where(.tab_active) .tab__indicator {
+  opacity: 1;
+}

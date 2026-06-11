@@ -1,0 +1,35 @@
+:host {
+  display: block;
+
+  --md-tabs-bg: var(--md-sys-color-surface);
+  --md-tabs-divider-color: var(--md-sys-color-surface-variant);
+  --md-tabs-secondary-active-color: var(--md-sys-color-on-surface);
+}
+
+.tabs {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  background: var(--md-tabs-bg);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs__divider {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--md-tabs-divider-color);
+  pointer-events: none;
+}
+
+:host([variant="secondary"]) ::slotted(md-tab) {
+  --md-tab-active-label-color: var(--md-tabs-secondary-active-color);
+  --md-tab-active-icon-color: var(--md-tabs-secondary-active-color);
+}
