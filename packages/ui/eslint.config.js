@@ -1,9 +1,25 @@
 import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 
+const tsRules = {
+  ...tsPlugin.configs.recommended.rules,
+  "@typescript-eslint/no-unused-expressions": "off",
+  "@typescript-eslint/no-explicit-any": "warn",
+  "@typescript-eslint/no-unused-vars": [
+    "error",
+    {
+      argsIgnorePattern: "^_",
+      varsIgnorePattern: "^_",
+      caughtErrorsIgnorePattern: "^_",
+    },
+  ],
+};
+
 export default [
   {
-    files: ["**/*.ts"],
+    // Parsed with @typescript-eslint/parser (not the default espree) because
+    // Lit decorator syntax isn't valid plain ECMAScript.
+    files: ["**/*.js"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -14,27 +30,16 @@ export default [
     plugins: {
       "@typescript-eslint": tsPlugin,
     },
-    rules: {
-      ...tsPlugin.configs.recommended.rules,
-      "@typescript-eslint/no-unused-expressions": "off",
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_",
-        },
-      ],
-    },
+    rules: tsRules,
   },
   {
     ignores: [
       "node_modules/**",
       "dist/**",
+      "storybook-static/**",
       ".wireit/**",
       "coverage/**",
-      "**/*.stories.ts",
+      "**/*.stories.js",
     ],
   },
 ];

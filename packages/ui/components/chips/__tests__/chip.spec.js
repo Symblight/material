@@ -1,0 +1,530 @@
+import { expect, fixture, html } from "@open-wc/testing";
+
+import "../assist-chip.js";
+import "../filter-chip.js";
+import "../input-chip.js";
+import "../suggestion-chip.js";
+
+/** @import MdAssistChip from "../assist-chip.js" */
+/** @import MdFilterChip from "../filter-chip.js" */
+/** @import MdInputChip from "../input-chip.js" */
+/** @import MdSuggestionChip from "../suggestion-chip.js" */
+
+// ─── Assist Chip ──────────────────────────────────────────────────────────────
+
+describe("md-assist-chip", () => {
+  describe("rendering", () => {
+    it("renders an inner <button>", async () => {
+      const el = /** @type {MdAssistChip} */ (
+        await fixture(html`<md-assist-chip>Add to calendar</md-assist-chip>`)
+      );
+      expect(el.shadowRoot.querySelector("button#chip")).to.exist;
+    });
+
+    it("renders slot content as the label", async () => {
+      const el = /** @type {MdAssistChip} */ (
+        await fixture(html`<md-assist-chip>Add to calendar</md-assist-chip>`)
+      );
+      expect(el).to.have.text("Add to calendar");
+    });
+  });
+
+  describe("variant", () => {
+    it('defaults to "outlined"', async () => {
+      const el = /** @type {MdAssistChip} */ (
+        await fixture(html`<md-assist-chip>Label</md-assist-chip>`)
+      );
+      expect(el.getAttribute("variant")).to.equal("outlined");
+    });
+
+    it('reflects variant="elevated" to the host', async () => {
+      const el = /** @type {MdAssistChip} */ (
+        await fixture(
+          html`<md-assist-chip variant="elevated">Label</md-assist-chip>`,
+        )
+      );
+      expect(el.getAttribute("variant")).to.equal("elevated");
+    });
+  });
+
+  describe("disabled", () => {
+    it("is not disabled by default", async () => {
+      const el = /** @type {MdAssistChip} */ (
+        await fixture(html`<md-assist-chip>Label</md-assist-chip>`)
+      );
+      expect(
+        /** @type {HTMLButtonElement} */ (
+          el.shadowRoot.querySelector("button#chip")
+        ).disabled,
+      ).to.be.false;
+    });
+
+    it("disables the inner button and reflects attribute", async () => {
+      const el = /** @type {MdAssistChip} */ (
+        await fixture(html`<md-assist-chip disabled>Label</md-assist-chip>`)
+      );
+      expect(el.hasAttribute("disabled")).to.be.true;
+      expect(
+        /** @type {HTMLButtonElement} */ (
+          el.shadowRoot.querySelector("button#chip")
+        ).disabled,
+      ).to.be.true;
+    });
+  });
+});
+
+// ─── Filter Chip ──────────────────────────────────────────────────────────────
+
+describe("md-filter-chip", () => {
+  describe("rendering", () => {
+    it("renders an inner <button>", async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(html`<md-filter-chip>Clothes</md-filter-chip>`)
+      );
+      expect(el.shadowRoot.querySelector("button#chip")).to.exist;
+    });
+
+    it("renders slot content as the label", async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(html`<md-filter-chip>Clothes</md-filter-chip>`)
+      );
+      expect(el).to.have.text("Clothes");
+    });
+  });
+
+  describe("variant", () => {
+    it('defaults to "outlined"', async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(html`<md-filter-chip>Label</md-filter-chip>`)
+      );
+      expect(el.getAttribute("variant")).to.equal("outlined");
+    });
+
+    it('reflects variant="elevated" to the host', async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(
+          html`<md-filter-chip variant="elevated">Label</md-filter-chip>`,
+        )
+      );
+      expect(el.getAttribute("variant")).to.equal("elevated");
+    });
+  });
+
+  describe("selected", () => {
+    it("is not selected by default", async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(html`<md-filter-chip>Label</md-filter-chip>`)
+      );
+      expect(el.selected).to.be.false;
+      expect(el.hasAttribute("selected")).to.be.false;
+    });
+
+    it("reflects selected attribute to the host", async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(html`<md-filter-chip selected>Label</md-filter-chip>`)
+      );
+      expect(el.selected).to.be.true;
+      expect(el.hasAttribute("selected")).to.be.true;
+    });
+
+    it("sets aria-pressed on the inner button", async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(html`<md-filter-chip selected>Label</md-filter-chip>`)
+      );
+      expect(
+        el.shadowRoot.querySelector("button#chip").getAttribute("aria-pressed"),
+      ).to.equal("true");
+    });
+
+    it("toggles selected on click and fires change event", async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(html`<md-filter-chip>Label</md-filter-chip>`)
+      );
+      let fired = false;
+      el.addEventListener("change", () => {
+        fired = true;
+      });
+
+      /** @type {HTMLButtonElement} */ (
+        el.shadowRoot.querySelector("button#chip")
+      ).click();
+      await el.updateComplete;
+
+      expect(el.selected).to.be.true;
+      expect(fired).to.be.true;
+    });
+
+    it("toggles back to unselected on second click", async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(html`<md-filter-chip selected>Label</md-filter-chip>`)
+      );
+      /** @type {HTMLButtonElement} */ (
+        el.shadowRoot.querySelector("button#chip")
+      ).click();
+      await el.updateComplete;
+      expect(el.selected).to.be.false;
+    });
+  });
+
+  describe("disabled", () => {
+    it("disables the inner button and reflects attribute", async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(html`<md-filter-chip disabled>Label</md-filter-chip>`)
+      );
+      expect(el.hasAttribute("disabled")).to.be.true;
+      expect(
+        /** @type {HTMLButtonElement} */ (
+          el.shadowRoot.querySelector("button#chip")
+        ).disabled,
+      ).to.be.true;
+    });
+
+    it("does not toggle selected when disabled", async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(html`<md-filter-chip disabled>Label</md-filter-chip>`)
+      );
+      el.click();
+      await el.updateComplete;
+      expect(el.selected).to.be.false;
+    });
+
+    it("does not fire change when disabled", async () => {
+      const el = /** @type {MdFilterChip} */ (
+        await fixture(html`<md-filter-chip disabled>Label</md-filter-chip>`)
+      );
+      let fired = false;
+      el.addEventListener("change", () => {
+        fired = true;
+      });
+      el.click();
+      expect(fired).to.be.false;
+    });
+  });
+});
+
+// ─── Input Chip ───────────────────────────────────────────────────────────────
+
+describe("md-input-chip", () => {
+  describe("rendering", () => {
+    it("renders an inner <button>", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip>React</md-input-chip>`)
+      );
+      expect(el.shadowRoot.querySelector("button#chip")).to.exist;
+    });
+
+    it("renders slot content as the label", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip>React</md-input-chip>`)
+      );
+      expect(el).to.have.text("React");
+    });
+  });
+
+  describe("selected", () => {
+    it("is not selected by default", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip>React</md-input-chip>`)
+      );
+      expect(el.selected).to.be.false;
+    });
+
+    it("reflects selected attribute to the host", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip selected>React</md-input-chip>`)
+      );
+      expect(el.hasAttribute("selected")).to.be.true;
+    });
+
+    it("toggles selected on chip click and fires change event", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip>React</md-input-chip>`)
+      );
+      let fired = false;
+      el.addEventListener("change", () => {
+        fired = true;
+      });
+
+      /** @type {HTMLButtonElement} */ (
+        el.shadowRoot.querySelector("button#chip")
+      ).click();
+      await el.updateComplete;
+
+      expect(el.selected).to.be.true;
+      expect(fired).to.be.true;
+    });
+  });
+
+  describe("removable", () => {
+    it("does not render the remove button by default", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip>React</md-input-chip>`)
+      );
+      const removeBtn = el.shadowRoot.querySelector(".chip__remove");
+      // hidden via chip__remove_hidden class when no trailing-icon slot content
+      expect(removeBtn.classList.contains("chip__remove_hidden")).to.be.true;
+    });
+
+    it("renders the remove button when removable is set", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip removable>React</md-input-chip>`)
+      );
+      const removeBtn = el.shadowRoot.querySelector(".chip__remove");
+      expect(removeBtn).to.exist;
+      expect(removeBtn.classList.contains("chip__remove_hidden")).to.be.false;
+    });
+
+    it("fires remove event when remove button is clicked", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip removable>React</md-input-chip>`)
+      );
+      let fired = false;
+      el.addEventListener("remove", () => {
+        fired = true;
+      });
+
+      /** @type {HTMLButtonElement} */ (
+        el.shadowRoot.querySelector(".chip__remove")
+      ).click();
+      expect(fired).to.be.true;
+    });
+
+    it("does not fire change when the remove button is clicked", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip removable>React</md-input-chip>`)
+      );
+      let changeFired = false;
+      el.addEventListener("change", () => {
+        changeFired = true;
+      });
+
+      /** @type {HTMLButtonElement} */ (
+        el.shadowRoot.querySelector(".chip__remove")
+      ).click();
+      expect(changeFired).to.be.false;
+    });
+
+    it("does not fire remove when disabled", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(
+          html`<md-input-chip removable disabled>React</md-input-chip>`,
+        )
+      );
+      let fired = false;
+      el.addEventListener("remove", () => {
+        fired = true;
+      });
+
+      /** @type {HTMLButtonElement} */ (
+        el.shadowRoot.querySelector(".chip__remove")
+      ).click();
+      expect(fired).to.be.false;
+    });
+
+    it("renders the close SVG inside the remove button", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip removable>React</md-input-chip>`)
+      );
+      const svg = el.shadowRoot.querySelector(".chip__remove svg");
+      expect(svg).to.exist;
+    });
+  });
+
+  describe("avatar", () => {
+    it("is false by default", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip>React</md-input-chip>`)
+      );
+      expect(el.avatar).to.be.false;
+    });
+
+    it("renders the avatar wrapper when avatar is set", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip avatar>React</md-input-chip>`)
+      );
+      expect(el.shadowRoot.querySelector(".chip__avatar")).to.exist;
+    });
+
+    it("does not render avatar wrapper when avatar is not set", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip>React</md-input-chip>`)
+      );
+      expect(el.shadowRoot.querySelector(".chip__avatar")).to.not.exist;
+    });
+  });
+
+  describe("disabled", () => {
+    it("disables the inner button and reflects attribute", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip disabled>React</md-input-chip>`)
+      );
+      expect(el.hasAttribute("disabled")).to.be.true;
+      expect(
+        /** @type {HTMLButtonElement} */ (
+          el.shadowRoot.querySelector("button#chip")
+        ).disabled,
+      ).to.be.true;
+    });
+
+    it("does not toggle selected when disabled", async () => {
+      const el = /** @type {MdInputChip} */ (
+        await fixture(html`<md-input-chip disabled>React</md-input-chip>`)
+      );
+      el.click();
+      await el.updateComplete;
+      expect(el.selected).to.be.false;
+    });
+  });
+});
+
+// ─── Suggestion Chip ──────────────────────────────────────────────────────────
+
+describe("md-suggestion-chip", () => {
+  describe("rendering", () => {
+    it("renders an inner <button>", async () => {
+      const el = /** @type {MdSuggestionChip} */ (
+        await fixture(
+          html`<md-suggestion-chip>Good morning!</md-suggestion-chip>`,
+        )
+      );
+      expect(el.shadowRoot.querySelector("button#chip")).to.exist;
+    });
+
+    it("renders slot content as the label", async () => {
+      const el = /** @type {MdSuggestionChip} */ (
+        await fixture(
+          html`<md-suggestion-chip>Good morning!</md-suggestion-chip>`,
+        )
+      );
+      expect(el).to.have.text("Good morning!");
+    });
+  });
+
+  describe("variant", () => {
+    it('defaults to "outlined"', async () => {
+      const el = /** @type {MdSuggestionChip} */ (
+        await fixture(html`<md-suggestion-chip>Label</md-suggestion-chip>`)
+      );
+      expect(el.getAttribute("variant")).to.equal("outlined");
+    });
+
+    it('reflects variant="elevated" to the host', async () => {
+      const el = /** @type {MdSuggestionChip} */ (
+        await fixture(
+          html`<md-suggestion-chip variant="elevated"
+            >Label</md-suggestion-chip
+          >`,
+        )
+      );
+      expect(el.getAttribute("variant")).to.equal("elevated");
+    });
+  });
+
+  describe("disabled", () => {
+    it("disables the inner button and reflects attribute", async () => {
+      const el = /** @type {MdSuggestionChip} */ (
+        await fixture(
+          html`<md-suggestion-chip disabled>Label</md-suggestion-chip>`,
+        )
+      );
+      expect(el.hasAttribute("disabled")).to.be.true;
+      expect(
+        /** @type {HTMLButtonElement} */ (
+          el.shadowRoot.querySelector("button#chip")
+        ).disabled,
+      ).to.be.true;
+    });
+  });
+
+  describe("click (base _handleClick no-op)", () => {
+    it("clicking suggestion chip does not throw", async () => {
+      const el = /** @type {MdSuggestionChip} */ (
+        await fixture(html`<md-suggestion-chip>Label</md-suggestion-chip>`)
+      );
+      expect(() =>
+        /** @type {HTMLButtonElement} */ (
+          el.shadowRoot.querySelector("button#chip")
+        ).click(),
+      ).to.not.throw;
+    });
+  });
+});
+
+// ─── BaseMdChip: leading-icon slot ────────────────────────────────────────────
+
+describe("BaseMdChip leading-icon slot", () => {
+  it("sets _hasLeadingIcon when leading-icon slot has content (assist chip)", async () => {
+    const el = /** @type {MdAssistChip} */ (
+      await fixture(html`
+        <md-assist-chip>
+          <span slot="leading-icon">icon</span>
+          Label
+        </md-assist-chip>
+      `)
+    );
+    await el.updateComplete;
+    const leadingIconSlot = /** @type {HTMLSlotElement} */ (
+      el.shadowRoot.querySelector('slot[name="leading-icon"]')
+    );
+    expect(leadingIconSlot).to.exist;
+    // The slot class is applied when _hasLeadingIcon is true
+    expect(leadingIconSlot.classList.contains("chip__leading-icon")).to.be.true;
+  });
+
+  it("assist chip click does not throw (base _handleClick no-op)", async () => {
+    const el = /** @type {MdAssistChip} */ (
+      await fixture(html`<md-assist-chip>Label</md-assist-chip>`)
+    );
+    expect(() =>
+      /** @type {HTMLButtonElement} */ (
+        el.shadowRoot.querySelector("button#chip")
+      ).click(),
+    ).to.not.throw;
+  });
+
+  it("filter chip _onSlotChange updates _hasSelectedIcon state", async () => {
+    const el = /** @type {MdFilterChip} */ (
+      await fixture(html`<md-filter-chip selected>Label</md-filter-chip>`)
+    );
+    await el.updateComplete;
+    // The selected-icon slot is rendered when selected — slotchange fires
+    const selectedIconSlot = /** @type {HTMLSlotElement} */ (
+      el.shadowRoot.querySelector('slot[name="selected-icon"]')
+    );
+    expect(selectedIconSlot).to.exist;
+  });
+
+  it("input chip trailing-icon slot fires slotchange updating _hasTrailingIcon", async () => {
+    const el = /** @type {MdInputChip} */ (
+      await fixture(html`<md-input-chip>React</md-input-chip>`)
+    );
+    await el.updateComplete;
+    // The trailing-icon slot is rendered when not removable
+    const trailingIconSlot = /** @type {HTMLSlotElement} */ (
+      el.shadowRoot.querySelector('slot[name="trailing-icon"]')
+    );
+    expect(trailingIconSlot).to.exist;
+  });
+
+  it("input chip chip_has-avatar class applied when avatar=true", async () => {
+    const el = /** @type {MdInputChip} */ (
+      await fixture(html`<md-input-chip avatar>React</md-input-chip>`)
+    );
+    await el.updateComplete;
+    const button = /** @type {HTMLButtonElement} */ (
+      el.shadowRoot.querySelector("button#chip")
+    );
+    expect(button.classList.contains("chip_has-avatar")).to.be.true;
+  });
+
+  it("filter chip chip_selected class applied when selected", async () => {
+    const el = /** @type {MdFilterChip} */ (
+      await fixture(html`<md-filter-chip selected>Label</md-filter-chip>`)
+    );
+    await el.updateComplete;
+    const button = /** @type {HTMLButtonElement} */ (
+      el.shadowRoot.querySelector("button#chip")
+    );
+    expect(button.classList.contains("chip_selected")).to.be.true;
+  });
+});

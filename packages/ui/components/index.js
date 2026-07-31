@@ -1,0 +1,17 @@
+import "./badge/badge.js";
+import "./button/button.js";
+import "./card/card.js";
+import "./chips/index.js";
+import "./icon/icon.js";
+import "./icon-button/icon-button.js";
+import "./list/index.js";
+import "./progress-circular/progress-circular.js";
+import "./progress-linear/progress-linear.js";
+import "./text-field/text-field.js";
+import "./dialog/dialog.js";
+import "./checkbox/checkbox.js";
+import "./radio-button/radio-button.js";
+import "./avatar/avatar.js";
+import "./fab/fab.js";
+import "./switch/switch.js";
+import "./tabs/index.js";
