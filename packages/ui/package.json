@@ -27,6 +27,7 @@
     "package": "npm run build",
     "prepublishOnly": "npm run package",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "format": "prettier --write . --ignore-path .gitignore",
     "preview": "vite preview",
     "sb": "storybook dev -p 6006",

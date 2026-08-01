@@ -32,6 +32,8 @@ export default class FAB extends BaseButton {
     /** The variant size of the button. */
     size: {},
     label: { type: String, attribute: true },
+    /** Tracks whether the button or link is focused. */
+    focused: { state: true },
   };
 
   /** @returns {import("lit").CSSResultGroup} */
@@ -63,6 +65,9 @@ export default class FAB extends BaseButton {
 
     /** @type {string} */
     this.label = "";
+
+    /** @type {boolean} */
+    this.focused = false;
   }
 
   /** @returns {FABButtonVariant} */
@@ -100,11 +105,16 @@ export default class FAB extends BaseButton {
   get classes() {
     return classMap({
       button_disabled: this.disabled,
-      button_icon: !!this.icon,
+      button_icon: this.hasIcon,
       button_focused: this.focused,
       button_label: !!this.label,
     });
   }
+
+  handleFocus = () => {
+    if (this.disabled) return;
+    this.focused = this.buttonOrAnchor?.matches(":focus") ?? false;
+  };
 
   renderIcon() {
     return html`<slot ?icon-only=${this.slotHasContent} name="icon"> </slot> `;

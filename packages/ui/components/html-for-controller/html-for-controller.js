@@ -11,8 +11,8 @@ export class HTMLForController {
   /** @type {HTMLElement | null | undefined} */
   control;
 
-  /** @type {HTMLElement | null | undefined} */
-  currentControl;
+  /** @type {HTMLElement | null} */
+  currentControl = null;
 
   /**
    * @param {ReactiveControllerHost} host
@@ -28,15 +28,17 @@ export class HTMLForController {
       /** @type {unknown} */ (this.host)
     ).getAttribute("for");
     if (forAttribute) {
+      const root = /** @type {Document | ShadowRoot} */ (
+        /** @type {HTMLElement} */ (
+          /** @type {unknown} */ (this.host)
+        ).getRootNode()
+      );
+      this.setCurrentControl(root.getElementById(forAttribute));
+    } else {
       const target = /** @type {HTMLElement} */ (
         /** @type {unknown} */ (this.host)
-      )
-        .getRootNode()
-        .getElementById(forAttribute);
-      this.setCurrentControl(target);
-    } else {
-      const target = this.host.getRootNode();
-      this.setCurrentControl(target);
+      ).getRootNode();
+      this.setCurrentControl(/** @type {HTMLElement} */ (target));
     }
   }
 

@@ -173,7 +173,7 @@ export class BaseButton extends LitElement {
     this.manageTextObservedSlot();
   }
 
-  /** @param {any} changes */
+  /** @param {import("lit").PropertyValues} changes */
   firstUpdated(changes) {
     super.firstUpdated(changes);
     this.updateComplete.then(() => {

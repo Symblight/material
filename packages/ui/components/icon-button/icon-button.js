@@ -76,7 +76,7 @@ export default class IconButton extends BaseButton {
     this.setAttribute("variant", this.variant);
   }
 
-  /** @param {any} changes */
+  /** @param {import("lit").PropertyValues} changes */
   firstUpdated(changes) {
     super.firstUpdated(changes);
 

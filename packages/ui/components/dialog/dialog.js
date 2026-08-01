@@ -15,14 +15,10 @@ import "../icon/icon.js";
 export default class MdDialog extends LitElement {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {
-    /** The state indicating whether the dialog is open. */
-    isOpen: { type: Boolean, state: true },
-    /** The state indicating whether the dialog is in the process of opening. */
-    isOpening: { type: Boolean, state: true },
     /** The type associated with the dialog. */
     type: {},
-    /** Property that reflects the open state of the dialog. */
-    open: { type: Boolean, attribute: true, reflect: true },
+    /** Whether the dialog is open. */
+    open: { type: Boolean, reflect: true },
   };
 
   /** @returns {import("lit").CSSResultGroup} */
@@ -33,13 +29,10 @@ export default class MdDialog extends LitElement {
   constructor() {
     super();
 
-    /** @type {boolean} */
-    this.isOpen = false;
-
-    /** @type {boolean} */
-    this.isOpening = false;
-
     this.type = nothing;
+
+    /** @type {boolean} */
+    this.open = false;
   }
 
   /** @returns {HTMLDialogElement | undefined} */
@@ -49,69 +42,77 @@ export default class MdDialog extends LitElement {
     );
   }
 
-  get open() {
-    return this.isOpen;
-  }
-
-  /** @param {boolean} open */
-  set open(open) {
-    if (open === this.isOpen) {
+  /**
+   * All native `<dialog>` side effects live here, gated on the `open` property
+   * having changed. `updated()` only ever runs after `render()` has populated
+   * `renderRoot`, so `this.dialog` is guaranteed to exist — including on the
+   * very first update, whether `open` was set via `.show()`, direct property
+   * assignment, or attribute reflection from server-rendered markup.
+   * @param {import("lit").PropertyValues} changedProperties
+   */
+  updated(changedProperties) {
+    super.updated(changedProperties);
+    if (!changedProperties.has("open")) {
       return;
     }
 
-    this.isOpen = open;
-    if (open) {
-      this.setAttribute("open", "");
-      this.show();
-    } else {
-      this.removeAttribute("open");
-      this.close();
-    }
-  }
-
-  show() {
-    this.isOpening = true;
     const dialog = this.dialog;
+    if (!dialog) {
+      return;
+    }
 
-    if (!dialog || dialog.open || !this.isOpening) {
-      this.isOpening = false;
-      return;
+    if (this.open) {
+      if (dialog.open) {
+        return;
+      }
+
+      const preventOpen = !this.dispatchEvent(
+        new Event("open", { cancelable: true }),
+      );
+      if (preventOpen) {
+        this.open = false;
+        return;
+      }
+
+      try {
+        dialog.showModal();
+      } catch {
+        // e.g. disconnected before this ran — don't leave state claiming "open"
+        this.open = false;
+        return;
+      }
+      /** @type {HTMLElement | null} */ (
+        this.querySelector("[autofocus]")
+      )?.focus();
+      this.dispatchEvent(new Event("opened"));
+    } else if (dialog.open) {
+      dialog.close();
+      this.dispatchEvent(new Event("closed"));
     }
-    const preventOpen = !this.dispatchEvent(
-      new Event("open", { cancelable: true }),
-    );
-    if (preventOpen) {
-      this.open = false;
-      return;
-    }
-    dialog.showModal();
+  }
+
+  async show() {
     this.open = true;
-    /** @type {HTMLElement | null} */ (
-      this.querySelector("[autofocus]")
-    )?.focus();
-    this.dispatchEvent(new Event("opened"));
-    this.isOpening = false;
+    await this.updateComplete;
   }
 
   async close() {
-    this.isOpening = false;
-    const dialog = this.dialog;
-    // Check if already closed or if `dialog.show()` was called while awaiting.
-    if (!dialog || !dialog.open || this.isOpening) {
-      this.open = false;
-      return;
-    }
-    dialog.close();
     this.open = false;
-    this.dispatchEvent(new Event("closed"));
+    await this.updateComplete;
+  }
+
+  /** Syncs state back when the native `<dialog>` closes itself (Escape, `<form method="dialog">`). */
+  handleNativeClose() {
+    if (this.open) {
+      this.open = false;
+    }
   }
 
   render() {
     return html`<dialog
       modal-mode="mega"
-      ?open=${this.isOpen}
       class="dialog"
-      @close=${this.close}
+      @close=${this.handleNativeClose}
     >
       <header class="dialog__header">
         <slot name="headline"></slot>

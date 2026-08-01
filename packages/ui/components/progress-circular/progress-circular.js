@@ -33,7 +33,7 @@ export default class MdProgressCircular extends LitElement {
     return this.value === undefined || this.value === null;
   }
 
-  /** @param {any} changes */
+  /** @param {import("lit").PropertyValues} changes */
   firstUpdated(changes) {
     super.firstUpdated(changes);
 

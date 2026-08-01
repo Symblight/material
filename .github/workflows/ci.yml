@@ -26,6 +26,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Typecheck
+        working-directory: packages/ui
+        run: pnpm typecheck
+
       - name: Build
         working-directory: packages/ui
         run: pnpm build
