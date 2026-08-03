@@ -1,0 +1,100 @@
+:host {
+  --md-data-grid-row-divider-color: var(--md-sys-color-outline-variant);
+  --md-data-grid-row-hover-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 96%
+  );
+  --md-data-grid-border-color: var(--md-sys-color-outline-variant);
+  --md-data-grid-shape: var(--md-sys-shape-corner-medium, 1rem);
+  --md-data-grid-empty-state-color: var(--md-sys-color-on-surface-variant);
+  --md-data-grid-empty-state-text-font: var(
+    --md-sys-typescale-body-medium-font,
+    inherit
+  );
+  --md-data-grid-empty-state-text-size: var(
+    --md-sys-typescale-body-medium-size,
+    0.875rem
+  );
+
+  display: block;
+  background-color: transparent;
+}
+
+.data-grid {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--md-data-grid-border-color);
+  border-radius: var(--md-data-grid-shape);
+}
+
+.data-grid__header {
+  display: grid;
+  align-items: stretch;
+  flex: none;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid var(--md-data-grid-row-divider-color);
+  background-color: inherit;
+}
+
+/* Reserves space for the viewport's vertical scrollbar (which sits inside
+   .data-grid__viewport, outside the header) so header columns stay aligned
+   with body columns instead of being stretched wider by the scrollbar gap. */
+.data-grid__header-gutter {
+  min-inline-size: 0;
+}
+
+.data-grid__viewport {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  /* Virtualized rows are constantly added/removed from the DOM as the user
+     scrolls. Without this, Chrome's scroll anchoring tries to compensate for
+     those DOM changes by nudging scrollTop itself, fighting our own
+     scroll-position math and desyncing the rendered window from the actual
+     scroll position (visible as blank space you can still scroll into). */
+  overflow-anchor: none;
+}
+
+.data-grid__empty-state {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 2rem 1rem;
+  color: var(--md-data-grid-empty-state-color);
+  font-family: var(--md-data-grid-empty-state-text-font);
+  font-size: var(--md-data-grid-empty-state-text-size);
+  text-align: center;
+}
+
+.data-grid__spacer {
+  position: relative;
+}
+
+.data-grid__rows {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  will-change: transform;
+}
+
+.data-grid__row {
+  display: grid;
+  align-items: stretch;
+  border-bottom: 1px solid var(--md-data-grid-row-divider-color);
+}
+
+:where(.data-grid__row:hover) {
+  background-color: var(--md-data-grid-row-hover-color);
+}
+
+:where(.data-grid__row:last-child) {
+  border-bottom: none;
+}

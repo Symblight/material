@@ -1,0 +1,42 @@
+:host {
+  --md-data-grid-header-label-color: var(--md-sys-color-on-surface-variant);
+  --md-data-grid-header-label-text-font: var(
+    --md-sys-typescale-label-large-font,
+    inherit
+  );
+  --md-data-grid-header-label-text-size: var(
+    --md-sys-typescale-label-large-size,
+    0.875rem
+  );
+  --md-data-grid-header-label-text-weight: 600;
+
+  /* Containing block for md-data-column-separator's position: absolute. */
+  position: relative;
+  /* The host is itself a CSS Grid item of .data-grid__header — an explicit
+     0 (not just relying on md-data-column-title's own overflow: hidden)
+     stops its reported intrinsic size from being the label's unbroken
+     content width. Deliberately not overflow: hidden here — that would
+     also clip md-data-column-separator, which hangs half outside this
+     box by design. Explicit min-inline-size: 0 works unconditionally,
+     independent of overflow, unlike the browser's own automatic (content-
+     based) minimum-size default. */
+  min-inline-size: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-inline: 0.55rem;
+  color: var(--md-data-grid-header-label-color);
+  font-size: var(--md-data-grid-header-label-text-size);
+  font-weight: var(--md-data-grid-header-label-text-weight);
+  text-align: left;
+}
+
+:host(.data-grid-column-header_align-right) {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+:host(.data-grid-column-header_align-center) {
+  justify-content: center;
+  text-align: center;
+}

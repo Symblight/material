@@ -1,0 +1,54 @@
+:host {
+  --md-data-grid-cell-color: var(--md-sys-color-on-surface);
+  --md-data-grid-cell-text-font: var(
+    --md-sys-typescale-body-medium-font,
+    inherit
+  );
+  --md-data-grid-cell-text-size: var(
+    --md-sys-typescale-body-medium-size,
+    0.875rem
+  );
+  --md-data-grid-cell-focus-ring-color: var(--md-sys-color-primary);
+  --md-data-grid-cell-focus-ring-width: 1px;
+
+  box-sizing: border-box;
+  display: block;
+  flex: 0 0 auto;
+  height: var(--height, 52px);
+  width: var(--width);
+  /* Vertically centers single-line content without flexbox — matches the
+     cell's own height so the text sits centered top-to-bottom. */
+  line-height: calc(var(--height, 52px) - 1px);
+  /* The host is itself a CSS Grid item — grid items default to
+     min-width: auto (their min-content size), which for nowrap text is
+     the full unwrapped text width — that lets the item blow past its
+     track's fixed width instead of respecting it, which in turn means
+     overflow/text-overflow never has anything to actually clip. */
+  min-inline-size: 0;
+  padding-inline: 0.55rem;
+  color: var(--md-data-grid-cell-color);
+  font-size: var(--md-data-grid-cell-text-size);
+  font-weight: 400;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  outline: none;
+  /* Always reserve the highlight border's space at transparent — swapping
+     only the color (not the width) when highlighted means the content area
+     never shifts between the two states. */
+  border: var(--md-data-grid-cell-focus-ring-width) solid transparent;
+  border-radius: 0.125rem;
+}
+
+:host(.data-grid-cell_align-right) {
+  text-align: right;
+}
+
+:host(.data-grid-cell_align-center) {
+  text-align: center;
+}
+
+:host(.data-grid-cell_highlighted) {
+  border-color: var(--md-data-grid-cell-focus-ring-color);
+}

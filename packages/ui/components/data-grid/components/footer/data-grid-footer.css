@@ -1,0 +1,45 @@
+:host {
+  --md-data-grid-footer-color: var(--md-sys-color-on-surface-variant);
+  --md-data-grid-footer-text-font: var(
+    --md-sys-typescale-label-medium-font,
+    inherit
+  );
+  --md-data-grid-footer-text-size: var(
+    --md-sys-typescale-label-medium-size,
+    0.75rem
+  );
+  --md-data-grid-footer-border-color: var(--md-sys-color-outline-variant);
+
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--md-data-grid-footer-border-color);
+}
+
+.data-grid-footer__count {
+  margin-inline-end: 0.5rem;
+  color: var(--md-data-grid-footer-color);
+  font-family: var(--md-data-grid-footer-text-font);
+  font-size: var(--md-data-grid-footer-text-size);
+  white-space: nowrap;
+}
+
+.data-grid-footer__rows-per-page-label {
+  color: var(--md-data-grid-footer-color);
+  font-family: var(--md-data-grid-footer-text-font);
+  font-size: var(--md-data-grid-footer-text-size);
+  white-space: nowrap;
+}
+
+.data-grid-footer__page-size-select {
+  margin-inline-end: 1rem;
+  width: 4.5rem;
+  --md-text-field-top-space: 0.375rem;
+  --md-text-field-bottom-space: 0.375rem;
+  --md-text-field-inline-start-space: 0.5rem;
+  --md-text-field-inline-end-space: 0.5rem;
+  --md-text-field-font-size: var(--md-data-grid-footer-text-size);
+}
