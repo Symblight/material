@@ -62,7 +62,7 @@ export class ColumnResizeController {
     if (column.resizable === false) return false;
     // A trade needs a right-hand neighbor to trade with — matches why the
     // last column never gets a handle.
-    return resizeColIndex < this.host.columns.length - 1;
+    return resizeColIndex < this.host._columns.length - 1;
   }
 
   /**
@@ -132,7 +132,7 @@ export class ColumnResizeController {
    * @returns {number}
    */
   _measureWidth(colIndex) {
-    const column = this.host.columns[colIndex];
+    const column = this.host._columns[colIndex];
     if (typeof column?.width === "number") return column.width;
 
     const header = this.host.renderRoot?.querySelector(".data-grid__header");
@@ -152,8 +152,8 @@ export class ColumnResizeController {
    * @returns {number} the dragged column's new width
    */
   _previewWidth(clientX) {
-    const column = this.host.columns[this._resizeColIndex];
-    const partner = this.host.columns[this._partnerColIndex];
+    const column = this.host._columns[this._resizeColIndex];
+    const partner = this.host._columns[this._partnerColIndex];
 
     const min = column.minWidth ?? DEFAULT_MIN_WIDTH;
     const max = column.maxWidth ?? Infinity;
@@ -179,7 +179,7 @@ export class ColumnResizeController {
     this._pendingWidth = width;
     this._pendingPartnerWidth = partnerWidth;
 
-    const previewColumns = this.host.columns.map((col, index) => {
+    const previewColumns = this.host._columns.map((col, index) => {
       if (index === this._resizeColIndex) return { ...col, width };
       if (index === this._partnerColIndex)
         return { ...col, width: partnerWidth };
@@ -208,15 +208,22 @@ export class ColumnResizeController {
   /**
    * The single point during a drag where `host.columns` actually changes —
    * triggers one normal Lit re-render, which reconciles away whatever
-   * `_previewWidth()` painted directly onto the DOM.
+   * `_previewWidth()` painted directly onto the DOM. `_resizeColIndex`/
+   * `_partnerColIndex` are indices into `host._columns` (the checkbox
+   * column, when present, counted in) — `host.columns` itself never
+   * includes that synthetic column, so writing back means shifting the
+   * index down by one to compensate, rather than accidentally baking
+   * `GRID_CHECKBOX_SELECTION_COL_DEF` permanently into the public array.
    * @private
    */
   _commitWidth() {
     const width = this._pendingWidth;
     const partnerWidth = this._pendingPartnerWidth;
+    const offset = this.host.checkboxSelection ? 1 : 0;
     this.host.columns = this.host.columns.map((col, index) => {
-      if (index === this._resizeColIndex) return { ...col, width };
-      if (index === this._partnerColIndex)
+      const mergedIndex = index + offset;
+      if (mergedIndex === this._resizeColIndex) return { ...col, width };
+      if (mergedIndex === this._partnerColIndex)
         return { ...col, width: partnerWidth };
       return col;
     });
@@ -228,7 +235,7 @@ export class ColumnResizeController {
    * @param {number} width
    */
   _dispatchResizeEvent(phase, width) {
-    const column = this.host.columns[this._resizeColIndex];
+    const column = this.host._columns[this._resizeColIndex];
     this.host.dispatchEvent(
       new CustomEvent("md-data-grid-column-resize", {
         detail: {

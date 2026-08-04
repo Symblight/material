@@ -21,6 +21,16 @@
     white,
     transparent 40%
   );
+  --md-data-grid-row-selected-color: color-mix(
+    in oklch,
+    var(--md-sys-color-primary),
+    transparent 92%
+  );
+  --md-data-grid-row-selected-hover-color: color-mix(
+    in oklch,
+    var(--md-sys-color-primary),
+    transparent 86%
+  );
 
   display: block;
   background-color: transparent;
@@ -112,6 +122,7 @@
 .data-grid__row {
   display: grid;
   align-items: stretch;
+  cursor: default;
   border-bottom: 1px solid var(--md-data-grid-row-divider-color);
 }
 
@@ -121,6 +132,17 @@
 
 :where(.data-grid__row:last-child) {
   border-bottom: none;
+}
+
+/* :where() so both rules carry zero specificity — source order (not
+   specificity) decides, letting the hover variant below win over this one
+   whenever a selected row is also being hovered. */
+:where(.data-grid__row_selected) {
+  background-color: var(--md-data-grid-row-selected-color);
+}
+
+:where(.data-grid__row_selected:hover) {
+  background-color: var(--md-data-grid-row-selected-hover-color);
 }
 
 .data-grid__skeleton-cell {

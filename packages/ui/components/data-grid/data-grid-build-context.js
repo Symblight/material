@@ -14,6 +14,8 @@ export function buildDataGridContext(host) {
     focusedCell: host._keyboardNav.focusedCell,
     setFocusedCell: (rowIndex, colIndex) =>
       host._keyboardNav.setFocusedCell(rowIndex, colIndex),
+    clearFocusedCell: (rowIndex, colIndex) =>
+      host._keyboardNav.clearFocusedCell(rowIndex, colIndex),
     hasFocusedCell: host._keyboardNav.hasFocusedCell,
     disableCellHighlight: host.disableCellHighlight,
     page: host.paginationModel?.page ?? 0,
@@ -29,5 +31,11 @@ export function buildDataGridContext(host) {
       host._columnResize.startColumnResize(resizeColIndex, clientX),
     resizeColumn: (clientX) => host._columnResize.resizeColumn(clientX),
     endColumnResize: (clientX) => host._columnResize.endColumnResize(clientX),
+    rows: host.rows,
+    rowSelectionModel: host.rowSelectionModel,
+    disableMultipleRowSelection: host.disableMultipleRowSelection,
+    toggleRowSelection: (row, rowIndex, modifiers) =>
+      host._selection.select(row, rowIndex, modifiers, host._effectiveRows),
+    toggleSelectAll: () => host._selection.toggleAll(host.rows),
   };
 }

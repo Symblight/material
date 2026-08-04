@@ -18,6 +18,8 @@ import { ColumnResizeController } from "./controllers/data-grid-column-resize-co
 import { SortController } from "./controllers/data-grid-sort-controller.js";
 import { RowSpanController } from "./controllers/data-grid-row-span-controller.js";
 import { TreeController } from "./controllers/data-grid-tree-controller.js";
+import { RowSelectionController } from "./controllers/data-grid-selection-controller.js";
+import { GRID_CHECKBOX_SELECTION_COL_DEF } from "./data-grid-checkbox-column.js";
 import { buildDataGridContext } from "./data-grid-build-context.js";
 import styles from "./data-grid.css?inline";
 
@@ -37,6 +39,8 @@ import styles from "./data-grid.css?inline";
  * @property {(params: DataGridCellParams) => import("lit").TemplateResult | string | number} [renderCell]
  * @property {(column: DataGridColumn) => import("lit").TemplateResult | string} [renderHeader]
  * @property {(params: DataGridCellParams) => unknown} [rowSpanValueGetter] // computes the equality key used to detect consecutive-equal-value runs; falls back to valueGetter, then the raw field value
+ * @property {string | ((params: DataGridCellParams) => string)} [cellClassName] // extra class name(s) (space-separated) applied to every md-data-cell in this column — a plain string, or computed per cell
+ * @property {string | ((column: DataGridColumn) => string)} [headerClassName] // extra class name(s) (space-separated) applied to this column's md-data-column-header — a plain string, or computed from the column
  */
 
 /**
@@ -144,6 +148,7 @@ export class MdDataGrid extends LitElement {
     sortModel: { state: true },
     rowSpanning: { type: Boolean, attribute: "row-spanning", reflect: true },
     loading: { type: Boolean, attribute: "loading", reflect: true },
+    rowSelectionModel: { state: true },
     hidePagination: {
       type: Boolean,
       attribute: "hide-pagination",
@@ -162,6 +167,21 @@ export class MdDataGrid extends LitElement {
     disableColumnSorting: {
       type: Boolean,
       attribute: "disable-column-sorting",
+      reflect: true,
+    },
+    disableMultipleRowSelection: {
+      type: Boolean,
+      attribute: "disable-multiple-row-selection",
+      reflect: true,
+    },
+    disableRowSelectionOnClick: {
+      type: Boolean,
+      attribute: "disable-row-selection-on-click",
+      reflect: true,
+    },
+    checkboxSelection: {
+      type: Boolean,
+      attribute: "checkbox-selection",
       reflect: true,
     },
   };
@@ -216,6 +236,9 @@ export class MdDataGrid extends LitElement {
     /** @type {boolean} */
     this.loading = false;
 
+    /** @type {Set<PropertyKey>} */
+    this.rowSelectionModel = new Set();
+
     /** @type {boolean} */
     this.hidePagination = false;
 
@@ -227,6 +250,15 @@ export class MdDataGrid extends LitElement {
 
     /** @type {boolean} */
     this.disableColumnSorting = false;
+
+    /** @type {boolean} */
+    this.disableMultipleRowSelection = false;
+
+    /** @type {boolean} */
+    this.disableRowSelectionOnClick = false;
+
+    /** @type {boolean} */
+    this.checkboxSelection = false;
 
     // Not @private: data-grid-build-context.js reads these directly as an
     // internal sibling module — see §15 of the data-grid plan.
@@ -245,6 +277,7 @@ export class MdDataGrid extends LitElement {
     this._rowSpan = new RowSpanController(this);
     this._tree = new TreeController(this);
     this._tree.build(this.rows);
+    this._selection = new RowSelectionController(this);
 
     /** @private */
     this._gridContextProvider = new ContextProvider(this, {
@@ -269,7 +302,9 @@ export class MdDataGrid extends LitElement {
       changed.has("paginationMode") ||
       changed.has("pageSizeOptions") ||
       changed.has("rowCount") ||
-      changed.has("disableCellHighlight")
+      changed.has("disableCellHighlight") ||
+      changed.has("rowSelectionModel") ||
+      changed.has("disableMultipleRowSelection")
     ) {
       this._gridContextProvider.setValue(buildDataGridContext(this));
     }
@@ -292,6 +327,24 @@ export class MdDataGrid extends LitElement {
     if (changed.has("rows") || changed.has("getRowId")) {
       this._tree.build();
     }
+    if (changed.has("rows") || changed.has("sortModel")) {
+      this._selection.resetAnchor();
+    }
+  }
+
+  /**
+   * `columns` with `GRID_CHECKBOX_SELECTION_COL_DEF` prepended when
+   * `checkboxSelection` is on — the actual list rendered (header + every
+   * row) and the one every column-index-based controller (resize,
+   * keyboard nav) operates against, so the checkbox column is genuinely
+   * column 0 rather than a visual overlay bolted on separately. `columns`
+   * itself (the public property) is never touched — `ColumnResizeController`
+   * writes back to it with the checkbox's offset subtracted out again.
+   */
+  get _columns() {
+    return this.checkboxSelection
+      ? [GRID_CHECKBOX_SELECTION_COL_DEF, ...this.columns]
+      : this.columns;
   }
 
   /** `rows` run through the active sort — the shared starting point for pagination/virtualization/keyboard nav below. */
@@ -358,10 +411,38 @@ export class MdDataGrid extends LitElement {
   }
 
   /**
+   * Shift-clicking to range-select rows is also, natively, how a browser
+   * extends a text selection — without this, every shift-click after the
+   * first drags a text-selection highlight across whatever cell content
+   * sits between the anchor row and the clicked one. That selection is
+   * made at mousedown (before `click` fires), so it has to be suppressed
+   * here, not in `_onRowClick()`; preventing default on `mousedown` blocks
+   * the native selection without blocking the click that follows it.
+   * @param {MouseEvent} event
+   */
+  _onRowMouseDown(event) {
+    if (event.shiftKey) event.preventDefault();
+  }
+
+  /**
+   * @param {MouseEvent} event
    * @param {Record<string, unknown>} row
    * @param {number} rowIndex
+   * @param {Record<string, unknown>[]} rows the exact rows this click happened against — for shift-range selection
    */
-  _onRowClick(row, rowIndex) {
+  _onRowClick(event, row, rowIndex, rows) {
+    if (!this.disableRowSelectionOnClick) {
+      // With checkboxSelection on, a plain row click behaves like the
+      // checkbox's own click — additive (add/remove just this row) rather
+      // than replacing the whole selection with it — matching what the
+      // visible checkboxes imply: clicking a row is another way to check
+      // its box, not a single-select action that would silently uncheck
+      // every other one. Shift-click still range-selects either way.
+      const modifiers = this.checkboxSelection
+        ? { shiftKey: event.shiftKey, ctrlKey: true, metaKey: true }
+        : event;
+      this._selection.select(row, rowIndex, modifiers, rows);
+    }
     this.dispatchEvent(
       new CustomEvent("md-data-grid-row-click", {
         detail: { row, rowIndex },
@@ -376,16 +457,16 @@ export class MdDataGrid extends LitElement {
     const rowCount = this._pagination.effectiveRows(this._sortedRows).length;
     this._keyboardNav.onKeydown(event, {
       rowCount,
-      colCount: this.columns.length,
+      colCount: this._columns.length,
       ensureRowVisible: (rowIndex) =>
         this._virtualization.ensureRowVisible(rowIndex, rowCount),
     });
   }
 
   render() {
-    const gridTemplateColumns = this._virtualization.gridTemplateColumns(
-      this.columns,
-    );
+    const columns = this._columns;
+    const gridTemplateColumns =
+      this._virtualization.gridTemplateColumns(columns);
     const scrollbarWidth = this._virtualization.scrollbarWidth;
     const headerGridTemplateColumns = scrollbarWidth
       ? `${gridTemplateColumns} ${scrollbarWidth}px`
@@ -424,11 +505,11 @@ export class MdDataGrid extends LitElement {
             // and skip the header cells it covers.
             let coveredUntil = -1;
             return repeat(
-              this.columns,
+              columns,
               (column) => column.field,
               (column, colIndex) => {
                 if (colIndex <= coveredUntil) return nothing;
-                const span = clampColSpan(this.columns, colIndex);
+                const span = clampColSpan(columns, colIndex);
                 coveredUntil = colIndex + span - 1;
                 const resizeColIndex = coveredUntil;
                 const resizable = this._columnResize.isResizable(
@@ -488,7 +569,7 @@ export class MdDataGrid extends LitElement {
                           style="grid-template-columns: ${gridTemplateColumns}; height: ${this
                             .rowHeight}px;"
                         >
-                          ${this.columns.map(
+                          ${columns.map(
                             (_column, colIndex) => html`
                               <div class="data-grid__skeleton-cell" part="cell">
                                 <md-skeleton
@@ -529,14 +610,25 @@ export class MdDataGrid extends LitElement {
                         const rowIndex = startIndex + i;
                         const rowClassName =
                           this.getRowClassName?.(row, rowIndex) ?? "";
+                        const selected = this._selection.isSelected(row);
                         return html`
                           <div
-                            class="data-grid__row ${rowClassName}"
+                            class="data-grid__row ${rowClassName} ${selected
+                              ? "data-grid__row_selected"
+                              : ""}"
                             part="row ${rowClassName}"
                             role="row"
+                            aria-selected=${selected}
                             style="grid-template-columns: ${gridTemplateColumns}; height: ${this
                               .rowHeight}px; --height: ${this.rowHeight}px;"
-                            @click=${() => this._onRowClick(row, rowIndex)}
+                            @mousedown=${this._onRowMouseDown}
+                            @click=${(/** @type {MouseEvent} */ event) =>
+                              this._onRowClick(
+                                event,
+                                row,
+                                rowIndex,
+                                effectiveRows,
+                              )}
                           >
                             ${(() => {
                               // Same coveredUntil skip as the header loop
@@ -545,14 +637,11 @@ export class MdDataGrid extends LitElement {
                               // just the header.
                               let coveredUntil = -1;
                               return repeat(
-                                this.columns,
+                                columns,
                                 (column) => column.field,
                                 (column, colIndex) => {
                                   if (colIndex <= coveredUntil) return nothing;
-                                  const span = clampColSpan(
-                                    this.columns,
-                                    colIndex,
-                                  );
+                                  const span = clampColSpan(columns, colIndex);
                                   coveredUntil = colIndex + span - 1;
                                   const spanInfo = rowSpans.get(column.field)?.[
                                     rowIndex

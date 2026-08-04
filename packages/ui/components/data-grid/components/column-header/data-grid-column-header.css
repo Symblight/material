@@ -43,6 +43,13 @@
   text-align: center;
 }
 
+/* Set via GRID_CHECKBOX_SELECTION_COL_DEF's headerClassName — the header
+   checkbox's own centering needs the full header width to work with; the
+   default padding-inline would just eat into that instead. */
+:host(.data-grid-column-header_checkbox) {
+  padding: 0px;
+}
+
 :host([sortable]) {
   cursor: pointer;
 }

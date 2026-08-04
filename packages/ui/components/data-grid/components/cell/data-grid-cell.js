@@ -64,6 +64,15 @@ export class MdDataCell extends LitElement {
      */
     this.rowSpan = 1;
 
+    /**
+     * Class name(s) last applied from `column.cellClassName` — tracked so
+     * a changed (or cleared) value can be removed before the new one is
+     * added, since `classList` is mutated directly here rather than
+     * reconciled from a template.
+     * @private @type {string}
+     */
+    this._appliedCellClassName = "";
+
     /** @private */
     this._gridConsumer = new ContextConsumer(this, {
       context: dataGridContext,
@@ -75,6 +84,9 @@ export class MdDataCell extends LitElement {
 
     this.addEventListener("focus", () =>
       this._gridConsumer.value?.setFocusedCell(this.rowIndex, this.colIndex),
+    );
+    this.addEventListener("blur", () =>
+      this._gridConsumer.value?.clearFocusedCell(this.rowIndex, this.colIndex),
     );
   }
 
@@ -125,6 +137,25 @@ export class MdDataCell extends LitElement {
     this.classList.toggle("data-grid-cell_align-right", align === "right");
     this.classList.toggle("data-grid-cell_align-center", align === "center");
     this.classList.toggle("data-grid-cell_highlighted", Boolean(highlighted));
+
+    const cellClassName =
+      (typeof column.cellClassName === "function"
+        ? column.cellClassName({
+            row: this.row,
+            column,
+            rowIndex,
+            value: this._value,
+          })
+        : column.cellClassName) ?? "";
+    if (cellClassName !== this._appliedCellClassName) {
+      for (const cls of this._appliedCellClassName.split(" ")) {
+        if (cls) this.classList.remove(cls);
+      }
+      for (const cls of cellClassName.split(" ")) {
+        if (cls) this.classList.add(cls);
+      }
+      this._appliedCellClassName = cellClassName;
+    }
 
     // Depends on the grid's rowHeight (via context, not a declared property
     // of this component), so it's recomputed unconditionally here rather

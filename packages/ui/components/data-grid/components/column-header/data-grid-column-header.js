@@ -15,8 +15,9 @@ import styles from "./data-grid-column-header.css?inline";
  * @tag md-data-column-header
  * @summary One header cell of an `md-data-grid`. The host itself is the
  * positioned/rendered cell (no wrapper div) — `part`/`role` are set once in
- * the constructor, the align modifier class and colSpan's `grid-column`
- * style are kept in sync with `column`/`colSpan` in `willUpdate()`.
+ * the constructor, the align modifier class, `column.headerClassName`, and
+ * colSpan's `grid-column` style are kept in sync with `column`/`colSpan` in
+ * `willUpdate()`.
  * `sortable`/`sort` reflect as attributes so `:host([sortable])` /
  * `:host([sort="desc"])` drive the pointer cursor and sort-icon styling —
  * clicking is wired by `data-grid.js` at the usage site (a plain `@click`
@@ -66,6 +67,15 @@ export class MdDataColumnHeader extends LitElement {
     /** @type {"asc" | "desc" | undefined} */
     this.sort = undefined;
 
+    /**
+     * Class name(s) last applied from `column.headerClassName` — tracked
+     * so a changed (or cleared) value can be removed before the new one
+     * is added, since `classList` is mutated directly here rather than
+     * reconciled from a template.
+     * @private @type {string}
+     */
+    this._appliedHeaderClassName = "";
+
     this.setAttribute("part", "header-cell");
     this.setAttribute("role", "columnheader");
   }
@@ -82,6 +92,20 @@ export class MdDataColumnHeader extends LitElement {
         "data-grid-column-header_align-center",
         align === "center",
       );
+
+      const headerClassName =
+        (typeof this.column.headerClassName === "function"
+          ? this.column.headerClassName(this.column)
+          : this.column.headerClassName) ?? "";
+      if (headerClassName !== this._appliedHeaderClassName) {
+        for (const cls of this._appliedHeaderClassName.split(" ")) {
+          if (cls) this.classList.remove(cls);
+        }
+        for (const cls of headerClassName.split(" ")) {
+          if (cls) this.classList.add(cls);
+        }
+        this._appliedHeaderClassName = headerClassName;
+      }
     }
     if (changed.has("colSpan")) {
       this.style.gridColumn = this.colSpan > 1 ? `span ${this.colSpan}` : "";

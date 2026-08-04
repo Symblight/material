@@ -6,6 +6,7 @@ import { createContext } from "@lit/context";
  * @property {(row: Record<string, unknown>) => string | number} getRowId
  * @property {{ rowIndex: number, colIndex: number }} focusedCell
  * @property {(rowIndex: number, colIndex: number) => void} setFocusedCell
+ * @property {(rowIndex: number, colIndex: number) => void} clearFocusedCell // drops the highlight on blur — no-op if (rowIndex, colIndex) isn't the currently-focused cell
  * @property {boolean} hasFocusedCell       // false until the user has actually clicked/navigated into a cell — focusedCell's (0,0) default doesn't count
  * @property {boolean} disableCellHighlight // when true, md-data-cell skips the focused-cell border highlight
  * @property {number} page                 // current page index, 0 when pagination disabled
@@ -20,6 +21,11 @@ import { createContext } from "@lit/context";
  * @property {(resizeColIndex: number, clientX: number) => void} startColumnResize
  * @property {(clientX: number) => void} resizeColumn
  * @property {(clientX: number) => void} endColumnResize
+ * @property {Record<string, unknown>[]} rows                 // the whole dataset, unsorted/unpaginated — only used for the checkbox column's "select all" state, which spans every page
+ * @property {Set<PropertyKey>} rowSelectionModel
+ * @property {boolean} disableMultipleRowSelection             // when true, md-data-grid-checkbox-header renders nothing — "select all" doesn't apply to single-row selection
+ * @property {(row: Record<string, unknown>, rowIndex: number, modifiers: { shiftKey?: boolean, ctrlKey?: boolean, metaKey?: boolean }) => void} toggleRowSelection
+ * @property {() => void} toggleSelectAll
  */
 
 /** @type {import("@lit/context").Context<symbol, DataGridContextValue>} */

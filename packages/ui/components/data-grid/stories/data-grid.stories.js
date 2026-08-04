@@ -130,6 +130,90 @@ export const RowSpanning = {
   `,
 };
 
+// ─── Row selection — highlight-based, not checkboxes. Click to select,
+// Ctrl/Cmd-click to toggle additively, Shift-click for a range ─────────────
+
+/** @type {Story} */
+export const RowSelection = {
+  render: () => {
+    /** @type {HTMLElement | undefined} */
+    let log;
+    return html`
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <md-data-grid
+          style="height: 320px; width: 720px; display: block;"
+          @md-data-grid-row-selection-model-change=${(
+            /** @type {CustomEvent} */ e,
+          ) => {
+            if (!log) return;
+            const ids = [...e.detail];
+            log.textContent =
+              ids.length === 0 ? "No rows selected." : `Selected: ${ids}`;
+          }}
+          ${ref((el) => {
+            const grid = /** @type {MdDataGrid | undefined} */ (
+              /** @type {unknown} */ (el)
+            );
+            if (!grid) return;
+            grid.columns = BASIC_COLUMNS;
+            grid.rows = makeRows(20);
+          })}
+        ></md-data-grid>
+        <span
+          ${ref((el) => (log = /** @type {HTMLElement | undefined} */ (el)))}
+          style="font-family: monospace; font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant);"
+        >
+          Click a row to select it. Hold Ctrl/Cmd to add/remove one row at a
+          time, or Shift to select a range.
+        </span>
+      </div>
+    `;
+  },
+};
+
+// ─── Checkbox selection — same rowSelectionModel as RowSelection above,
+// driven by an md-checkbox column (GRID_CHECKBOX_SELECTION_COL_DEF) instead
+// of a plain row highlight ────────────────────────────────────────────────
+
+/** @type {Story} */
+export const CheckboxSelection = {
+  render: () => {
+    /** @type {HTMLElement | undefined} */
+    let log;
+    return html`
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <md-data-grid
+          checkbox-selection
+          style="height: 320px; width: 720px; display: block;"
+          @md-data-grid-row-selection-model-change=${(
+            /** @type {CustomEvent} */ e,
+          ) => {
+            if (!log) return;
+            const ids = [...e.detail];
+            log.textContent =
+              ids.length === 0 ? "No rows selected." : `Selected: ${ids}`;
+          }}
+          ${ref((el) => {
+            const grid = /** @type {MdDataGrid | undefined} */ (
+              /** @type {unknown} */ (el)
+            );
+            if (!grid) return;
+            grid.columns = BASIC_COLUMNS;
+            grid.rows = makeRows(20);
+          })}
+        ></md-data-grid>
+        <span
+          ${ref((el) => (log = /** @type {HTMLElement | undefined} */ (el)))}
+          style="font-family: monospace; font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant);"
+        >
+          Check a row's box to select it — checking another adds to the
+          selection. The header checkbox selects/clears all 20 rows.
+        </span>
+      </div>
+    `;
+  },
+};
+
 // ─── Loading — md-progress-linear between the header and body, toggled via
 // a ref (the grid never fetches anything itself) ────────────────────────────
 

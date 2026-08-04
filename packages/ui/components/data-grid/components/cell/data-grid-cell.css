@@ -54,6 +54,14 @@
   border-color: var(--md-data-grid-cell-focus-ring-color);
 }
 
+/* Set via GRID_CHECKBOX_SELECTION_COL_DEF's cellClassName — the checkbox's
+   own centering (display: inline-flex + text-align: center, inherited from
+   .data-grid-cell_align-center) needs the full cell width to work with;
+   the default padding-inline would just eat into that instead. */
+:host(.data-grid-cell_checkbox) {
+  padding: 0px;
+}
+
 /* A row-spanning owner's explicit (taller) height overflows past its own
    row's box — nothing clips it (no ancestor between here and the scrollable
    viewport sets overflow: hidden) — but it needs its own stacking context

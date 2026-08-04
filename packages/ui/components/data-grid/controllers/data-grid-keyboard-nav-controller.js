@@ -46,6 +46,30 @@ export class KeyboardNavController {
   }
 
   /**
+   * Drops the highlight when a cell blurs — but only if it's still the one
+   * that's actually highlighted, not some earlier cell's stale blur. Arrow-key
+   * navigation calls `setFocusedCell()` for the new cell immediately, then
+   * imperatively `.focus()`s it afterward (`focusCell()`, which awaits
+   * `updateComplete` first) — so the old cell's `blur` can fire after
+   * `focusedCell` has already moved on. Guarding on identity means that
+   * stale blur is a no-op instead of clearing a highlight that's already
+   * correct.
+   * @param {number} rowIndex
+   * @param {number} colIndex
+   */
+  clearFocusedCell(rowIndex, colIndex) {
+    if (
+      this.focusedCell.rowIndex !== rowIndex ||
+      this.focusedCell.colIndex !== colIndex
+    ) {
+      return;
+    }
+    this.hasFocusedCell = false;
+    this._onFocusChange?.();
+    this.host.requestUpdate();
+  }
+
+  /**
    * @param {number} rowIndex
    * @param {number} colIndex
    */

@@ -30,6 +30,8 @@ import { MdDataColumnHeader } from "./data-grid/components/column-header/data-gr
 import { MdDataColumnSeparator } from "./data-grid/components/column-separator/data-grid-column-separator.js";
 import { MdDataColumnTitle } from "./data-grid/components/column-title/data-grid-column-title.js";
 import { MdDataFooter } from "./data-grid/components/footer/data-grid-footer.js";
+import { MdDataGridCheckboxCell } from "./data-grid/components/checkbox-cell/data-grid-checkbox-cell.js";
+import { MdDataGridCheckboxHeader } from "./data-grid/components/checkbox-header/data-grid-checkbox-header.js";
 import { MdSkeleton } from "./skeleton/skeleton.js";
 
 declare global {
@@ -66,6 +68,8 @@ declare global {
     "md-data-column-separator": MdDataColumnSeparator;
     "md-data-column-title": MdDataColumnTitle;
     "md-data-footer": MdDataFooter;
+    "md-data-grid-checkbox-cell": MdDataGridCheckboxCell;
+    "md-data-grid-checkbox-header": MdDataGridCheckboxHeader;
     "md-skeleton": MdSkeleton;
   }
 }

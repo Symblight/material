@@ -522,6 +522,67 @@ describe("md-data-grid", () => {
         colIndex: 1,
       });
     });
+
+    it("blurring the focused cell drops the highlight", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const cell = /** @type {any} */ (
+        el.shadowRoot.querySelector("md-data-cell")
+      );
+      await cell.updateComplete;
+      cell.dispatchEvent(new Event("focus"));
+      await el.updateComplete;
+      expect(el._gridContextProvider.value.hasFocusedCell).to.be.true;
+      expect(cell.classList.contains("data-grid-cell_highlighted")).to.be.true;
+
+      cell.dispatchEvent(new Event("blur"));
+      await el.updateComplete;
+
+      expect(el._gridContextProvider.value.hasFocusedCell).to.be.false;
+      expect(cell.classList.contains("data-grid-cell_highlighted")).to.be.false;
+    });
+
+    it("a stale blur from a cell that's no longer focused doesn't clear the new highlight", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const cells = /** @type {any[]} */ (
+        Array.from(el.shadowRoot.querySelectorAll("md-data-cell"))
+      );
+      const firstCell = cells.find((c) => c.rowIndex === 0 && c.colIndex === 0);
+      const secondCell = cells.find(
+        (c) => c.rowIndex === 1 && c.colIndex === 0,
+      );
+      await firstCell.updateComplete;
+      firstCell.dispatchEvent(new Event("focus"));
+      await el.updateComplete;
+
+      // Focus already moved to secondCell (e.g. via arrow-key nav) before
+      // firstCell's own blur fires — its blur should now be a no-op.
+      secondCell.dispatchEvent(new Event("focus"));
+      await el.updateComplete;
+      firstCell.dispatchEvent(new Event("blur"));
+      await el.updateComplete;
+
+      expect(el._gridContextProvider.value.focusedCell).to.deep.equal({
+        rowIndex: 1,
+        colIndex: 0,
+      });
+      expect(el._gridContextProvider.value.hasFocusedCell).to.be.true;
+    });
   });
 
   describe("updateRows", () => {
@@ -2030,6 +2091,869 @@ describe("md-data-grid", () => {
       expect(el.shadowRoot.querySelector('[part="skeleton-rows"]')).to.not
         .exist;
       expect(el.shadowRoot.querySelector('[part="empty-state"]')).to.exist;
+    });
+  });
+
+  describe("row selection", () => {
+    /** @param {MdDataGrid} el */
+    function rowEls(el) {
+      return /** @type {HTMLElement[]} */ ([
+        ...el.shadowRoot.querySelectorAll(".data-grid__row"),
+      ]);
+    }
+
+    /**
+     * @param {HTMLElement} rowEl
+     * @param {{ ctrlKey?: boolean, metaKey?: boolean, shiftKey?: boolean }} [modifiers]
+     */
+    function click(rowEl, modifiers = {}) {
+      rowEl.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, ...modifiers }),
+      );
+    }
+
+    it("plain click selects just that row, highlighting it", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      click(rowEls(el)[0]);
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel]).to.deep.equal([0]);
+      expect(rowEls(el)[0].classList.contains("data-grid__row_selected")).to.be
+        .true;
+      expect(rowEls(el)[0].getAttribute("aria-selected")).to.equal("true");
+      expect(rowEls(el)[1].getAttribute("aria-selected")).to.equal("false");
+    });
+
+    it("plain click on a different row replaces the selection", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      click(rowEls(el)[0]);
+      await el.updateComplete;
+      click(rowEls(el)[1]);
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel]).to.deep.equal([1]);
+      expect(rowEls(el)[0].classList.contains("data-grid__row_selected")).to.be
+        .false;
+      expect(rowEls(el)[1].classList.contains("data-grid__row_selected")).to.be
+        .true;
+    });
+
+    it("Ctrl/Cmd-click toggles a row into the selection additively", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      click(rowEls(el)[0]);
+      await el.updateComplete;
+      click(rowEls(el)[2], { ctrlKey: true });
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([0, 2]);
+    });
+
+    it("Ctrl/Cmd-click on an already-selected row toggles it off", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      click(rowEls(el)[0]);
+      await el.updateComplete;
+      click(rowEls(el)[1], { metaKey: true });
+      await el.updateComplete;
+      click(rowEls(el)[1], { metaKey: true });
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel]).to.deep.equal([0]);
+    });
+
+    it("Shift-click selects the contiguous range from the last click", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5);
+      await el.updateComplete;
+
+      click(rowEls(el)[1]);
+      await el.updateComplete;
+      click(rowEls(el)[3], { shiftKey: true });
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([1, 2, 3]);
+    });
+
+    it("shift-mousedown is prevented, so it doesn't drag a text selection across cells", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5);
+      await el.updateComplete;
+
+      const plainMousedown = rowEls(el)[0].dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      );
+      const shiftMousedown = rowEls(el)[1].dispatchEvent(
+        new MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          shiftKey: true,
+        }),
+      );
+
+      // dispatchEvent() returns false when the event was cancelled.
+      expect(plainMousedown).to.be.true;
+      expect(shiftMousedown).to.be.false;
+    });
+
+    it("Shift-click works backwards from the anchor too", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5);
+      await el.updateComplete;
+
+      click(rowEls(el)[3]);
+      await el.updateComplete;
+      click(rowEls(el)[1], { shiftKey: true });
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([1, 2, 3]);
+    });
+
+    it("Shift-click with no prior click behaves like a plain click", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      click(rowEls(el)[1], { shiftKey: true });
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel]).to.deep.equal([1]);
+    });
+
+    it("Shift-click merges its range into the existing selection instead of replacing it", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(10);
+      await el.updateComplete;
+
+      // An unrelated row, selected additively — nothing to do with the
+      // upcoming shift gesture.
+      click(rowEls(el)[8], { ctrlKey: true });
+      await el.updateComplete;
+
+      click(rowEls(el)[1], { ctrlKey: true });
+      await el.updateComplete;
+      click(rowEls(el)[3], { shiftKey: true });
+      await el.updateComplete;
+
+      // Row 8 survives — a replace-based implementation would have wiped
+      // it out when the shift range was applied.
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([1, 2, 3, 8]);
+    });
+
+    it("shrinking: shift-clicking an already-selected row doesn't deselect that row, only backs the range off beyond it", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(10);
+      await el.updateComplete;
+
+      click(rowEls(el)[1]);
+      await el.updateComplete;
+      click(rowEls(el)[5], { shiftKey: true });
+      await el.updateComplete;
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([1, 2, 3, 4, 5]);
+
+      // Row 3 is already selected — shrinks back to [1..3], row 3 itself
+      // stays selected rather than toggling off.
+      click(rowEls(el)[3], { shiftKey: true });
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([1, 2, 3]);
+    });
+
+    it("shift-clicking the current anchor row while it's still selected is a no-op", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5);
+      await el.updateComplete;
+
+      click(rowEls(el)[2]);
+      await el.updateComplete;
+
+      let dispatched = false;
+      el.addEventListener("md-data-grid-row-selection-model-change", () => {
+        dispatched = true;
+      });
+      click(rowEls(el)[2], { shiftKey: true });
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel]).to.deep.equal([2]);
+      expect(dispatched).to.be.false;
+    });
+
+    it("the anchor advances after a shift-click, so a following shift-click is relative to it, not the original click", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(10);
+      await el.updateComplete;
+
+      click(rowEls(el)[5]);
+      await el.updateComplete;
+      click(rowEls(el)[1], { shiftKey: true });
+      await el.updateComplete;
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([1, 2, 3, 4, 5]);
+
+      // Anchor is now 1 (the last shift-clicked row), not the original 5 —
+      // shrinking from row 3 (already selected) backs off toward THIS
+      // anchor, landing on [3, 4, 5]. A fixed anchor stuck at 5 would
+      // instead have produced [1, 2, 3].
+      click(rowEls(el)[3], { shiftKey: true });
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([3, 4, 5]);
+    });
+
+    it("disableMultipleRowSelection makes Ctrl/Shift-click behave like a plain click", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid disable-multiple-row-selection></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5);
+      await el.updateComplete;
+
+      click(rowEls(el)[1]);
+      await el.updateComplete;
+      click(rowEls(el)[3], { ctrlKey: true });
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel]).to.deep.equal([3]);
+    });
+
+    it("disableRowSelectionOnClick prevents selection but still dispatches row-click", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid disable-row-selection-on-click></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      let clicked = false;
+      el.addEventListener("md-data-grid-row-click", () => {
+        clicked = true;
+      });
+      click(rowEls(el)[0]);
+      await el.updateComplete;
+
+      expect(el.rowSelectionModel.size).to.equal(0);
+      expect(clicked).to.be.true;
+    });
+
+    it("dispatches md-data-grid-row-selection-model-change with the new Set", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      let detail;
+      el.addEventListener("md-data-grid-row-selection-model-change", (e) => {
+        detail = /** @type {CustomEvent} */ (e).detail;
+      });
+      click(rowEls(el)[0]);
+
+      expect(detail).to.be.instanceOf(Set);
+      expect([...detail]).to.deep.equal([0]);
+    });
+
+    it("is controlled — setting rowSelectionModel highlights the matching row", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.rowSelectionModel = new Set([1]);
+      await el.updateComplete;
+
+      expect(rowEls(el)[1].classList.contains("data-grid__row_selected")).to.be
+        .true;
+      expect(rowEls(el)[0].classList.contains("data-grid__row_selected")).to.be
+        .false;
+    });
+
+    it("re-anchors shift-range selection after rows are resorted", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5);
+      await el.updateComplete;
+
+      click(rowEls(el)[1]);
+      await el.updateComplete;
+
+      // Re-triggers `updated()`'s rows-changed path, resetting the anchor —
+      // a stale anchor index would otherwise silently range-select against
+      // whatever row now sits at that same position.
+      el.rows = [...el.rows];
+      await el.updateComplete;
+
+      click(rowEls(el)[3], { shiftKey: true });
+      await el.updateComplete;
+
+      // No anchor -> shift-click behaved like a plain click.
+      expect([...el.rowSelectionModel]).to.deep.equal([3]);
+    });
+  });
+
+  describe("cellClassName", () => {
+    it("applies a plain string as a class on every cell in that column", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = [
+        { field: "id", headerName: "ID", cellClassName: "id-cell" },
+        { field: "name", headerName: "Name" },
+      ];
+      el.rows = makeRows(2);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const cells = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+      ]);
+      const idCells = cells.filter((c) => c.column.field === "id");
+      const nameCells = cells.filter((c) => c.column.field === "name");
+
+      expect(idCells.length).to.be.greaterThan(0);
+      for (const cell of idCells) {
+        expect(cell.classList.contains("id-cell")).to.be.true;
+      }
+      for (const cell of nameCells) {
+        expect(cell.classList.contains("id-cell")).to.be.false;
+      }
+    });
+
+    it("computes a class per cell when given a function", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = [
+        {
+          field: "id",
+          headerName: "ID",
+          cellClassName: ({ row }) =>
+            /** @type {{ id: number }} */ (row).id % 2 === 0
+              ? "id-even"
+              : "id-odd",
+        },
+      ];
+      el.rows = makeRows(3);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const cells = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+      ]);
+      const byRow = new Map(cells.map((c) => [c.rowIndex, c]));
+
+      expect(byRow.get(0).classList.contains("id-even")).to.be.true;
+      expect(byRow.get(1).classList.contains("id-odd")).to.be.true;
+      expect(byRow.get(2).classList.contains("id-even")).to.be.true;
+    });
+
+    it("removes the previous class when cellClassName's value changes", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = [
+        { field: "id", headerName: "ID", cellClassName: "first-class" },
+      ];
+      el.rows = makeRows(1);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const cell = /** @type {any} */ (
+        el.shadowRoot.querySelector("md-data-cell")
+      );
+      expect(cell.classList.contains("first-class")).to.be.true;
+
+      el.columns = [
+        { field: "id", headerName: "ID", cellClassName: "second-class" },
+      ];
+      await el.updateComplete;
+
+      expect(cell.classList.contains("first-class")).to.be.false;
+      expect(cell.classList.contains("second-class")).to.be.true;
+    });
+  });
+
+  describe("headerClassName", () => {
+    it("applies a plain string as a class on that column's header", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = [
+        { field: "id", headerName: "ID", headerClassName: "id-header" },
+        { field: "name", headerName: "Name" },
+      ];
+      el.rows = makeRows(1);
+      await el.updateComplete;
+
+      const headers = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-column-header"),
+      ]);
+      expect(headers[0].classList.contains("id-header")).to.be.true;
+      expect(headers[1].classList.contains("id-header")).to.be.false;
+    });
+
+    it("computes a class from the column when given a function", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = [
+        {
+          field: "id",
+          headerName: "ID",
+          headerClassName: (column) => `header-for-${column.field}`,
+        },
+      ];
+      el.rows = makeRows(1);
+      await el.updateComplete;
+
+      const header = /** @type {any} */ (
+        el.shadowRoot.querySelector("md-data-column-header")
+      );
+      expect(header.classList.contains("header-for-id")).to.be.true;
+    });
+
+    it("removes the previous class when headerClassName's value changes", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = [
+        { field: "id", headerName: "ID", headerClassName: "first-class" },
+      ];
+      el.rows = makeRows(1);
+      await el.updateComplete;
+
+      const header = /** @type {any} */ (
+        el.shadowRoot.querySelector("md-data-column-header")
+      );
+      expect(header.classList.contains("first-class")).to.be.true;
+
+      el.columns = [
+        { field: "id", headerName: "ID", headerClassName: "second-class" },
+      ];
+      await el.updateComplete;
+
+      expect(header.classList.contains("first-class")).to.be.false;
+      expect(header.classList.contains("second-class")).to.be.true;
+    });
+  });
+
+  describe("checkboxSelection", () => {
+    /**
+     * @param {MdDataGrid} el
+     * @param {number} rowIndex
+     */
+    async function getRowCheckbox(el, rowIndex) {
+      const cells = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+      ]);
+      const cell = cells.find(
+        (c) => c.rowIndex === rowIndex && c.colIndex === 0,
+      );
+      await cell.updateComplete;
+      const checkboxCell = cell.shadowRoot.querySelector(
+        "md-data-grid-checkbox-cell",
+      );
+      await checkboxCell.updateComplete;
+      return checkboxCell.shadowRoot.querySelector("md-checkbox");
+    }
+
+    /** @param {MdDataGrid} el */
+    async function getHeaderCheckbox(el) {
+      const headerCell = /** @type {any} */ (
+        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+      );
+      await headerCell.updateComplete;
+      const checkboxHeader = headerCell.shadowRoot.querySelector(
+        "md-data-grid-checkbox-header",
+      );
+      if (!checkboxHeader) return null;
+      await checkboxHeader.updateComplete;
+      return checkboxHeader.shadowRoot.querySelector("md-checkbox");
+    }
+
+    /**
+     * @param {HTMLElement} checkbox
+     * @param {{ shiftKey?: boolean, ctrlKey?: boolean }} [modifiers]
+     */
+    function clickCheckbox(checkbox, modifiers = {}) {
+      checkbox.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, ...modifiers }),
+      );
+    }
+
+    it("is off by default — no checkbox column rendered", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      expect(el._columns).to.deep.equal(COLUMNS);
+      expect(el.shadowRoot.querySelector("md-data-grid-checkbox-header")).to.not
+        .exist;
+    });
+
+    it("prepends GRID_CHECKBOX_SELECTION_COL_DEF without mutating the public columns array", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      expect(el._columns.length).to.equal(COLUMNS.length + 1);
+      expect(el._columns[0].field).to.equal("__check__");
+      expect(el._columns.slice(1)).to.deep.equal(COLUMNS);
+      // The public property itself is never touched.
+      expect(el.columns).to.deep.equal(COLUMNS);
+    });
+
+    it("the checkbox column is not resizable or sortable", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const checkboxHeaderCell = /** @type {any} */ (
+        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+      );
+      expect(checkboxHeaderCell.resizable).to.be.false;
+      expect(checkboxHeaderCell.sortable).to.be.false;
+    });
+
+    it("clicking a row's checkbox toggles just that row into the selection additively", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.rowSelectionModel = new Set([0]);
+      await el.updateComplete;
+
+      const checkbox = await getRowCheckbox(el, 2);
+      clickCheckbox(checkbox);
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([0, 2]);
+    });
+
+    it("clicking an already-checked row's checkbox unchecks just that row", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.rowSelectionModel = new Set([0, 1]);
+      await el.updateComplete;
+
+      const checkbox = await getRowCheckbox(el, 0);
+      clickCheckbox(checkbox);
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel]).to.deep.equal([1]);
+    });
+
+    it("shift-clicking a checkbox range-selects, same as shift-clicking a row", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5);
+      await el.updateComplete;
+
+      const first = await getRowCheckbox(el, 1);
+      clickCheckbox(first);
+      await el.updateComplete;
+
+      const fourth = await getRowCheckbox(el, 3);
+      clickCheckbox(fourth, { shiftKey: true });
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([1, 2, 3]);
+    });
+
+    it("a checkbox click doesn't also trigger the row's own click-to-select (no double handling)", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.rowSelectionModel = new Set([0, 1]);
+      await el.updateComplete;
+
+      // If the click also bubbled to the row's own handler, a plain
+      // (unmodified) click there would replace the selection with just
+      // row 2 instead of adding to it.
+      const checkbox = await getRowCheckbox(el, 2);
+      clickCheckbox(checkbox);
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([0, 1, 2]);
+    });
+
+    it("a plain click anywhere in a row is additive too, same as clicking its checkbox — it doesn't drop the previous selection", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      const rows = el.shadowRoot.querySelectorAll(".data-grid__row");
+      rows[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await el.updateComplete;
+      rows[2].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([0, 2]);
+    });
+
+    it("without checkboxSelection, a plain row click still replaces the selection as before", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      const rows = el.shadowRoot.querySelectorAll(".data-grid__row");
+      rows[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await el.updateComplete;
+      rows[2].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel]).to.deep.equal([2]);
+    });
+
+    it("shift-clicking a row still range-selects when checkboxSelection is on", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5);
+      await el.updateComplete;
+
+      const rows = el.shadowRoot.querySelectorAll(".data-grid__row");
+      rows[1].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await el.updateComplete;
+      rows[3].dispatchEvent(
+        new MouseEvent("click", { bubbles: true, shiftKey: true }),
+      );
+      await el.updateComplete;
+
+      expect([...el.rowSelectionModel].sort()).to.deep.equal([1, 2, 3]);
+    });
+
+    it("header checkbox reflects unchecked/indeterminate/checked across the selection", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      let headerCheckbox = await getHeaderCheckbox(el);
+      expect(headerCheckbox.checked).to.be.false;
+      expect(headerCheckbox.indeterminate).to.be.false;
+
+      el.rowSelectionModel = new Set([0]);
+      await el.updateComplete;
+      headerCheckbox = await getHeaderCheckbox(el);
+      expect(headerCheckbox.checked).to.be.false;
+      expect(headerCheckbox.indeterminate).to.be.true;
+
+      el.rowSelectionModel = new Set([0, 1, 2]);
+      await el.updateComplete;
+      headerCheckbox = await getHeaderCheckbox(el);
+      expect(headerCheckbox.checked).to.be.true;
+      expect(headerCheckbox.indeterminate).to.be.false;
+    });
+
+    it("clicking the header checkbox selects every row across the whole dataset, not just the current page", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(10);
+      el.paginationModel = { page: 0, pageSize: 4 };
+      await el.updateComplete;
+
+      const headerCheckbox = await getHeaderCheckbox(el);
+      clickCheckbox(headerCheckbox);
+      await el.updateComplete;
+
+      expect(el.rowSelectionModel.size).to.equal(10);
+    });
+
+    it("clicking the header checkbox again clears the selection", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.rowSelectionModel = new Set([0, 1, 2]);
+      await el.updateComplete;
+
+      const headerCheckbox = await getHeaderCheckbox(el);
+      clickCheckbox(headerCheckbox);
+      await el.updateComplete;
+
+      expect(el.rowSelectionModel.size).to.equal(0);
+    });
+
+    it("renders no header checkbox when disableMultipleRowSelection is set", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            checkbox-selection
+            disable-multiple-row-selection
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      expect(await getHeaderCheckbox(el)).to.equal(null);
+    });
+
+    it("dispatches md-data-grid-row-selection-model-change on checkbox click, same event as row clicks", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      let detail;
+      el.addEventListener("md-data-grid-row-selection-model-change", (e) => {
+        detail = /** @type {CustomEvent} */ (e).detail;
+      });
+      const checkbox = await getRowCheckbox(el, 1);
+      clickCheckbox(checkbox);
+
+      expect(detail).to.be.instanceOf(Set);
+      expect([...detail]).to.deep.equal([1]);
+    });
+
+    it("resizing a real column after the checkbox column writes back to the correct entry in the public columns array", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            checkbox-selection
+            style="display:block; width: 400px;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = [
+        { field: "a", headerName: "A", width: 100 },
+        { field: "b", headerName: "B", width: 100 },
+      ];
+      el.rows = makeRows(1);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      // Column "a" is merged index 1 (checkbox is 0) — its resize handle
+      // lives on the header at that position.
+      const header = /** @type {any} */ (
+        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+      );
+      await header.updateComplete;
+      const handle = header.shadowRoot.querySelector(
+        "md-data-column-separator",
+      );
+      await handle.updateComplete;
+
+      handle.dispatchEvent(
+        new PointerEvent("pointerdown", {
+          pointerId: 1,
+          clientX: 100,
+          bubbles: true,
+        }),
+      );
+      handle.dispatchEvent(
+        new PointerEvent("pointermove", {
+          pointerId: 1,
+          clientX: 140,
+          bubbles: true,
+        }),
+      );
+      handle.dispatchEvent(
+        new PointerEvent("pointerup", {
+          pointerId: 1,
+          clientX: 140,
+          bubbles: true,
+        }),
+      );
+      await el.updateComplete;
+
+      // Written back to host.columns (raw, no checkbox entry) at index 0,
+      // not index 1 — the offset introduced by the merged checkbox column
+      // must be subtracted back out.
+      expect(el.columns[0].field).to.equal("a");
+      expect(el.columns[0].width).to.equal(140);
+      expect(el.columns[1].field).to.equal("b");
+      expect(el.columns[1].width).to.equal(60);
     });
   });
 });
