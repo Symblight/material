@@ -11,11 +11,13 @@ import styles from "./data-grid-cell.css?inline";
  * @tag md-data-cell
  * @summary One body cell of an `md-data-grid`. The host itself is the
  * rendered/focusable cell (no wrapper div) — `part`/`role` are set once in
- * the constructor, `tabindex` and the align/highlighted modifier classes
- * are kept in sync in `updated()` (focus state comes from a context
- * subscription rather than a declared reactive property, so it can't be
- * targeted by `willUpdate()`'s `changed` map). Composed internally by the
- * grid — not intended to be used standalone.
+ * the constructor, `colSpan`'s `grid-column` style is kept in sync in
+ * `willUpdate()` (mirrors `md-data-column-header`), and `tabindex`/the
+ * align/highlighted/row-span modifiers are kept in sync in `updated()`
+ * (focus state and `rowHeight` both come from a context subscription rather
+ * than a declared reactive property, so they can't be targeted by
+ * `willUpdate()`'s `changed` map). Composed internally by the grid — not
+ * intended to be used standalone.
  */
 @customElement("md-data-cell")
 export class MdDataCell extends LitElement {
@@ -25,6 +27,8 @@ export class MdDataCell extends LitElement {
     column: { attribute: false },
     rowIndex: { type: Number },
     colIndex: { type: Number },
+    colSpan: { type: Number },
+    rowSpan: { type: Number },
   };
 
   /** @returns {import("lit").CSSResultGroup} */
@@ -46,6 +50,19 @@ export class MdDataCell extends LitElement {
 
     /** @type {number} */
     this.colIndex = 0;
+
+    /** @type {number} */
+    this.colSpan = 1;
+
+    /**
+     * Row-spanning owner: a run of `rowSpan` consecutive rows shares one
+     * equal value in this column (see `RowSpanController`). Grows this
+     * cell to `rowHeight * rowSpan` tall and lets it overflow past its own
+     * row's box — the covered rows' cells for this column simply aren't
+     * rendered, so there's nothing underneath to clip against.
+     * @type {number}
+     */
+    this.rowSpan = 1;
 
     /** @private */
     this._gridConsumer = new ContextConsumer(this, {
@@ -76,6 +93,13 @@ export class MdDataCell extends LitElement {
   }
 
   /** @param {import("lit").PropertyValues} changed */
+  willUpdate(changed) {
+    if (changed.has("colSpan")) {
+      this.style.gridColumn = this.colSpan > 1 ? `span ${this.colSpan}` : "";
+    }
+  }
+
+  /** @param {import("lit").PropertyValues} changed */
   updated(changed) {
     super.updated(changed);
 
@@ -101,6 +125,16 @@ export class MdDataCell extends LitElement {
     this.classList.toggle("data-grid-cell_align-right", align === "right");
     this.classList.toggle("data-grid-cell_align-center", align === "center");
     this.classList.toggle("data-grid-cell_highlighted", Boolean(highlighted));
+
+    // Depends on the grid's rowHeight (via context, not a declared property
+    // of this component), so it's recomputed unconditionally here rather
+    // than gated behind willUpdate()'s changed-property check — same reason
+    // focused/highlighted above are.
+    const rowHeight = this._gridConsumer.value?.rowHeight ?? 0;
+    this.classList.toggle("data-grid-cell_row-span", this.rowSpan > 1);
+    // Matches :host's own `height` (not `block-size`) in data-grid-cell.css
+    // exactly, so this inline override unambiguously wins over it.
+    this.style.height = this.rowSpan > 1 ? `${rowHeight * this.rowSpan}px` : "";
   }
 
   render() {

@@ -10,6 +10,7 @@
   );
   --md-data-grid-cell-focus-ring-color: var(--md-sys-color-primary);
   --md-data-grid-cell-focus-ring-width: 1px;
+  --md-data-grid-row-span-background: var(--md-sys-color-surface);
 
   box-sizing: border-box;
   display: block;
@@ -51,4 +52,15 @@
 
 :host(.data-grid-cell_highlighted) {
   border-color: var(--md-data-grid-cell-focus-ring-color);
+}
+
+/* A row-spanning owner's explicit (taller) height overflows past its own
+   row's box — nothing clips it (no ancestor between here and the scrollable
+   viewport sets overflow: hidden) — but it needs its own stacking context
+   and an opaque background so it paints over, instead of under, the
+   covered rows' own borders/backgrounds/hover-highlight beneath it. */
+:host(.data-grid-cell_row-span) {
+  position: relative;
+  z-index: 1;
+  background-color: var(--md-data-grid-row-span-background);
 }

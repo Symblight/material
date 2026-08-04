@@ -10,9 +10,15 @@ export class PaginationController {
     this.host = host;
   }
 
-  /** Rows sliced to the current page (client mode) or passed through as-is (server mode / no pagination). */
-  effectiveRows() {
-    const { rows, paginationModel, paginationMode } = this.host;
+  /**
+   * Rows sliced to the current page (client mode) or passed through as-is
+   * (server mode / no pagination). Takes the rows to paginate as a param
+   * (rather than always reading `host.rows` itself) so the host can run
+   * them through sorting first — see `SortController`.
+   * @param {Record<string, unknown>[]} [rows]
+   */
+  effectiveRows(rows = this.host.rows) {
+    const { paginationModel, paginationMode } = this.host;
     if (!paginationModel || paginationMode === "server") return rows;
     const { page, pageSize } = paginationModel;
     const firstRowIndex = Math.min(

@@ -9,6 +9,8 @@
     0.875rem
   );
   --md-data-grid-header-label-text-weight: 600;
+  --md-data-grid-sort-icon-color: var(--md-sys-color-on-surface-variant);
+  --md-data-grid-sort-icon-size: 1rem;
 
   /* Containing block for md-data-column-separator's position: absolute. */
   position: relative;
@@ -39,4 +41,34 @@
 :host(.data-grid-column-header_align-center) {
   justify-content: center;
   text-align: center;
+}
+
+:host([sortable]) {
+  cursor: pointer;
+}
+
+.data-grid-column-header__sort-icon {
+  flex: none;
+  inline-size: var(--md-data-grid-sort-icon-size);
+  block-size: var(--md-data-grid-sort-icon-size);
+  margin-inline-start: 0.25rem;
+  color: var(--md-data-grid-sort-icon-color);
+  /* Hidden until hover — a hint that the column is sortable — except when
+     it's the active sort column, where it stays visible as the indicator. */
+  opacity: 0;
+  transition:
+    transform 150ms ease,
+    opacity 150ms ease;
+}
+
+:host([sortable]:hover) .data-grid-column-header__sort-icon,
+:host([sort="asc"]) .data-grid-column-header__sort-icon,
+:host([sort="desc"]) .data-grid-column-header__sort-icon {
+  opacity: 1;
+}
+
+/* Base icon is an upward arrow — desc just rotates it 180°, avoiding a
+   second svg import for what's otherwise an identical glyph. */
+:host([sort="desc"]) .data-grid-column-header__sort-icon {
+  transform: rotate(180deg);
 }

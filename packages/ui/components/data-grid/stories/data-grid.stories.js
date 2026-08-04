@@ -89,45 +89,121 @@ export const BasicEmpty = {
   `,
 };
 
-// ─── Header colSpan — one header cell stretched over several columns ────────
-
-/** @param {number} count */
-function makeColSpanRows(count) {
-  return Array.from({ length: count }, (_, i) => ({
-    id: i,
-    firstName: `First${i}`,
-    lastName: `Last${i}`,
-    email: `user${i}@example.com`,
-    department: DEPARTMENTS[i % DEPARTMENTS.length],
-  }));
-}
+// ─── Row spanning — consecutive equal values in a column merge vertically ──
 
 /** @type {DataGridColumn[]} */
-const COLSPAN_COLUMNS = [
-  { field: "id", headerName: "ID", width: 60 },
-  // "Name" spans both the firstName and lastName columns — lastName renders
-  // no header cell of its own, but every row still gets both data cells.
-  { field: "firstName", headerName: "Name", colSpan: 2 },
-  { field: "lastName" },
+const ROW_SPAN_COLUMNS = [
+  { field: "department", headerName: "Department", width: 160 },
+  { field: "name", headerName: "Name" },
   { field: "email", headerName: "Email" },
-  { field: "department", headerName: "Department", width: 140 },
 ];
 
+/** Grouped by department so equal adjacent values actually merge — row
+ * spanning only sees adjacency, not the whole dataset. */
+const ROW_SPAN_ROWS = DEPARTMENTS.flatMap((department, deptIndex) =>
+  Array.from({ length: 3 }, (_, i) => {
+    const id = deptIndex * 3 + i;
+    return {
+      id,
+      department,
+      name: `Item ${id}`,
+      email: `item${id}@example.com`,
+    };
+  }),
+);
+
 /** @type {Story} */
-export const HeaderColSpan = {
+export const RowSpanning = {
   render: () => html`
     <md-data-grid
-      style="height: 320px; width: 720px; display: block;"
+      row-spanning
+      style="height: 320px; width: 640px; display: block;"
       ${ref((el) => {
         const grid = /** @type {MdDataGrid | undefined} */ (
           /** @type {unknown} */ (el)
         );
         if (!grid) return;
-        grid.columns = COLSPAN_COLUMNS;
-        grid.rows = makeColSpanRows(20);
+        grid.columns = ROW_SPAN_COLUMNS;
+        grid.rows = ROW_SPAN_ROWS;
       })}
     ></md-data-grid>
   `,
+};
+
+// ─── Loading — md-progress-linear between the header and body, toggled via
+// a ref (the grid never fetches anything itself) ────────────────────────────
+
+/** @type {Story} */
+export const LoadingWithRows = {
+  render: () => {
+    /** @type {MdDataGrid | undefined} */
+    let grid;
+    return html`
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <md-data-grid
+          style="height: 320px; width: 720px; display: block;"
+          ${ref((el) => {
+            grid = /** @type {MdDataGrid | undefined} */ (
+              /** @type {unknown} */ (el)
+            );
+            if (!grid) return;
+            grid.columns = BASIC_COLUMNS;
+            grid.rows = makeRows(20);
+          })}
+        ></md-data-grid>
+        <div style="display: flex; gap: 0.5rem;">
+          <md-button
+            @click=${() => {
+              if (!grid) return;
+              grid.loading = true;
+              setTimeout(() => {
+                if (grid) grid.loading = false;
+              }, 2000);
+            }}
+          >
+            Simulate 2s reload (progress bar + overlay over existing rows)
+          </md-button>
+        </div>
+      </div>
+    `;
+  },
+};
+
+// ─── Loading — rows still empty (first load), skeleton rows instead ────────
+
+/** @type {Story} */
+export const LoadingSkeleton = {
+  render: () => {
+    /** @type {MdDataGrid | undefined} */
+    let grid;
+    return html`
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <md-data-grid
+          loading
+          style="height: 320px; width: 720px; display: block;"
+          ${ref((el) => {
+            grid = /** @type {MdDataGrid | undefined} */ (
+              /** @type {unknown} */ (el)
+            );
+            if (!grid) return;
+            grid.columns = BASIC_COLUMNS;
+            grid.rows = [];
+          })}
+        ></md-data-grid>
+        <div style="display: flex; gap: 0.5rem;">
+          <md-button
+            @click=${() => {
+              if (!grid) return;
+              grid.rows = makeRows(20);
+              grid.loading = false;
+            }}
+          >
+            Finish loading (reveals real rows)
+          </md-button>
+        </div>
+      </div>
+    `;
+  },
 };
 
 // ─── Column resize — drag handles on the header, live width readout ────────

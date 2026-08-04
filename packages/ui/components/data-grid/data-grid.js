@@ -6,6 +6,8 @@ import { repeat } from "lit/directives/repeat.js";
 import "./components/column-header/data-grid-column-header.js";
 import "./components/cell/data-grid-cell.js";
 import "./components/footer/data-grid-footer.js";
+import "../progress-linear/progress-linear.js";
+import "../skeleton/skeleton.js";
 
 import { dataGridContext } from "./data-grid-context.js";
 import { VirtualizationController } from "./controllers/data-grid-virtualization-controller.js";
@@ -13,6 +15,9 @@ import { PaginationController } from "./controllers/data-grid-pagination-control
 import { RowUpdatesController } from "./controllers/data-grid-row-updates-controller.js";
 import { KeyboardNavController } from "./controllers/data-grid-keyboard-nav-controller.js";
 import { ColumnResizeController } from "./controllers/data-grid-column-resize-controller.js";
+import { SortController } from "./controllers/data-grid-sort-controller.js";
+import { RowSpanController } from "./controllers/data-grid-row-span-controller.js";
+import { TreeController } from "./controllers/data-grid-tree-controller.js";
 import { buildDataGridContext } from "./data-grid-build-context.js";
 import styles from "./data-grid.css?inline";
 
@@ -23,12 +28,15 @@ import styles from "./data-grid.css?inline";
  * @property {number} [width]        // px; omitted columns share remaining space (grid `1fr`)
  * @property {number} [minWidth]     // px; only applies when `width` is unset — floor on the flexible column
  * @property {number} [maxWidth]     // px; only applies when `width` is unset — ceiling on the flexible column
- * @property {number} [colSpan]      // default 1; header cell only — spans this many column tracks, and the next (colSpan - 1) columns render no header cell of their own
+ * @property {number} [colSpan]      // default 1; spans this many column tracks in the header AND every row — the next (colSpan - 1) columns render no header/data cell of their own for that row
  * @property {boolean} [resizable]   // default true — set false to opt this column out of drag-to-resize
+ * @property {boolean} [sortable]    // default true — set false to opt this column out of click-to-sort
+ * @property {boolean} [rowSpannable] // default true — set false to opt this column out of row spanning when the grid's rowSpanning is on
  * @property {"left" | "right" | "center"} [align]  // default "left"
  * @property {(params: DataGridCellParams) => unknown} [valueGetter]
  * @property {(params: DataGridCellParams) => import("lit").TemplateResult | string | number} [renderCell]
  * @property {(column: DataGridColumn) => import("lit").TemplateResult | string} [renderHeader]
+ * @property {(params: DataGridCellParams) => unknown} [rowSpanValueGetter] // computes the equality key used to detect consecutive-equal-value runs; falls back to valueGetter, then the raw field value
  */
 
 /**
@@ -46,6 +54,15 @@ import styles from "./data-grid.css?inline";
  */
 
 /**
+ * One entry of `sortModel`. `sort: null | undefined` means the field is
+ * tracked but the rule doesn't apply (no active direction) — distinct from
+ * omitting the entry entirely, but both render/sort the same way.
+ * @typedef {object} DataGridSortItem
+ * @property {string} field
+ * @property {"asc" | "desc" | null | undefined} sort
+ */
+
+/**
  * An entry for `updateRows()`. Matched against existing rows via
  * `getRowId()`. Without `_action`, the entry shallow-merges onto the
  * existing row (or is inserted as a new row if no match is found). With
@@ -57,6 +74,37 @@ const DEFAULT_ROW_HEIGHT = 40;
 const DEFAULT_HEADER_HEIGHT = 48;
 const DEFAULT_OVERSCAN = 5;
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+const SKELETON_ROW_COUNT = 8;
+
+/**
+ * Deterministic pseudo-random width (40–85%) for a skeleton cell, seeded by
+ * its position — stable across re-renders (no jumping around on every
+ * loading-state re-render, unlike `Math.random()`) while still varying per
+ * cell/row, mimicking real text of differing lengths.
+ * @param {number} rowIndex
+ * @param {number} colIndex
+ * @returns {number}
+ */
+function skeletonWidth(rowIndex, colIndex) {
+  const seed = Math.sin(rowIndex * 12.9898 + colIndex * 78.233) * 43758.5453;
+  const fraction = seed - Math.floor(seed);
+  return 40 + Math.round(fraction * 45);
+}
+
+/**
+ * A column's `colSpan`, clamped so it never reaches past the last column.
+ * Shared by the header and every row's cell loop — both skip the next
+ * `span - 1` columns and render one cell spanning `span` tracks instead.
+ * @param {DataGridColumn[]} columns
+ * @param {number} colIndex
+ * @returns {number}
+ */
+function clampColSpan(columns, colIndex) {
+  return Math.max(
+    1,
+    Math.min(columns[colIndex].colSpan ?? 1, columns.length - colIndex),
+  );
+}
 
 /** @param {Record<string, unknown>} row */
 const defaultGetRowId = (row) => /** @type {string | number} */ (row.id);
@@ -93,6 +141,9 @@ export class MdDataGrid extends LitElement {
     paginationMode: { attribute: "pagination-mode" },
     pageSizeOptions: { state: true },
     rowCount: { type: Number, attribute: "row-count" },
+    sortModel: { state: true },
+    rowSpanning: { type: Boolean, attribute: "row-spanning", reflect: true },
+    loading: { type: Boolean, attribute: "loading", reflect: true },
     hidePagination: {
       type: Boolean,
       attribute: "hide-pagination",
@@ -106,6 +157,11 @@ export class MdDataGrid extends LitElement {
     disableColumnResize: {
       type: Boolean,
       attribute: "disable-column-resize",
+      reflect: true,
+    },
+    disableColumnSorting: {
+      type: Boolean,
+      attribute: "disable-column-sorting",
       reflect: true,
     },
   };
@@ -151,6 +207,15 @@ export class MdDataGrid extends LitElement {
     /** @type {number | undefined} */
     this.rowCount = undefined;
 
+    /** @type {DataGridSortItem[]} */
+    this.sortModel = [];
+
+    /** @type {boolean} */
+    this.rowSpanning = false;
+
+    /** @type {boolean} */
+    this.loading = false;
+
     /** @type {boolean} */
     this.hidePagination = false;
 
@@ -159,6 +224,9 @@ export class MdDataGrid extends LitElement {
 
     /** @type {boolean} */
     this.disableColumnResize = false;
+
+    /** @type {boolean} */
+    this.disableColumnSorting = false;
 
     // Not @private: data-grid-build-context.js reads these directly as an
     // internal sibling module — see §15 of the data-grid plan.
@@ -173,6 +241,10 @@ export class MdDataGrid extends LitElement {
         this._gridContextProvider.setValue(buildDataGridContext(this)),
     });
     this._columnResize = new ColumnResizeController(this);
+    this._sort = new SortController(this);
+    this._rowSpan = new RowSpanController(this);
+    this._tree = new TreeController(this);
+    this._tree.build(this.rows);
 
     /** @private */
     this._gridContextProvider = new ContextProvider(this, {
@@ -217,11 +289,19 @@ export class MdDataGrid extends LitElement {
       // No-op if the current page is still in range.
       this._pagination.setPage(this.paginationModel.page);
     }
+    if (changed.has("rows") || changed.has("getRowId")) {
+      this._tree.build();
+    }
   }
 
-  /** Rows sliced to the current page (client mode) or passed through as-is (server mode / no pagination). */
+  /** `rows` run through the active sort — the shared starting point for pagination/virtualization/keyboard nav below. */
+  get _sortedRows() {
+    return this._sort.sortedRows(this.rows);
+  }
+
+  /** Sorted rows sliced to the current page (client mode) or passed through as-is (server mode / no pagination). */
   get _effectiveRows() {
-    return this._pagination.effectiveRows();
+    return this._pagination.effectiveRows(this._sortedRows);
   }
 
   /** @returns {number} */
@@ -236,7 +316,7 @@ export class MdDataGrid extends LitElement {
 
   /** @returns {{ row: Record<string, unknown>, rowIndex: number }[]} */
   getVisibleRows() {
-    const effectiveRows = this._pagination.effectiveRows();
+    const effectiveRows = this._pagination.effectiveRows(this._sortedRows);
     const { startIndex, endIndex } = this._virtualization.visibleRange(
       effectiveRows.length,
     );
@@ -293,7 +373,7 @@ export class MdDataGrid extends LitElement {
 
   /** @param {KeyboardEvent} event */
   _onKeydown(event) {
-    const rowCount = this._pagination.effectiveRows().length;
+    const rowCount = this._pagination.effectiveRows(this._sortedRows).length;
     this._keyboardNav.onKeydown(event, {
       rowCount,
       colCount: this.columns.length,
@@ -310,13 +390,23 @@ export class MdDataGrid extends LitElement {
     const headerGridTemplateColumns = scrollbarWidth
       ? `${gridTemplateColumns} ${scrollbarWidth}px`
       : gridTemplateColumns;
-    const effectiveRows = this._pagination.effectiveRows();
+    const effectiveRows = this._pagination.effectiveRows(this._sortedRows);
     const { startIndex, endIndex } = this._virtualization.visibleRange(
       effectiveRows.length,
     );
     const visibleRows = effectiveRows.slice(startIndex, endIndex);
     const totalHeight = effectiveRows.length * this.rowHeight;
     const offsetY = startIndex * this.rowHeight;
+    // Computed over the full (post-sort, post-pagination) effectiveRows —
+    // not just visibleRows — so a run's owner still reports its true span
+    // even when part of the run is outside the current virtualized window.
+    const rowSpans = this._rowSpan.computeSpans(effectiveRows);
+    // Skeleton rows replace the empty state while there's no data yet to
+    // show real virtualized rows for; once some rows exist, a reload is
+    // shown as the thin progress bar + overlay instead (below) — the two
+    // are mutually exclusive, never both at once.
+    const showSkeletonRows = this.loading && effectiveRows.length === 0;
+    const showLoadingOverlay = this.loading && effectiveRows.length > 0;
 
     return html`
       <div class="data-grid" part="root">
@@ -338,24 +428,28 @@ export class MdDataGrid extends LitElement {
               (column) => column.field,
               (column, colIndex) => {
                 if (colIndex <= coveredUntil) return nothing;
-                const span = Math.max(
-                  1,
-                  Math.min(column.colSpan ?? 1, this.columns.length - colIndex),
-                );
+                const span = clampColSpan(this.columns, colIndex);
                 coveredUntil = colIndex + span - 1;
                 const resizeColIndex = coveredUntil;
                 const resizable = this._columnResize.isResizable(
                   column,
                   resizeColIndex,
                 );
+                const sortable = this._sort.isSortable(column);
+                const sort = this._sort.getSort(column.field);
                 return html`
                   <md-data-column-header
-                    exportparts="separator, title"
+                    exportparts="separator, title, sort-icon"
                     .column=${column}
                     .colIndex=${colIndex}
                     .colSpan=${span}
                     .resizeColIndex=${resizeColIndex}
                     .resizable=${resizable}
+                    .sortable=${sortable}
+                    .sort=${sort}
+                    @click=${() => {
+                      if (sortable) this._sort.toggleSort(column.field);
+                    }}
                   ></md-data-column-header>
                 `;
               },
@@ -374,12 +468,49 @@ export class MdDataGrid extends LitElement {
           @scroll=${this._onScroll}
           @keydown=${this._onKeydown}
         >
+          ${showLoadingOverlay
+            ? html`<md-progress-linear
+                class="data-grid__loading-indicator"
+                part="loading-indicator"
+                aria-label="Loading"
+              ></md-progress-linear>`
+            : nothing}
           ${effectiveRows.length === 0
-            ? html`
-                <div class="data-grid__empty-state" part="empty-state">
-                  <slot name="empty-label">No rows</slot>
-                </div>
-              `
+            ? showSkeletonRows
+              ? html`
+                  <div class="data-grid__skeleton-rows" part="skeleton-rows">
+                    ${Array.from(
+                      { length: SKELETON_ROW_COUNT },
+                      (_, rowIndex) => html`
+                        <div
+                          class="data-grid__row"
+                          part="row"
+                          style="grid-template-columns: ${gridTemplateColumns}; height: ${this
+                            .rowHeight}px;"
+                        >
+                          ${this.columns.map(
+                            (_column, colIndex) => html`
+                              <div class="data-grid__skeleton-cell" part="cell">
+                                <md-skeleton
+                                  part="skeleton"
+                                  style="width: ${skeletonWidth(
+                                    rowIndex,
+                                    colIndex,
+                                  )}%;"
+                                ></md-skeleton>
+                              </div>
+                            `,
+                          )}
+                        </div>
+                      `,
+                    )}
+                  </div>
+                `
+              : html`
+                  <div class="data-grid__empty-state" part="empty-state">
+                    <slot name="empty-label">No rows</slot>
+                  </div>
+                `
             : html`
                 <div
                   class="data-grid__spacer"
@@ -407,18 +538,43 @@ export class MdDataGrid extends LitElement {
                               .rowHeight}px; --height: ${this.rowHeight}px;"
                             @click=${() => this._onRowClick(row, rowIndex)}
                           >
-                            ${repeat(
-                              this.columns,
-                              (column) => column.field,
-                              (column, colIndex) => html`
-                                <md-data-cell
-                                  .row=${row}
-                                  .column=${column}
-                                  .rowIndex=${rowIndex}
-                                  .colIndex=${colIndex}
-                                ></md-data-cell>
-                              `,
-                            )}
+                            ${(() => {
+                              // Same coveredUntil skip as the header loop
+                              // above, reset per row — a column's colSpan
+                              // merges its cells across every row, not
+                              // just the header.
+                              let coveredUntil = -1;
+                              return repeat(
+                                this.columns,
+                                (column) => column.field,
+                                (column, colIndex) => {
+                                  if (colIndex <= coveredUntil) return nothing;
+                                  const span = clampColSpan(
+                                    this.columns,
+                                    colIndex,
+                                  );
+                                  coveredUntil = colIndex + span - 1;
+                                  const spanInfo = rowSpans.get(column.field)?.[
+                                    rowIndex
+                                  ];
+                                  // Covered by an earlier row's row-span run
+                                  // for this column — that owner cell paints
+                                  // over this slot by overflowing downward.
+                                  if (spanInfo && !spanInfo.owner)
+                                    return nothing;
+                                  return html`
+                                    <md-data-cell
+                                      .row=${row}
+                                      .column=${column}
+                                      .rowIndex=${rowIndex}
+                                      .colIndex=${colIndex}
+                                      .colSpan=${span}
+                                      .rowSpan=${spanInfo?.span ?? 1}
+                                    ></md-data-cell>
+                                  `;
+                                },
+                              );
+                            })()}
                           </div>
                         `;
                       },
@@ -426,6 +582,12 @@ export class MdDataGrid extends LitElement {
                   </div>
                 </div>
               `}
+          ${showLoadingOverlay
+            ? html`<div
+                class="data-grid__loading-overlay"
+                part="loading-overlay"
+              ></div>`
+            : nothing}
         </div>
         ${this.paginationModel && !this.hidePagination
           ? html`<md-data-footer

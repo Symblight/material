@@ -1,6 +1,10 @@
-import { html, LitElement } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement } from "lit/decorators.js";
+import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 
+import arrowUpward from "@material-design-icons/svg/outlined/arrow_upward.svg?raw";
+
+import "../../../icon/icon.js";
 import "../column-separator/data-grid-column-separator.js";
 import "../column-title/data-grid-column-title.js";
 import styles from "./data-grid-column-header.css?inline";
@@ -13,7 +17,12 @@ import styles from "./data-grid-column-header.css?inline";
  * positioned/rendered cell (no wrapper div) — `part`/`role` are set once in
  * the constructor, the align modifier class and colSpan's `grid-column`
  * style are kept in sync with `column`/`colSpan` in `willUpdate()`.
- * Composed internally by the grid — not intended to be used standalone.
+ * `sortable`/`sort` reflect as attributes so `:host([sortable])` /
+ * `:host([sort="desc"])` drive the pointer cursor and sort-icon styling —
+ * clicking is wired by `data-grid.js` at the usage site (a plain `@click`
+ * listener, same as row clicks), not through `dataGridContext`; this
+ * component only renders the current sort state. Composed internally by
+ * the grid — not intended to be used standalone.
  */
 @customElement("md-data-column-header")
 export class MdDataColumnHeader extends LitElement {
@@ -24,6 +33,8 @@ export class MdDataColumnHeader extends LitElement {
     colSpan: { type: Number },
     resizeColIndex: { type: Number },
     resizable: { type: Boolean },
+    sortable: { type: Boolean, reflect: true },
+    sort: { type: String, reflect: true },
   };
 
   /** @returns {import("lit").CSSResultGroup} */
@@ -48,6 +59,12 @@ export class MdDataColumnHeader extends LitElement {
 
     /** @type {boolean} */
     this.resizable = false;
+
+    /** @type {boolean} */
+    this.sortable = false;
+
+    /** @type {"asc" | "desc" | undefined} */
+    this.sort = undefined;
 
     this.setAttribute("part", "header-cell");
     this.setAttribute("role", "columnheader");
@@ -80,6 +97,16 @@ export class MdDataColumnHeader extends LitElement {
           ? column.renderHeader(column)
           : (column.headerName ?? column.field)}
       </md-data-column-title>
+      ${this.sortable
+        ? html`
+            <md-icon
+              class="data-grid-column-header__sort-icon"
+              part="sort-icon"
+            >
+              ${unsafeSVG(arrowUpward)}
+            </md-icon>
+          `
+        : nothing}
       <md-data-column-separator
         .resizeColIndex=${this.resizeColIndex}
         .resizable=${this.resizable}

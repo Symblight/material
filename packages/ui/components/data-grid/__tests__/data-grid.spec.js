@@ -778,7 +778,7 @@ describe("md-data-grid", () => {
     });
   });
 
-  describe("header colSpan", () => {
+  describe("colSpan", () => {
     it("renders one header per column when colSpan is unset", async () => {
       const el = /** @type {MdDataGrid} */ (
         await fixture(html`<md-data-grid></md-data-grid>`)
@@ -839,7 +839,33 @@ describe("md-data-grid", () => {
       expect(headers[1].colSpan).to.equal(1); // clamped from 5 down to the 1 remaining column
     });
 
-    it("still renders every data cell per row regardless of header colSpan", async () => {
+    it("also skips the data cells covered by a preceding colSpan, in every row", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = [{ field: "a", colSpan: 2 }, { field: "b" }, { field: "c" }];
+      el.rows = [
+        { a: 1, b: 2, c: 3 },
+        { a: 4, b: 5, c: 6 },
+      ];
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      // 2 rows * 2 cells each (colSpan swallows "b"'s cell, "c" is unaffected).
+      const cells = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+      ]);
+      expect(cells.length).to.equal(4);
+      expect(cells.map((c) => c.column.field)).to.deep.equal([
+        "a",
+        "c",
+        "a",
+        "c",
+      ]);
+    });
+
+    it("applies grid-column: span N to the spanning data cell, in every row", async () => {
       const el = /** @type {MdDataGrid} */ (
         await fixture(html`<md-data-grid></md-data-grid>`)
       );
@@ -849,7 +875,12 @@ describe("md-data-grid", () => {
       await settle();
       await el.updateComplete;
 
-      expect(el.shadowRoot.querySelectorAll("md-data-cell").length).to.equal(3);
+      const cell = /** @type {any} */ (
+        el.shadowRoot.querySelector("md-data-cell")
+      );
+      await cell.updateComplete;
+      expect(cell.column.field).to.equal("a");
+      expect(cell.style.gridColumn).to.equal("span 2");
     });
   });
 
@@ -975,7 +1006,9 @@ describe("md-data-grid", () => {
       // md-data-column-separator's own tag) and does need forwarding.
       const header = el.shadowRoot.querySelector("md-data-column-header");
       expect(header.getAttribute("part")).to.equal("header-cell");
-      expect(header.getAttribute("exportparts")).to.equal("separator, title");
+      expect(header.getAttribute("exportparts")).to.equal(
+        "separator, title, sort-icon",
+      );
       // md-data-footer also has no wrapper div — part="footer" lives
       // directly on its own tag. The other footer parts (count,
       // prev/next buttons, page-size select) are genuine children inside
@@ -1378,6 +1411,625 @@ describe("md-data-grid", () => {
       expect(el.columns[0].width).to.equal(130);
       expect(el.columns[1].width).to.equal(70);
       expect(el.columns[0].width + el.columns[1].width).to.equal(200);
+    });
+  });
+
+  describe("column sorting", () => {
+    const RATING_COLUMNS = [
+      { field: "id", headerName: "ID", width: 60 },
+      { field: "rating", headerName: "Rating" },
+    ];
+
+    /** @param {any[]} rows */
+    const ratingRows = (rows) => rows.map((rating, id) => ({ id, rating }));
+
+    it("clicking a sortable header's title cycles none -> asc -> desc -> none", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = RATING_COLUMNS;
+      el.rows = ratingRows([3, 1, 2]);
+      await el.updateComplete;
+
+      const header = /** @type {any} */ (
+        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+      );
+      await header.updateComplete;
+
+      header.dispatchEvent(new Event("click", { bubbles: true }));
+      await el.updateComplete;
+      expect(el.sortModel).to.deep.equal([{ field: "rating", sort: "asc" }]);
+
+      header.dispatchEvent(new Event("click", { bubbles: true }));
+      await el.updateComplete;
+      expect(el.sortModel).to.deep.equal([{ field: "rating", sort: "desc" }]);
+
+      header.dispatchEvent(new Event("click", { bubbles: true }));
+      await el.updateComplete;
+      expect(el.sortModel).to.deep.equal([]);
+    });
+
+    it("sorts rows ascending/descending by the active sortModel entry", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = RATING_COLUMNS;
+      el.rows = ratingRows([3, 1, 2]);
+      await el.updateComplete;
+
+      el.sortModel = [{ field: "rating", sort: "asc" }];
+      await el.updateComplete;
+      expect(el._effectiveRows.map((r) => r.rating)).to.deep.equal([1, 2, 3]);
+
+      el.sortModel = [{ field: "rating", sort: "desc" }];
+      await el.updateComplete;
+      expect(el._effectiveRows.map((r) => r.rating)).to.deep.equal([3, 2, 1]);
+    });
+
+    it("is initializable with a pre-set sortModel", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.sortModel = [{ field: "rating", sort: "desc" }];
+      el.columns = RATING_COLUMNS;
+      el.rows = ratingRows([3, 1, 2]);
+      await el.updateComplete;
+
+      expect(el._effectiveRows.map((r) => r.rating)).to.deep.equal([3, 2, 1]);
+    });
+
+    it("ignores a sortModel entry whose sort is null/undefined", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = RATING_COLUMNS;
+      el.rows = ratingRows([3, 1, 2]);
+      el.sortModel = [{ field: "rating", sort: null }];
+      await el.updateComplete;
+
+      expect(el._effectiveRows.map((r) => r.rating)).to.deep.equal([3, 1, 2]);
+    });
+
+    it("dispatches md-data-grid-sort-model-change with the new sortModel", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = RATING_COLUMNS;
+      el.rows = ratingRows([3, 1, 2]);
+      await el.updateComplete;
+
+      const events = [];
+      el.addEventListener("md-data-grid-sort-model-change", (e) =>
+        events.push(e.detail),
+      );
+
+      const header = /** @type {any} */ (
+        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+      );
+      await header.updateComplete;
+      header.dispatchEvent(new Event("click", { bubbles: true }));
+      await el.updateComplete;
+
+      expect(events).to.deep.equal([[{ field: "rating", sort: "asc" }]]);
+    });
+
+    it("column.sortable: false skips the click-to-sort affordance", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = [
+        { field: "id", headerName: "ID", width: 60 },
+        { field: "rating", headerName: "Rating", sortable: false },
+      ];
+      el.rows = ratingRows([3, 1, 2]);
+      await el.updateComplete;
+
+      const header = /** @type {any} */ (
+        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+      );
+      await header.updateComplete;
+      expect(header.hasAttribute("sortable")).to.be.false;
+
+      header.dispatchEvent(new Event("click", { bubbles: true }));
+      await el.updateComplete;
+      expect(el.sortModel).to.deep.equal([]);
+    });
+
+    it("disable-column-sorting disables sorting on every column", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid disable-column-sorting></md-data-grid>`,
+        )
+      );
+      el.columns = RATING_COLUMNS;
+      el.rows = ratingRows([3, 1, 2]);
+      await el.updateComplete;
+
+      const header = /** @type {any} */ (
+        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+      );
+      await header.updateComplete;
+      expect(header.hasAttribute("sortable")).to.be.false;
+
+      header.dispatchEvent(new Event("click", { bubbles: true }));
+      await el.updateComplete;
+      expect(el.sortModel).to.deep.equal([]);
+    });
+
+    it("renders the sort icon only on the active sort column, rotated for desc", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = RATING_COLUMNS;
+      el.rows = ratingRows([3, 1, 2]);
+      await el.updateComplete;
+
+      const [idHeader, ratingHeader] = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-column-header"),
+      ]);
+
+      el.sortModel = [{ field: "rating", sort: "asc" }];
+      await el.updateComplete;
+      await idHeader.updateComplete;
+      await ratingHeader.updateComplete;
+
+      expect(idHeader.hasAttribute("sort")).to.be.false;
+      expect(ratingHeader.getAttribute("sort")).to.equal("asc");
+      expect(
+        ratingHeader.shadowRoot.querySelector(
+          ".data-grid-column-header__sort-icon",
+        ),
+      ).to.exist;
+
+      el.sortModel = [{ field: "rating", sort: "desc" }];
+      await el.updateComplete;
+      await ratingHeader.updateComplete;
+      expect(ratingHeader.getAttribute("sort")).to.equal("desc");
+    });
+
+    it("renders the sort icon hidden (opacity 0) for a sortable-but-unsorted column, visible once active", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = RATING_COLUMNS;
+      el.rows = ratingRows([3, 1, 2]);
+      await el.updateComplete;
+
+      const header = /** @type {any} */ (
+        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+      );
+      await header.updateComplete;
+      const icon = header.shadowRoot.querySelector(
+        ".data-grid-column-header__sort-icon",
+      );
+      // Present in the DOM (so :hover can reveal it via CSS alone, with no
+      // extra render) but invisible by default — not the active sort field.
+      expect(icon).to.exist;
+      expect(header.hasAttribute("sort")).to.be.false;
+      expect(getComputedStyle(icon).opacity).to.equal("0");
+
+      el.sortModel = [{ field: "rating", sort: "asc" }];
+      await el.updateComplete;
+      await header.updateComplete;
+      // The opacity change is CSS-transitioned (150ms) — outlast it before
+      // reading the settled computed value.
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(getComputedStyle(icon).opacity).to.equal("1");
+    });
+
+    it("a resize drag on a sortable column doesn't also toggle its sort", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            style="display:block; width: 400px;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = [
+        { field: "rating", headerName: "Rating", width: 100 },
+        { field: "id", headerName: "ID", width: 100 },
+      ];
+      el.rows = ratingRows([3, 1, 2]);
+      await el.updateComplete;
+
+      const header = /** @type {any} */ (
+        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+      );
+      await header.updateComplete;
+      const separator = header.shadowRoot.querySelector(
+        "md-data-column-separator",
+      );
+      await separator.updateComplete;
+
+      separator.dispatchEvent(
+        new PointerEvent("pointerdown", {
+          pointerId: 1,
+          clientX: 100,
+          bubbles: true,
+        }),
+      );
+      separator.dispatchEvent(
+        new PointerEvent("pointermove", {
+          pointerId: 1,
+          clientX: 130,
+          bubbles: true,
+        }),
+      );
+      separator.dispatchEvent(
+        new PointerEvent("pointerup", {
+          pointerId: 1,
+          clientX: 130,
+          bubbles: true,
+        }),
+      );
+      // The browser fires "click" right after "pointerup" on the same
+      // target — dispatch it too, the same way a real drag-release would,
+      // to actually exercise the click-suppression this test is for.
+      separator.dispatchEvent(
+        new Event("click", { bubbles: true, cancelable: true }),
+      );
+      await el.updateComplete;
+
+      expect(el.columns[0].width).to.equal(130);
+      expect(el.sortModel).to.deep.equal([]);
+    });
+  });
+
+  describe("row spanning", () => {
+    const GROUP_COLUMNS = [
+      { field: "group", headerName: "Group", width: 100 },
+      { field: "name", headerName: "Name", width: 150 },
+    ];
+
+    /** @param {[string, string][]} pairs */
+    const groupRows = (pairs) =>
+      pairs.map(([group, name], id) => ({ id, group, name }));
+
+    it("is off by default — every row renders a cell for every column", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = GROUP_COLUMNS;
+      el.rows = groupRows([
+        ["A", "Ada"],
+        ["A", "Bea"],
+      ]);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      expect(el.shadowRoot.querySelectorAll("md-data-cell").length).to.equal(4);
+    });
+
+    it("merges consecutive rows with an equal value into one taller owner cell", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid row-spanning></md-data-grid>`)
+      );
+      el.columns = GROUP_COLUMNS;
+      el.rows = groupRows([
+        ["A", "Ada"],
+        ["A", "Bea"],
+        ["B", "Cid"],
+      ]);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const cells = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+      ]);
+      const groupCells = cells.filter((c) => c.column.field === "group");
+      const nameCells = cells.filter((c) => c.column.field === "name");
+
+      // "name" never repeats, so it's unaffected: still one cell per row.
+      expect(nameCells.length).to.equal(3);
+      // "group" merges rows 0-1 (both "A") into a single owner cell; row 2
+      // ("B") starts a fresh run of its own.
+      expect(groupCells.length).to.equal(2);
+      expect(groupCells.map((c) => [c.rowIndex, c.rowSpan])).to.deep.equal([
+        [0, 2],
+        [2, 1],
+      ]);
+
+      await groupCells[0].updateComplete;
+      expect(getComputedStyle(groupCells[0]).height).to.equal(
+        `${el.rowHeight * 2}px`,
+      );
+    });
+
+    it("the owner cell visually paints over the covered row's slot for that column", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            row-spanning
+            style="display:block; width: 300px; height: 300px;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = GROUP_COLUMNS;
+      el.rows = groupRows([
+        ["A", "Ada"],
+        ["A", "Bea"],
+      ]);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const owner = /** @type {any} */ (
+        el.shadowRoot.querySelector("md-data-cell")
+      );
+      await owner.updateComplete;
+      const rect = owner.getBoundingClientRect();
+      // A point inside row 1's vertical slice (which renders no "group"
+      // cell of its own) should resolve to the owner overflowing over it,
+      // not a gap or something from row 1.
+      const covered = el.shadowRoot.elementFromPoint(
+        rect.left + 10,
+        rect.top + rect.height - 5,
+      );
+      expect(covered).to.equal(owner);
+    });
+
+    it("column.rowSpannable: false opts a column out even when row-spanning is on", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid row-spanning></md-data-grid>`)
+      );
+      el.columns = [
+        { field: "group", headerName: "Group", rowSpannable: false },
+        { field: "name", headerName: "Name" },
+      ];
+      el.rows = groupRows([
+        ["A", "Ada"],
+        ["A", "Bea"],
+      ]);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      expect(el.shadowRoot.querySelectorAll("md-data-cell").length).to.equal(4);
+    });
+
+    it("a colSpan column is never row-spannable, even with equal adjacent values", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid row-spanning></md-data-grid>`)
+      );
+      el.columns = [
+        { field: "group", headerName: "Group", colSpan: 2 },
+        { field: "name", headerName: "Name" },
+        { field: "extra", headerName: "Extra" },
+      ];
+      el.rows = [
+        { id: 1, group: "A", name: "x", extra: "e1" },
+        { id: 2, group: "A", name: "y", extra: "e2" },
+      ];
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      // colSpan already collapses "name"'s own cell in every row; if "group"
+      // were also row-spanning it would collapse further to 2 total.
+      const cells = el.shadowRoot.querySelectorAll("md-data-cell");
+      expect(cells.length).to.equal(4); // 2 rows * (1 spanning "group" + 1 "extra")
+    });
+
+    it("uses rowSpanValueGetter for the equality key when provided", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid row-spanning></md-data-grid>`)
+      );
+      el.columns = [
+        {
+          field: "score",
+          headerName: "Score",
+          // Groups by rounded value rather than the exact number.
+          rowSpanValueGetter: ({ value }) =>
+            Math.round(/** @type {number} */ (value)),
+        },
+        { field: "name", headerName: "Name" },
+      ];
+      el.rows = [
+        { id: 1, score: 1.1, name: "a" },
+        { id: 2, score: 1.4, name: "b" },
+        { id: 3, score: 2.0, name: "c" },
+      ];
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const scoreCells = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+      ]).filter((c) => c.column.field === "score");
+      expect(scoreCells.map((c) => [c.rowIndex, c.rowSpan])).to.deep.equal([
+        [0, 2],
+        [2, 1],
+      ]);
+    });
+
+    it("re-detects runs against the current sort order", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid row-spanning></md-data-grid>`)
+      );
+      el.columns = GROUP_COLUMNS;
+      // Not adjacent in insertion order — sorting by "group" makes them so.
+      el.rows = groupRows([
+        ["A", "Ada"],
+        ["B", "Cid"],
+        ["A", "Bea"],
+      ]);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      expect(el.shadowRoot.querySelectorAll("md-data-cell").length).to.equal(6); // no merging yet — no two A's are adjacent
+
+      el.sortModel = [{ field: "group", sort: "asc" }];
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const groupCells = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+      ]).filter((c) => c.column.field === "group");
+      // Sorted: A, A, B — the two A's are now adjacent and merge.
+      expect(groupCells.map((c) => c.rowSpan)).to.deep.equal([2, 1]);
+    });
+
+    it("a run never crosses a page boundary in client pagination", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid row-spanning></md-data-grid>`)
+      );
+      el.columns = GROUP_COLUMNS;
+      el.rows = groupRows([
+        ["A", "Ada"], // page 0
+        ["A", "Bea"], // page 0
+        ["A", "Cid"], // page 1 — same value, but a new page
+      ]);
+      el.paginationModel = { page: 1, pageSize: 2 };
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      // Page 1 has exactly one row — nothing for it to merge with.
+      const groupCells = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+      ]).filter((c) => c.column.field === "group");
+      expect(groupCells.length).to.equal(1);
+      expect(groupCells[0].rowSpan).to.equal(1);
+    });
+  });
+
+  describe("loading", () => {
+    it("is off by default — no progress indicator rendered", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      expect(el.shadowRoot.querySelector("md-progress-linear")).to.not.exist;
+    });
+
+    it("the loading attribute renders an indeterminate md-progress-linear, absolutely positioned full-width at the top of the viewport", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid loading></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      const indicator = /** @type {any} */ (
+        el.shadowRoot.querySelector("md-progress-linear")
+      );
+      expect(indicator).to.exist;
+      expect(indicator.getAttribute("part")).to.equal("loading-indicator");
+      // No `value` set — renders as indeterminate.
+      expect(indicator.value).to.be.undefined;
+
+      // A child of the viewport (its containing block via position:
+      // relative), absolutely positioned pinned to its own top edge —
+      // doesn't occupy normal-flow space, so it never affects the
+      // viewport's own height/scroll math, and stays full-width/at the
+      // top regardless of scroll position.
+      const viewport = el.shadowRoot.querySelector(".data-grid__viewport");
+      expect(viewport.contains(indicator)).to.be.true;
+      const style = getComputedStyle(indicator);
+      expect(style.position).to.equal("absolute");
+      expect(style.top).to.equal("0px");
+      expect(style.left).to.equal("0px");
+      expect(style.right).to.equal("0px");
+    });
+
+    it("renders a translucent overlay covering the viewport while loading", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid loading></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      const overlay = el.shadowRoot.querySelector('[part="loading-overlay"]');
+      expect(overlay).to.exist;
+      const viewport = el.shadowRoot.querySelector(".data-grid__viewport");
+      expect(viewport.contains(overlay)).to.be.true;
+      expect(getComputedStyle(overlay).position).to.equal("absolute");
+    });
+
+    it("can be toggled imperatively via a property (e.g. a ref), same as any other property", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+      expect(el.shadowRoot.querySelector("md-progress-linear")).to.not.exist;
+
+      el.loading = true;
+      await el.updateComplete;
+      expect(el.shadowRoot.querySelector("md-progress-linear")).to.exist;
+      expect(el.hasAttribute("loading")).to.be.true;
+
+      el.loading = false;
+      await el.updateComplete;
+      expect(el.shadowRoot.querySelector("md-progress-linear")).to.not.exist;
+      expect(el.hasAttribute("loading")).to.be.false;
+    });
+
+    it("shows skeleton rows instead of the progress bar/overlay when rows is empty", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid loading></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = [];
+      await el.updateComplete;
+
+      // Skeleton mode, not the progress-bar/overlay mode.
+      expect(el.shadowRoot.querySelector("md-progress-linear")).to.not.exist;
+      expect(el.shadowRoot.querySelector('[part="loading-overlay"]')).to.not
+        .exist;
+      expect(el.shadowRoot.querySelector('[part="skeleton-rows"]')).to.exist;
+      // The default "No rows" empty state is suppressed while skeletons show.
+      expect(el.shadowRoot.querySelector('[part="empty-state"]')).to.not.exist;
+
+      const skeletonRows = el.shadowRoot.querySelectorAll(
+        '[part="skeleton-rows"] > .data-grid__row',
+      );
+      expect(skeletonRows.length).to.equal(8);
+      // One md-skeleton per column, in every skeleton row.
+      const firstRowSkeletons = skeletonRows[0].querySelectorAll("md-skeleton");
+      expect(firstRowSkeletons.length).to.equal(COLUMNS.length);
+    });
+
+    it("switches from skeleton rows to the progress bar/overlay once rows arrive while still loading", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid loading></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = [];
+      await el.updateComplete;
+      expect(el.shadowRoot.querySelector('[part="skeleton-rows"]')).to.exist;
+
+      el.rows = makeRows(3);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      expect(el.shadowRoot.querySelector('[part="skeleton-rows"]')).to.not
+        .exist;
+      expect(el.shadowRoot.querySelector("md-progress-linear")).to.exist;
+      expect(el.shadowRoot.querySelector('[part="loading-overlay"]')).to.exist;
+    });
+
+    it("shows the default empty state (not skeletons) when rows is empty and loading is off", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = [];
+      await el.updateComplete;
+
+      expect(el.shadowRoot.querySelector('[part="skeleton-rows"]')).to.not
+        .exist;
+      expect(el.shadowRoot.querySelector('[part="empty-state"]')).to.exist;
     });
   });
 });

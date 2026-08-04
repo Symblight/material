@@ -1,0 +1,42 @@
+:host {
+  --md-skeleton-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 88%
+  );
+  --md-skeleton-radius: var(--md-sys-shape-corner-extra-small, 0.25rem);
+  --md-skeleton-height: 1em;
+  --md-skeleton-width: 100%;
+
+  display: block;
+  width: var(--md-skeleton-width);
+  height: var(--md-skeleton-height);
+  border-radius: var(--md-skeleton-radius);
+  background-color: var(--md-skeleton-color);
+  animation: md-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+:host([variant="circular"]) {
+  border-radius: 50%;
+}
+
+:host([variant="rectangular"]) {
+  --md-skeleton-radius: 0px;
+}
+
+@keyframes md-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    animation: none;
+  }
+}

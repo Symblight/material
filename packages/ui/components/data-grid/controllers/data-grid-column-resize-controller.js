@@ -1,5 +1,11 @@
 const DEFAULT_MIN_WIDTH = 40;
 
+/** @param {MouseEvent} event */
+function preventClick(event) {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
 /**
  * Owns drag-to-resize for column headers. `md-data-column-header` performs
  * the raw pointer mechanics (setPointerCapture, pointermove/up) and calls
@@ -79,6 +85,15 @@ export class ColumnResizeController {
     // cursor should stay col-resize for the whole drag regardless.
     document.body.style.cursor = "col-resize";
 
+    // A "click" always fires right after pointerup on the same target —
+    // including a plain click-without-drag on the handle itself — and
+    // would otherwise bubble out of the separator into the header's own
+    // click-to-sort listener. Swallow it in the capture phase; removed
+    // (in endColumnResize) via setTimeout rather than immediately, since
+    // click dispatch happens synchronously and this listener needs to
+    // still be attached when it fires.
+    document.addEventListener("click", preventClick, true);
+
     this._dispatchResizeEvent("start", this._startWidth);
   }
 
@@ -99,6 +114,10 @@ export class ColumnResizeController {
     this._resizeColIndex = -1;
     this._partnerColIndex = -1;
     document.body.style.removeProperty("cursor");
+    setTimeout(
+      () => document.removeEventListener("click", preventClick, true),
+      0,
+    );
   }
 
   /**

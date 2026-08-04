@@ -30,6 +30,7 @@ import { MdDataColumnHeader } from "./data-grid/components/column-header/data-gr
 import { MdDataColumnSeparator } from "./data-grid/components/column-separator/data-grid-column-separator.js";
 import { MdDataColumnTitle } from "./data-grid/components/column-title/data-grid-column-title.js";
 import { MdDataFooter } from "./data-grid/components/footer/data-grid-footer.js";
+import { MdSkeleton } from "./skeleton/skeleton.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -65,5 +66,6 @@ declare global {
     "md-data-column-separator": MdDataColumnSeparator;
     "md-data-column-title": MdDataColumnTitle;
     "md-data-footer": MdDataFooter;
+    "md-skeleton": MdSkeleton;
   }
 }

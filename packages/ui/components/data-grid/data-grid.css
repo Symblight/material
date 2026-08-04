@@ -16,6 +16,11 @@
     --md-sys-typescale-body-medium-size,
     0.875rem
   );
+  --md-data-grid-loading-overlay-color: color-mix(
+    in oklch,
+    white,
+    transparent 40%
+  );
 
   display: block;
   background-color: transparent;
@@ -49,6 +54,7 @@
 }
 
 .data-grid__viewport {
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -59,6 +65,24 @@
      scroll-position math and desyncing the rendered window from the actual
      scroll position (visible as blank space you can still scroll into). */
   overflow-anchor: none;
+}
+
+/* Both direct children of .data-grid__viewport, not of the scrolled inner
+   content (.data-grid__spacer/.data-grid__rows) — stay anchored to the
+   viewport's own box (full width, pinned to its top) instead of scrolling
+   away with the rows underneath them. */
+.data-grid__loading-indicator {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 2;
+}
+
+.data-grid__loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-color: var(--md-data-grid-loading-overlay-color);
 }
 
 .data-grid__empty-state {
@@ -97,4 +121,13 @@
 
 :where(.data-grid__row:last-child) {
   border-bottom: none;
+}
+
+.data-grid__skeleton-cell {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-inline-size: 0;
+  padding-inline: 0.55rem;
+  overflow: hidden;
 }
