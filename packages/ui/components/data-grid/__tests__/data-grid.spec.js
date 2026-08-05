@@ -253,6 +253,82 @@ describe("md-data-grid", () => {
       expect(el.shadowRoot.querySelector(".data-grid__header-gutter")).to.be
         .null;
     });
+
+    it("recycles row/cell DOM nodes across a scroll jump instead of tearing them down and recreating them", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            style="display: block; height: 300px; width: 500px;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5000);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const rowsBefore = [...el.shadowRoot.querySelectorAll(".data-grid__row")];
+      const cellsBefore = [...el.shadowRoot.querySelectorAll("md-data-cell")];
+      expect(rowsBefore.length).to.be.greaterThan(0);
+
+      const viewport = el.shadowRoot.querySelector(".data-grid__viewport");
+      viewport.scrollTop = 50000;
+      viewport.dispatchEvent(new Event("scroll"));
+      await settle();
+      await el.updateComplete;
+
+      const rowsAfter = [...el.shadowRoot.querySelectorAll(".data-grid__row")];
+      const cellsAfter = [...el.shadowRoot.querySelectorAll("md-data-cell")];
+
+      // Every row/cell element from before the jump is still the exact
+      // same DOM node afterward — rebound to a different row rather than
+      // destroyed and recreated.
+      expect(rowsBefore.every((row) => rowsAfter.includes(row))).to.be.true;
+      expect(cellsBefore.every((cell) => cellsAfter.includes(cell))).to.be.true;
+
+      // The recycled cells reflect the NEW row, not stale data from before.
+      const firstCellAfter = /** @type {any} */ (cellsAfter[0]);
+      expect(firstCellAfter.rowIndex).to.be.greaterThan(900);
+      expect(firstCellAfter.row.id).to.equal(firstCellAfter.rowIndex);
+    });
+
+    it("releases DOM focus (and dataGridContext's focusedCell) when a focused cell's DOM node is recycled to a different row", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            style="display: block; height: 300px; width: 500px;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5000);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const firstCell = /** @type {any} */ (
+        el.shadowRoot.querySelector("md-data-cell")
+      );
+      firstCell.focus();
+      await el.updateComplete;
+      expect(el.shadowRoot.activeElement).to.equal(firstCell);
+      expect(el._gridContextProvider.value.hasFocusedCell).to.be.true;
+
+      const viewport = el.shadowRoot.querySelector(".data-grid__viewport");
+      viewport.scrollTop = 50000;
+      viewport.dispatchEvent(new Event("scroll"));
+      await settle();
+      await el.updateComplete;
+
+      // Same DOM node, now representing a different row — but no longer
+      // holding real focus, and the shared focus state was released with
+      // it (not left stuck pointing at a cell that's no longer focused).
+      expect(el.shadowRoot.contains(firstCell)).to.be.true;
+      expect(firstCell.rowIndex).to.be.greaterThan(900);
+      expect(el.shadowRoot.activeElement).to.not.equal(firstCell);
+      expect(el._gridContextProvider.value.hasFocusedCell).to.be.false;
+    });
   });
 
   describe("events", () => {
@@ -882,7 +958,7 @@ describe("md-data-grid", () => {
         el.shadowRoot.querySelector("md-data-column-header")
       );
       await header.updateComplete;
-      expect(header.style.gridColumn).to.equal("span 3");
+      expect(header.style.gridColumn).to.equal("1 / span 3");
     });
 
     it("clamps colSpan so it never reaches past the last column", async () => {
@@ -941,7 +1017,7 @@ describe("md-data-grid", () => {
       );
       await cell.updateComplete;
       expect(cell.column.field).to.equal("a");
-      expect(cell.style.gridColumn).to.equal("span 2");
+      expect(cell.style.gridColumn).to.equal("1 / span 2");
     });
   });
 
@@ -1796,6 +1872,36 @@ describe("md-data-grid", () => {
       expect(getComputedStyle(groupCells[0]).height).to.equal(
         `${el.rowHeight * 2}px`,
       );
+    });
+
+    it("a covered row's remaining cells still land in their real columns, not shifted left by the omitted one", async () => {
+      // The covered row's "group" cell renders nothing (no DOM node at
+      // all, not an empty placeholder) — without an explicit grid-column
+      // on every cell, CSS Grid auto-placement packs whatever real cells
+      // DO exist into the next available tracks in DOM order, shifting
+      // "name" into "group"'s column instead of leaving it in its own.
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid row-spanning></md-data-grid>`)
+      );
+      el.columns = GROUP_COLUMNS;
+      el.rows = groupRows([
+        ["A", "Ada"],
+        ["A", "Bea"],
+      ]);
+      await el.updateComplete;
+      await settle();
+      await el.updateComplete;
+
+      const cells = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+      ]);
+      const coveredRowNameCell = cells.find(
+        (c) => c.column.field === "name" && c.rowIndex === 1,
+      );
+      await coveredRowNameCell.updateComplete;
+
+      // "name" is column index 1 -> CSS grid line 2.
+      expect(coveredRowNameCell.style.gridColumn).to.equal("2 / span 1");
     });
 
     it("the owner cell visually paints over the covered row's slot for that column", async () => {

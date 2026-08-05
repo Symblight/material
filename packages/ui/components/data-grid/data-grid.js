@@ -74,9 +74,9 @@ import styles from "./data-grid.css?inline";
  * @typedef {Record<string, unknown> & { _action?: "delete" }} DataGridRowUpdate
  */
 
-const DEFAULT_ROW_HEIGHT = 40;
+const DEFAULT_ROW_HEIGHT = 52;
 const DEFAULT_HEADER_HEIGHT = 48;
-const DEFAULT_OVERSCAN = 5;
+const DEFAULT_OVERSCAN = 8;
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const SKELETON_ROW_COUNT = 8;
 
@@ -405,11 +405,6 @@ export class MdDataGrid extends LitElement {
     this._rowUpdates.update(changes);
   }
 
-  /** @param {Event} event */
-  _onScroll(event) {
-    this._virtualization.onScroll(event);
-  }
-
   /**
    * Shift-clicking to range-select rows is also, natively, how a browser
    * extends a text selection — without this, every shift-click after the
@@ -546,7 +541,6 @@ export class MdDataGrid extends LitElement {
         <div
           class="data-grid__viewport"
           part="viewport"
-          @scroll=${this._onScroll}
           @keydown=${this._onKeydown}
         >
           ${showLoadingOverlay
@@ -605,7 +599,21 @@ export class MdDataGrid extends LitElement {
                   >
                     ${repeat(
                       visibleRows,
-                      (row) => this.getRowId(row),
+                      // Keyed by *slot position* within the current window,
+                      // not row identity (getRowId) — deliberately, so a
+                      // fast scroll recycles the same row/cell DOM nodes
+                      // (rebinding them to whatever row now occupies that
+                      // position) instead of tearing down and reconstructing
+                      // every md-data-cell that scrolls into view. The
+                      // window size (visibleRows.length) is stable for the
+                      // whole middle of a scroll session (only overscan/
+                      // rowHeight/viewport height change it), so positional
+                      // keys stay a valid, non-colliding key set from one
+                      // render to the next — see md-data-cell's willUpdate()
+                      // for the corresponding focus-safety half of this: a
+                      // recycled node can't be allowed to silently keep
+                      // real DOM focus while its bound row changes under it.
+                      (_row, i) => i,
                       (row, i) => {
                         const rowIndex = startIndex + i;
                         const rowClassName =

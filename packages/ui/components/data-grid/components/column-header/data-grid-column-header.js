@@ -107,8 +107,16 @@ export class MdDataColumnHeader extends LitElement {
         this._appliedHeaderClassName = headerClassName;
       }
     }
-    if (changed.has("colSpan")) {
-      this.style.gridColumn = this.colSpan > 1 ? `span ${this.colSpan}` : "";
+    if (changed.has("colIndex") || changed.has("colSpan")) {
+      // Explicit start (1-based CSS grid line) + span — matches
+      // md-data-cell's own placement (see its willUpdate() for the full
+      // rationale: a row whose cell for this column is entirely absent
+      // from the DOM, not just empty, throws off auto-placement for
+      // every following cell in that row). The header itself never omits
+      // a cell this way, but placing it identically keeps header and body
+      // columns aligned by the same explicit contract rather than one
+      // relying on auto-placement and the other not.
+      this.style.gridColumn = `${this.colIndex + 1} / span ${this.colSpan}`;
     }
   }
 

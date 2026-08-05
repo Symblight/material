@@ -11,9 +11,10 @@ import styles from "./data-grid-cell.css?inline";
  * @tag md-data-cell
  * @summary One body cell of an `md-data-grid`. The host itself is the
  * rendered/focusable cell (no wrapper div) — `part`/`role` are set once in
- * the constructor, `colSpan`'s `grid-column` style is kept in sync in
- * `willUpdate()` (mirrors `md-data-column-header`), and `tabindex`/the
- * align/highlighted/row-span modifiers are kept in sync in `updated()`
+ * the constructor, an explicit `grid-column` (from `colIndex`/`colSpan`,
+ * not left to auto-placement) is kept in sync in `willUpdate()` (mirrors
+ * `md-data-column-header`), and `tabindex`/the align/highlighted/row-span
+ * modifiers are kept in sync in `updated()`
  * (focus state and `rowHeight` both come from a context subscription rather
  * than a declared reactive property, so they can't be targeted by
  * `willUpdate()`'s `changed` map). Composed internally by the grid — not
@@ -106,8 +107,54 @@ export class MdDataCell extends LitElement {
 
   /** @param {import("lit").PropertyValues} changed */
   willUpdate(changed) {
-    if (changed.has("colSpan")) {
-      this.style.gridColumn = this.colSpan > 1 ? `span ${this.colSpan}` : "";
+    if (changed.has("colIndex") || changed.has("colSpan")) {
+      // Explicit start (1-based CSS grid line) + span, not just a bare
+      // `span N` left to auto-placement. A row-spanning owner cell in a
+      // DIFFERENT row can cover this column for THIS row, in which case
+      // this row's own cell for that column renders `nothing` — not an
+      // empty placeholder, no DOM node at all. Auto-placement has no way
+      // to know a "virtual" cell was skipped there; it just packs whatever
+      // real DOM children this row actually has into the next available
+      // tracks in order, shifting every cell after the gap one column
+      // left per cell omitted before it — explicit placement makes each
+      // cell's column independent of how many siblings happen to exist.
+      this.style.gridColumn = `${this.colIndex + 1} / span ${this.colSpan}`;
+    }
+    if (
+      (changed.has("rowIndex") || changed.has("colIndex")) &&
+      this.matches(":focus")
+    ) {
+      // Virtualized scrolling recycles row/cell DOM nodes (data-grid.js's
+      // row repeat() is keyed by slot position, not row identity, so the
+      // same element gets rebound to a different row instead of torn down
+      // and recreated). If THIS exact node currently holds real browser
+      // focus and is being reassigned to a different row/column, release
+      // that focus explicitly — left alone, focus would silently "follow"
+      // the recycled node onto content the user never actually focused,
+      // while dataGridContext's focusedCell (last set by this cell's own
+      // "focus" listener below, when it was still the ORIGINAL row/column)
+      // stays pointed there — desyncing the highlight and arrow-key
+      // navigation from where focus visibly/actually is. Matches what
+      // already happens when a focused cell scrolls out of a non-recycled
+      // virtualized window (its DOM node is removed, so focus already
+      // reverts to the document) — recycling shouldn't change that
+      // outcome, just how it gets there.
+      //
+      // `rowIndex`/`colIndex` are already the NEW (post-recycling) values
+      // here — property setters apply before willUpdate() runs — so the
+      // "blur" listener below, which reads `this.rowIndex`/`this.colIndex`
+      // when the native blur event fires, would clear focusedCell using
+      // the WRONG (new) identity, and its own stale-blur guard would then
+      // (correctly, given that wrong input) treat it as a no-op, leaving
+      // focusedCell stuck pointing at a cell that's no longer focused.
+      // Clearing explicitly first, with the ORIGINAL identity from
+      // `changed`, does the real work; `.blur()` afterward only needs to
+      // release the actual DOM focus.
+      this._gridConsumer.value?.clearFocusedCell(
+        /** @type {number} */ (changed.get("rowIndex") ?? this.rowIndex),
+        /** @type {number} */ (changed.get("colIndex") ?? this.colIndex),
+      );
+      this.blur();
     }
   }
 
