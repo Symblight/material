@@ -10,7 +10,7 @@ function preventClick(event) {
  * Owns drag-to-resize for column headers. `md-data-column-header` performs
  * the raw pointer mechanics (setPointerCapture, pointermove/up) and calls
  * into this controller through `dataGridContext` — the same channel
- * `setFocusedCell` already uses — rather than a dedicated event bus.
+ * `setCellFocus` already uses — rather than a dedicated event bus.
  *
  * Dragging a column's right-edge handle trades width with its immediate
  * right neighbor — the dragged column grows/shrinks and the neighbor

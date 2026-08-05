@@ -313,7 +313,7 @@ describe("md-data-grid", () => {
       firstCell.focus();
       await el.updateComplete;
       expect(el.shadowRoot.activeElement).to.equal(firstCell);
-      expect(el._gridContextProvider.value.hasFocusedCell).to.be.true;
+      expect(el._gridContextProvider.value.hasFocus).to.be.true;
 
       const viewport = el.shadowRoot.querySelector(".data-grid__viewport");
       viewport.scrollTop = 50000;
@@ -327,7 +327,7 @@ describe("md-data-grid", () => {
       expect(el.shadowRoot.contains(firstCell)).to.be.true;
       expect(firstCell.rowIndex).to.be.greaterThan(900);
       expect(el.shadowRoot.activeElement).to.not.equal(firstCell);
-      expect(el._gridContextProvider.value.hasFocusedCell).to.be.false;
+      expect(el._gridContextProvider.value.hasFocus).to.be.false;
     });
   });
 
@@ -568,7 +568,7 @@ describe("md-data-grid", () => {
         (c) => c.rowIndex === 1 && c.colIndex === 0,
       );
       await secondRowFirstCell.updateComplete;
-      secondRowFirstCell.dispatchEvent(new Event("focus"));
+      secondRowFirstCell.dispatchEvent(new Event("focusin"));
       await el.updateComplete;
 
       expect(el._gridContextProvider.value.focusedCell).to.deep.equal({
@@ -613,15 +613,15 @@ describe("md-data-grid", () => {
         el.shadowRoot.querySelector("md-data-cell")
       );
       await cell.updateComplete;
-      cell.dispatchEvent(new Event("focus"));
+      cell.dispatchEvent(new Event("focusin"));
       await el.updateComplete;
-      expect(el._gridContextProvider.value.hasFocusedCell).to.be.true;
+      expect(el._gridContextProvider.value.hasFocus).to.be.true;
       expect(cell.classList.contains("data-grid-cell_highlighted")).to.be.true;
 
-      cell.dispatchEvent(new Event("blur"));
+      cell.dispatchEvent(new Event("focusout"));
       await el.updateComplete;
 
-      expect(el._gridContextProvider.value.hasFocusedCell).to.be.false;
+      expect(el._gridContextProvider.value.hasFocus).to.be.false;
       expect(cell.classList.contains("data-grid-cell_highlighted")).to.be.false;
     });
 
@@ -643,21 +643,21 @@ describe("md-data-grid", () => {
         (c) => c.rowIndex === 1 && c.colIndex === 0,
       );
       await firstCell.updateComplete;
-      firstCell.dispatchEvent(new Event("focus"));
+      firstCell.dispatchEvent(new Event("focusin"));
       await el.updateComplete;
 
       // Focus already moved to secondCell (e.g. via arrow-key nav) before
       // firstCell's own blur fires — its blur should now be a no-op.
-      secondCell.dispatchEvent(new Event("focus"));
+      secondCell.dispatchEvent(new Event("focusin"));
       await el.updateComplete;
-      firstCell.dispatchEvent(new Event("blur"));
+      firstCell.dispatchEvent(new Event("focusout"));
       await el.updateComplete;
 
       expect(el._gridContextProvider.value.focusedCell).to.deep.equal({
         rowIndex: 1,
         colIndex: 0,
       });
-      expect(el._gridContextProvider.value.hasFocusedCell).to.be.true;
+      expect(el._gridContextProvider.value.hasFocus).to.be.true;
     });
   });
 

@@ -5,9 +5,12 @@ import { createContext } from "@lit/context";
  * @property {number} rowHeight
  * @property {(row: Record<string, unknown>) => string | number} getRowId
  * @property {{ rowIndex: number, colIndex: number }} focusedCell
- * @property {(rowIndex: number, colIndex: number) => void} setFocusedCell
- * @property {(rowIndex: number, colIndex: number) => void} clearFocusedCell // drops the highlight on blur — no-op if (rowIndex, colIndex) isn't the currently-focused cell
- * @property {boolean} hasFocusedCell       // false until the user has actually clicked/navigated into a cell — focusedCell's (0,0) default doesn't count
+ * @property {(rowIndex: number, colIndex: number) => void} setCellFocus
+ * @property {(rowIndex: number, colIndex: number) => void} clearCellFocus // drops the highlight on blur — no-op if (rowIndex, colIndex) isn't the currently-focused cell
+ * @property {boolean} hasFocus             // false until the user has actually clicked/navigated into a cell — focusedCell's (0,0) default doesn't count
+ * @property {"cell" | "columnHeader"} focusedRegion // which one owns the grid's single Tab stop right now
+ * @property {number} focusedHeaderColIndex
+ * @property {(colIndex: number) => void} setHeaderFocus
  * @property {boolean} disableCellHighlight // when true, md-data-cell skips the focused-cell border highlight
  * @property {number} page                 // current page index, 0 when pagination disabled
  * @property {number} pageSize

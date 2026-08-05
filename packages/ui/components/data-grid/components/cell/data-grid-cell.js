@@ -83,11 +83,18 @@ export class MdDataCell extends LitElement {
     this.setAttribute("part", "cell");
     this.setAttribute("role", "gridcell");
 
-    this.addEventListener("focus", () =>
-      this._gridConsumer.value?.setFocusedCell(this.rowIndex, this.colIndex),
+    // "focusin"/"focusout" (bubbling + composed), not "focus"/"blur" (neither
+    // bubbles nor crosses the shadow boundary): a `renderCell` can put an
+    // inner focusable element (e.g. an icon button) in this cell's shadow
+    // tree, and per the WAI-ARIA APG grid pattern `focusCell()` below sends
+    // DOM focus straight to that inner element, not this host — plain
+    // "focus"/"blur" would never fire here for that case since the host
+    // itself is never the event target.
+    this.addEventListener("focusin", () =>
+      this._gridConsumer.value?.setCellFocus(this.rowIndex, this.colIndex),
     );
-    this.addEventListener("blur", () =>
-      this._gridConsumer.value?.clearFocusedCell(this.rowIndex, this.colIndex),
+    this.addEventListener("focusout", () =>
+      this._gridConsumer.value?.clearCellFocus(this.rowIndex, this.colIndex),
     );
   }
 
@@ -100,9 +107,18 @@ export class MdDataCell extends LitElement {
       : raw;
   }
 
-  /** Imperatively focuses this cell (used for roving-tabindex keyboard navigation). */
+  /**
+   * Imperatively focuses this cell for roving-tabindex keyboard navigation.
+   * Per the WAI-ARIA APG grid pattern, delegates to the first inner element
+   * a `renderCell` opted into the tab sequence (`tabindex="0"`) — e.g. an
+   * icon button — falling back to the cell host itself when there is none.
+   */
   focusCell() {
-    this.focus();
+    const target =
+      /** @type {HTMLElement | null} */ (
+        this.shadowRoot?.querySelector('[tabindex="0"]')
+      ) ?? this;
+    target.focus();
   }
 
   /** @param {import("lit").PropertyValues} changed */
@@ -122,38 +138,46 @@ export class MdDataCell extends LitElement {
     }
     if (
       (changed.has("rowIndex") || changed.has("colIndex")) &&
-      this.matches(":focus")
+      this.matches(":focus-within")
     ) {
       // Virtualized scrolling recycles row/cell DOM nodes (data-grid.js's
       // row repeat() is keyed by slot position, not row identity, so the
       // same element gets rebound to a different row instead of torn down
-      // and recreated). If THIS exact node currently holds real browser
-      // focus and is being reassigned to a different row/column, release
-      // that focus explicitly — left alone, focus would silently "follow"
-      // the recycled node onto content the user never actually focused,
-      // while dataGridContext's focusedCell (last set by this cell's own
-      // "focus" listener below, when it was still the ORIGINAL row/column)
-      // stays pointed there — desyncing the highlight and arrow-key
-      // navigation from where focus visibly/actually is. Matches what
-      // already happens when a focused cell scrolls out of a non-recycled
-      // virtualized window (its DOM node is removed, so focus already
-      // reverts to the document) — recycling shouldn't change that
+      // and recreated). If THIS exact node (or an inner element delegated
+      // to by focusCell(), hence :focus-within rather than :focus) currently
+      // holds real browser focus and is being reassigned to a different
+      // row/column, release that focus explicitly — left alone, focus would
+      // silently "follow" the recycled node onto content the user never
+      // actually focused, while dataGridContext's focusedCell (last set by
+      // this cell's own "focusin" listener below, when it was still the
+      // ORIGINAL row/column) stays pointed there — desyncing the highlight
+      // and arrow-key navigation from where focus visibly/actually is.
+      // Matches what already happens when a focused cell scrolls out of a
+      // non-recycled virtualized window (its DOM node is removed, so focus
+      // already reverts to the document) — recycling shouldn't change that
       // outcome, just how it gets there.
       //
       // `rowIndex`/`colIndex` are already the NEW (post-recycling) values
       // here — property setters apply before willUpdate() runs — so the
-      // "blur" listener below, which reads `this.rowIndex`/`this.colIndex`
-      // when the native blur event fires, would clear focusedCell using
-      // the WRONG (new) identity, and its own stale-blur guard would then
-      // (correctly, given that wrong input) treat it as a no-op, leaving
-      // focusedCell stuck pointing at a cell that's no longer focused.
-      // Clearing explicitly first, with the ORIGINAL identity from
-      // `changed`, does the real work; `.blur()` afterward only needs to
-      // release the actual DOM focus.
-      this._gridConsumer.value?.clearFocusedCell(
+      // "focusout" listener below, which reads `this.rowIndex`/
+      // `this.colIndex` when the native focusout event fires, would clear
+      // focusedCell using the WRONG (new) identity, and its own stale-blur
+      // guard would then (correctly, given that wrong input) treat it as a
+      // no-op, leaving focusedCell stuck pointing at a cell that's no longer
+      // focused. Clearing explicitly first, with the ORIGINAL identity from
+      // `changed`, does the real work; releasing DOM focus below only needs
+      // to make that release actually happen.
+      this._gridConsumer.value?.clearCellFocus(
         /** @type {number} */ (changed.get("rowIndex") ?? this.rowIndex),
         /** @type {number} */ (changed.get("colIndex") ?? this.colIndex),
       );
+      // Focus may be on this host itself or on an inner element inside its
+      // shadow tree (delegated to by focusCell()) — release whichever one
+      // actually holds it. Blurring an element that isn't focused is a
+      // harmless no-op, so both calls are safe regardless of which applies.
+      /** @type {HTMLElement | null} */ (
+        this.shadowRoot?.activeElement
+      )?.blur();
       this.blur();
     }
   }
@@ -164,18 +188,23 @@ export class MdDataCell extends LitElement {
 
     const { rowIndex, colIndex, column } = this;
     const focused =
+      this._gridConsumer.value?.focusedRegion === "cell" &&
       this._gridConsumer.value?.focusedCell?.rowIndex === rowIndex &&
       this._gridConsumer.value?.focusedCell?.colIndex === colIndex;
     // Native focus (click or roving-tabindex keyboard nav) already updates
-    // focusedCell via the "focus" listener above — `focused` reflects that
+    // focusedCell via the "focusin" listener above — `focused` reflects that
     // logical state directly rather than relying on :focus/:focus-visible,
     // which don't reliably fire the same way across click vs. keyboard.
-    // hasFocusedCell additionally gates out focusedCell's (0, 0) default,
-    // which is only there so *some* cell has tabindex="0" — it shouldn't
-    // look highlighted before the user has actually interacted.
+    // hasFocus additionally gates out focusedCell's (0, 0) default, which is
+    // only there so *some* cell has tabindex="0" — it shouldn't look
+    // highlighted before the user has actually interacted. focusedRegion
+    // gates the header/cell regions apart — a cell keeps its logical
+    // focusedCell position (so Tab can return to it) even while the header
+    // temporarily owns the grid's single Tab stop, so this can't rely on
+    // focusedCell alone.
     const highlighted =
       focused &&
-      this._gridConsumer.value?.hasFocusedCell &&
+      this._gridConsumer.value?.hasFocus &&
       !this._gridConsumer.value?.disableCellHighlight;
 
     this.tabIndex = focused ? 0 : -1;

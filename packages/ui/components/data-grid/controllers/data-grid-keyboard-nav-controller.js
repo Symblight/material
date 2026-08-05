@@ -1,90 +1,20 @@
 /**
- * Owns roving-tabindex focus state and Arrow-key navigation for
- * `md-data-grid`. Doesn't know about pagination or virtualization directly —
+ * Interprets Arrow/Enter/Space-key navigation for `md-data-grid` and calls
+ * into `host._focus` (a `FocusController`) to actually move focus — doesn't
+ * own any focus state itself. Handles both the `cell` and `columnHeader`
+ * regions (see `FocusController`), dispatching on `host._focus.
+ * focusedRegion` — the header row and the row viewport are separate
+ * sibling elements in the DOM, so a single `keydown` listener on their
+ * shared `.data-grid` ancestor is what makes both reachable from one place;
+ * see the listener's attachment point in `data-grid.js`.
+ * Doesn't know about pagination or virtualization directly either —
  * `onKeydown()` takes row/column counts and an `ensureRowVisible` callback
  * as parameters, supplied by the host.
  */
 export class KeyboardNavController {
-  /**
-   * @param {import("../data-grid.js").MdDataGrid} host
-   * @param {{ onFocusChange?: () => void }} [options] `onFocusChange` fires
-   *   synchronously from `setFocusedCell()`, before `host.requestUpdate()`.
-   *   `focusedCell` isn't a Lit reactive property (it changes far more
-   *   selectively than the host's generic re-render), so the host uses this
-   *   to rebuild the shared context immediately, the same way it used to
-   *   before `focusedCell` moved into this controller — without needing to
-   *   watch a `willUpdate()` property-changed gate for it.
-   */
-  constructor(host, options = {}) {
+  /** @param {import("../data-grid.js").MdDataGrid} host */
+  constructor(host) {
     this.host = host;
-    this._onFocusChange = options.onFocusChange;
-
-    /** @type {{ rowIndex: number, colIndex: number }} */
-    this.focusedCell = { rowIndex: 0, colIndex: 0 };
-
-    /**
-     * `focusedCell` starts at (0, 0) so *some* cell always has `tabindex="0"`
-     * for basic keyboard accessibility (Tab needs a target to land on) —
-     * but that default shouldn't visually read as "highlighted" before the
-     * user has actually clicked or navigated into the grid. This flips true
-     * the first time `setFocusedCell()` runs for real (click or arrow-key
-     * nav), and is what the highlight visual is actually gated on.
-     * @type {boolean}
-     */
-    this.hasFocusedCell = false;
-  }
-
-  /**
-   * @param {number} rowIndex
-   * @param {number} colIndex
-   */
-  setFocusedCell(rowIndex, colIndex) {
-    this.focusedCell = { rowIndex, colIndex };
-    this.hasFocusedCell = true;
-    this._onFocusChange?.();
-    this.host.requestUpdate();
-  }
-
-  /**
-   * Drops the highlight when a cell blurs — but only if it's still the one
-   * that's actually highlighted, not some earlier cell's stale blur. Arrow-key
-   * navigation calls `setFocusedCell()` for the new cell immediately, then
-   * imperatively `.focus()`s it afterward (`focusCell()`, which awaits
-   * `updateComplete` first) — so the old cell's `blur` can fire after
-   * `focusedCell` has already moved on. Guarding on identity means that
-   * stale blur is a no-op instead of clearing a highlight that's already
-   * correct.
-   * @param {number} rowIndex
-   * @param {number} colIndex
-   */
-  clearFocusedCell(rowIndex, colIndex) {
-    if (
-      this.focusedCell.rowIndex !== rowIndex ||
-      this.focusedCell.colIndex !== colIndex
-    ) {
-      return;
-    }
-    this.hasFocusedCell = false;
-    this._onFocusChange?.();
-    this.host.requestUpdate();
-  }
-
-  /**
-   * @param {number} rowIndex
-   * @param {number} colIndex
-   */
-  async focusCell(rowIndex, colIndex) {
-    await this.host.updateComplete;
-    const cells =
-      /** @type {NodeListOf<import("../components/cell/data-grid-cell.js").MdDataCell>} */ (
-        this.host.renderRoot.querySelectorAll("md-data-cell")
-      );
-    for (const cell of cells) {
-      if (cell.rowIndex === rowIndex && cell.colIndex === colIndex) {
-        cell.focusCell();
-        break;
-      }
-    }
   }
 
   /**
@@ -92,7 +22,30 @@ export class KeyboardNavController {
    * @param {{ rowCount: number, colCount: number, ensureRowVisible: (rowIndex: number) => void }} params
    */
   onKeydown(event, { rowCount, colCount, ensureRowVisible }) {
-    const { rowIndex, colIndex } = this.focusedCell;
+    if (this.host._focus.focusedRegion === "columnHeader") {
+      this._onHeaderKeydown(event, colCount);
+      return;
+    }
+    this._onCellKeydown(event, { rowCount, colCount, ensureRowVisible });
+  }
+
+  /**
+   * @param {KeyboardEvent} event
+   * @param {{ rowCount: number, colCount: number, ensureRowVisible: (rowIndex: number) => void }} params
+   */
+  _onCellKeydown(event, { rowCount, colCount, ensureRowVisible }) {
+    const { rowIndex, colIndex } = this.host._focus.focusedCell;
+
+    // Row 0 is the top of the body — ArrowUp from there hands the grid's
+    // single Tab stop to the column header instead of clamping in place,
+    // mirroring the WAI-ARIA APG grid pattern's header/body transition.
+    if (event.key === "ArrowUp" && rowIndex === 0) {
+      event.preventDefault();
+      this.host._focus.setHeaderFocus(colIndex);
+      this.host._focus.focusHeader(colIndex);
+      return;
+    }
+
     const maxRowIndex = Math.max(rowCount - 1, 0);
     const maxColIndex = Math.max(colCount - 1, 0);
 
@@ -120,7 +73,49 @@ export class KeyboardNavController {
 
     event.preventDefault();
     ensureRowVisible(nextRowIndex);
-    this.setFocusedCell(nextRowIndex, nextColIndex);
-    this.focusCell(nextRowIndex, nextColIndex);
+    this.host._focus.setCellFocus(nextRowIndex, nextColIndex);
+    this.host._focus.focusCell(nextRowIndex, nextColIndex);
+  }
+
+  /**
+   * @param {KeyboardEvent} event
+   * @param {number} colCount
+   */
+  _onHeaderKeydown(event, colCount) {
+    const colIndex = this.host._focus.focusedHeaderColIndex;
+    const maxColIndex = Math.max(colCount - 1, 0);
+
+    switch (event.key) {
+      case "ArrowRight":
+      case "ArrowLeft": {
+        const nextColIndex =
+          event.key === "ArrowRight"
+            ? Math.min(colIndex + 1, maxColIndex)
+            : Math.max(colIndex - 1, 0);
+        if (nextColIndex === colIndex) return;
+        event.preventDefault();
+        this.host._focus.setHeaderFocus(nextColIndex);
+        this.host._focus.focusHeader(nextColIndex);
+        return;
+      }
+      case "ArrowDown":
+        // Hands the Tab stop back to row 0 at the same column — the mirror
+        // image of _onCellKeydown()'s ArrowUp-from-row-0 transition above.
+        event.preventDefault();
+        this.host._focus.setCellFocus(0, colIndex);
+        this.host._focus.focusCell(0, colIndex);
+        return;
+      case "Enter":
+      case " ": {
+        event.preventDefault();
+        const column = this.host._columns[colIndex];
+        if (column && this.host._sort.isSortable(column)) {
+          this.host._sort.toggleSort(column.field);
+        }
+        return;
+      }
+      default:
+        return;
+    }
   }
 }

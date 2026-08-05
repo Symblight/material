@@ -645,7 +645,11 @@ export const RowActions = {
         width: 64,
         align: "center",
         renderCell: ({ row }) => html`
-          <md-icon-button aria-label="Row actions" @click=${toggleMenu}>
+          <md-icon-button
+            tabindex="0"
+            aria-label="Row actions"
+            @click=${toggleMenu}
+          >
             <md-icon>${unsafeSVG(moreVert)}</md-icon>
           </md-icon-button>
           <div popover class="row-actions-menu">

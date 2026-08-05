@@ -11,12 +11,15 @@ export function buildDataGridContext(host) {
   return {
     rowHeight: host.rowHeight,
     getRowId: host.getRowId,
-    focusedCell: host._keyboardNav.focusedCell,
-    setFocusedCell: (rowIndex, colIndex) =>
-      host._keyboardNav.setFocusedCell(rowIndex, colIndex),
-    clearFocusedCell: (rowIndex, colIndex) =>
-      host._keyboardNav.clearFocusedCell(rowIndex, colIndex),
-    hasFocusedCell: host._keyboardNav.hasFocusedCell,
+    focusedCell: host._focus.focusedCell,
+    setCellFocus: (rowIndex, colIndex) =>
+      host._focus.setCellFocus(rowIndex, colIndex),
+    clearCellFocus: (rowIndex, colIndex) =>
+      host._focus.clearCellFocus(rowIndex, colIndex),
+    hasFocus: host._focus.hasFocus,
+    focusedRegion: host._focus.focusedRegion,
+    focusedHeaderColIndex: host._focus.focusedHeaderColIndex,
+    setHeaderFocus: (colIndex) => host._focus.setHeaderFocus(colIndex),
     disableCellHighlight: host.disableCellHighlight,
     page: host.paginationModel?.page ?? 0,
     pageSize: host.paginationModel?.pageSize ?? host._pagination.rowCount,

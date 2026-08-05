@@ -1,12 +1,14 @@
 import { html, LitElement, nothing } from "lit";
 import { customElement } from "lit/decorators.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
+import { ContextConsumer } from "@lit/context";
 
 import arrowUpward from "@material-design-icons/svg/outlined/arrow_upward.svg?raw";
 
 import "../../../icon/icon.js";
 import "../column-separator/data-grid-column-separator.js";
 import "../column-title/data-grid-column-title.js";
+import { dataGridContext } from "../../data-grid-context.js";
 import styles from "./data-grid-column-header.css?inline";
 
 /** @typedef {import("../../data-grid.js").DataGridColumn} DataGridColumn */
@@ -17,13 +19,16 @@ import styles from "./data-grid-column-header.css?inline";
  * positioned/rendered cell (no wrapper div) — `part`/`role` are set once in
  * the constructor, the align modifier class, `column.headerClassName`, and
  * colSpan's `grid-column` style are kept in sync with `column`/`colSpan` in
- * `willUpdate()`.
+ * `willUpdate()`, and `tabindex` (roving-tabindex for the `columnHeader`
+ * focus region — see `FocusController`) is kept in sync in `updated()`.
  * `sortable`/`sort` reflect as attributes so `:host([sortable])` /
  * `:host([sort="desc"])` drive the pointer cursor and sort-icon styling —
- * clicking is wired by `data-grid.js` at the usage site (a plain `@click`
- * listener, same as row clicks), not through `dataGridContext`; this
- * component only renders the current sort state. Composed internally by
- * the grid — not intended to be used standalone.
+ * clicking-to-sort is wired by `data-grid.js` at the usage site (a plain
+ * `@click` listener, same as row clicks), not through `dataGridContext`;
+ * this component only renders the current sort state. Keyboard-driven
+ * sorting (Enter/Space) and Left/Right/ArrowDown navigation between header
+ * cells go through `KeyboardNavController` instead, same as body cells.
+ * Composed internally by the grid — not intended to be used standalone.
  */
 @customElement("md-data-column-header")
 export class MdDataColumnHeader extends LitElement {
@@ -76,8 +81,22 @@ export class MdDataColumnHeader extends LitElement {
      */
     this._appliedHeaderClassName = "";
 
+    /** @private */
+    this._gridConsumer = new ContextConsumer(this, {
+      context: dataGridContext,
+      subscribe: true,
+    });
+
     this.setAttribute("part", "header-cell");
     this.setAttribute("role", "columnheader");
+
+    // No matching "focusout" — unlike md-data-cell's highlight, a header
+    // cell's only focused-state visual is the browser's own native :focus
+    // outline, which already goes away on blur by itself. See
+    // FocusController.setHeaderFocus()'s doc comment for the full reasoning.
+    this.addEventListener("focusin", () =>
+      this._gridConsumer.value?.setHeaderFocus(this.colIndex),
+    );
   }
 
   /** @param {import("lit").PropertyValues} changed */
@@ -118,6 +137,20 @@ export class MdDataColumnHeader extends LitElement {
       // relying on auto-placement and the other not.
       this.style.gridColumn = `${this.colIndex + 1} / span ${this.colSpan}`;
     }
+  }
+
+  /** @param {import("lit").PropertyValues} changed */
+  updated(changed) {
+    super.updated(changed);
+
+    // Depends on dataGridContext (a subscription, not a declared reactive
+    // property), so — same as md-data-cell's own focused/highlighted —
+    // this is recomputed unconditionally here rather than gated behind
+    // willUpdate()'s changed-property check.
+    const focused =
+      this._gridConsumer.value?.focusedRegion === "columnHeader" &&
+      this._gridConsumer.value?.focusedHeaderColIndex === this.colIndex;
+    this.tabIndex = focused ? 0 : -1;
   }
 
   render() {

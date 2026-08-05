@@ -14,7 +14,7 @@ export const GRID_CHECKBOX_SELECTION_FIELD = "__check__";
  * is on. An ordinary `DataGridColumn` like any other — `renderCell`/
  * `renderHeader` just render `md-data-grid-checkbox-cell`/
  * `md-data-grid-checkbox-header`, which read/write selection through
- * `dataGridContext` (the same channel `setFocusedCell` and column-resize
+ * `dataGridContext` (the same channel `setCellFocus` and column-resize
  * already use) rather than needing anything from `params` beyond `row`/
  * `rowIndex` — this column has no special-cased rendering path inside the
  * grid itself.

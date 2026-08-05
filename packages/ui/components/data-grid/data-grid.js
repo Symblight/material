@@ -15,6 +15,7 @@ import { VirtualizationController } from "./controllers/data-grid-virtualization
 import { PaginationController } from "./controllers/data-grid-pagination-controller.js";
 import { RowUpdatesController } from "./controllers/data-grid-row-updates-controller.js";
 import { KeyboardNavController } from "./controllers/data-grid-keyboard-nav-controller.js";
+import { FocusController } from "./controllers/data-grid-focus-controller.js";
 import { ColumnResizeController } from "./controllers/data-grid-column-resize-controller.js";
 import { SortController } from "./controllers/data-grid-sort-controller.js";
 import { RowSpanController } from "./controllers/data-grid-row-span-controller.js";
@@ -266,13 +267,14 @@ export class MdDataGrid extends LitElement {
     this._virtualization = new VirtualizationController(this);
     this._pagination = new PaginationController(this);
     this._rowUpdates = new RowUpdatesController(this);
-    this._keyboardNav = new KeyboardNavController(this, {
-      // focusedCell isn't a Lit reactive property, so willUpdate()'s
+    this._focus = new FocusController(this, {
+      // focus state isn't a Lit reactive property, so willUpdate()'s
       // property-changed gate can't see it change — rebuild the context
       // immediately instead of waiting for the next tracked-property update.
       onFocusChange: () =>
         this._gridContextProvider.setValue(buildDataGridContext(this)),
     });
+    this._keyboardNav = new KeyboardNavController(this);
     this._columnResize = new ColumnResizeController(this);
     this._sort = new SortController(this);
     this._rowSpan = new RowSpanController(this);
@@ -473,7 +475,7 @@ export class MdDataGrid extends LitElement {
     const showLoadingOverlay = this.loading && effectiveRows.length > 0;
 
     return html`
-      <div class="data-grid" part="root">
+      <div class="data-grid" part="root" @keydown=${this._onKeydown}>
         <div
           class="data-grid__header"
           part="header"
@@ -522,11 +524,7 @@ export class MdDataGrid extends LitElement {
               ></div>`
             : nothing}
         </div>
-        <div
-          class="data-grid__viewport"
-          part="viewport"
-          @keydown=${this._onKeydown}
-        >
+        <div class="data-grid__viewport" part="viewport">
           ${showLoadingOverlay
             ? html`<md-progress-linear
                 class="data-grid__loading-indicator"
