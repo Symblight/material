@@ -2,7 +2,7 @@ import { createContext } from "@lit/context";
 
 /**
  * @typedef {object} DataGridContextValue
- * @property {number} rowHeight
+ * @property {number | "auto"} rowHeight
  * @property {(row: Record<string, unknown>) => string | number} getRowId
  * @property {{ rowIndex: number, colIndex: number }} focusedCell
  * @property {(rowIndex: number, colIndex: number) => void} setCellFocus

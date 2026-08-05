@@ -1,10 +1,13 @@
-import { html } from "lit";
+import { html, nothing } from "lit";
 import { ref } from "lit/directives/ref.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 
 import moreVert from "@material-design-icons/svg/outlined/more_vert.svg?raw";
 import renameIcon from "@material-design-icons/svg/outlined/drive_file_rename_outline.svg?raw";
 import deleteIcon from "@material-design-icons/svg/outlined/delete.svg?raw";
+import starIcon from "@material-design-icons/svg/outlined/star.svg?raw";
+import starBorderIcon from "@material-design-icons/svg/outlined/star_border.svg?raw";
+import pdfIcon from "@material-design-icons/svg/outlined/picture_as_pdf.svg?raw";
 
 import "../index.js";
 import "../../card/card.js";
@@ -721,6 +724,217 @@ export const RowActions = {
           width: 176px;
         }
       </style>
+    `;
+  },
+};
+
+// ─── Auto row height — rowHeight="auto", each row sized to its own content
+// (an inbox list: most rows are one line, an attachment chip makes a row
+// taller) — every column here uses renderCell, since under "auto" a cell's
+// own vertical centering falls to whatever renderCell renders, not the
+// grid's line-height-based default (see data-grid-cell.css) ─────────────────
+
+/**
+ * @typedef {object} InboxMessage
+ * @property {string} sender
+ * @property {string} subject
+ * @property {string} preview
+ * @property {string} time
+ * @property {string} [attachment]
+ */
+
+/** @type {InboxMessage[]} */
+const INBOX_TEMPLATES = [
+  {
+    sender: "CloudHost Billing",
+    subject: "Failed to process card payment",
+    preview:
+      "We couldn't charge your card ending in 4242 for this month's invoice — please update your billing details.",
+    time: "13:30",
+  },
+  {
+    sender: "CloudHost Billing",
+    subject: "Action required: payment method expiring",
+    preview: "Your subscription will be paused in 3 days without an update.",
+    time: "13:30",
+  },
+  {
+    sender: "Outdoor Supply Co.",
+    subject: "Summer water sports sale is here! 🏄",
+    preview: "Biggest wetsuit and paddleboard sale of the year — ends Sunday.",
+    time: "Aug 4",
+  },
+  {
+    sender: "Ieva Petraityte",
+    subject: "Invoice for this month's services",
+    preview:
+      "Hi, please find the invoice attached below. Let me know if you have any questions — thanks!",
+    time: "Aug 4",
+    attachment: "invoice_20260804.pdf",
+  },
+  {
+    sender: "Flavio Rossi",
+    subject: "Big news and a ton of new things shipped!",
+    preview:
+      "Hi there — we've been heads down building, and here's what's new this month across the whole product.",
+    time: "Aug 4",
+  },
+  {
+    sender: "Northgate Bank",
+    subject: "Plan your future today",
+    preview: "How much would you like to earn in retirement? Let's talk.",
+    time: "Aug 4",
+  },
+  {
+    sender: "GreenMart",
+    subject: "Weekly deals inside 🔥",
+    preview:
+      "Fresh produce specials this week, delivered straight to your door.",
+    time: "Aug 4",
+  },
+  {
+    sender: "RideShare",
+    subject: "Your trip receipt",
+    preview:
+      "Thanks for riding with us. Here's your receipt and a full trip summary for your records.",
+    time: "Aug 4",
+    attachment: "receipt_trip_2291.pdf",
+  },
+];
+
+/** @param {number} count */
+function makeInboxRows(count) {
+  return Array.from({ length: count }, (_, i) => {
+    const template = INBOX_TEMPLATES[i % INBOX_TEMPLATES.length];
+    return { id: i, starred: false, ...template };
+  });
+}
+
+/** @type {Story} */
+export const AutoRowHeight = {
+  render: () => {
+    /** @type {MdDataGrid | undefined} */
+    let grid;
+
+    /**
+     * @param {MouseEvent} event
+     * @param {InboxMessage & { id: number, starred: boolean }} row
+     */
+    function toggleStar(event, row) {
+      // Without this, the click bubbles up to the row's own click handler
+      // and selects the row too — starring a message shouldn't also select it.
+      event.stopPropagation();
+      grid?.updateRows([{ id: row.id, starred: !row.starred }]);
+    }
+
+    /** @type {DataGridColumn[]} */
+    const columns = [
+      {
+        field: "starred",
+        headerName: "",
+        width: 44,
+        renderCell: ({ row }) => html`
+          <div
+            style="display: flex; align-items: center; justify-content: center; height: 100%;"
+          >
+            <md-icon-button
+              variant="standard"
+              toggle
+              ?selected=${row.starred}
+              aria-label="Star this email"
+              @click=${(/** @type {MouseEvent} */ event) =>
+                toggleStar(event, /** @type {any} */ (row))}
+            >
+              <md-icon slot="selected">${unsafeSVG(starIcon)}</md-icon>
+              <md-icon>${unsafeSVG(starBorderIcon)}</md-icon>
+            </md-icon-button>
+          </div>
+        `,
+      },
+      {
+        field: "sender",
+        headerName: "From",
+        width: 180,
+        renderCell: ({ value }) => html`
+          <div
+            style="display: flex; align-items: center; height: 100%; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+          >
+            ${value}
+          </div>
+        `,
+      },
+      {
+        field: "subject",
+        headerName: "Message",
+        // Reuses renderCell to lay out the two things that actually vary a
+        // row's content height: the subject/preview line (always present,
+        // truncated to one line) and an attachment chip (only on some rows)
+        // stacked below it — a row with an attachment ends up taller than
+        // one without, which is exactly what rowHeight="auto" measures and
+        // reflects in real (not estimated) scroll math.
+        renderCell: ({ row }) => html`
+          <div
+            style="display: flex; flex-direction: column; justify-content: center; gap: 0.25rem; min-width: 0; height: 100%; padding-block: 0.5rem;"
+          >
+            <div
+              style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+            >
+              <span style="font-weight: 500;"
+                >${/** @type {any} */ (row).subject}</span
+              >
+              <span
+                style="color: var(--md-sys-color-on-surface-variant); margin-inline-start: 0.35rem;"
+                >${/** @type {any} */ (row).preview}</span
+              >
+            </div>
+            ${
+              /** @type {any} */ (row).attachment
+                ? html`
+                    <md-assist-chip
+                      variant="outlined"
+                      style="width: fit-content;"
+                    >
+                      <span slot="leading-icon" style="color: #d32f2f;"
+                        >${unsafeSVG(pdfIcon)}</span
+                      >
+                      ${/** @type {any} */ (row).attachment}
+                    </md-assist-chip>
+                  `
+                : nothing
+            }
+          </div>
+        `,
+      },
+      {
+        field: "time",
+        headerName: "",
+        width: 80,
+        align: "right",
+        renderCell: ({ value }) => html`
+          <div
+            style="display: flex; align-items: center; justify-content: flex-end; height: 100%; color: var(--md-sys-color-on-surface-variant); font-size: 0.8125rem;"
+          >
+            ${value}
+          </div>
+        `,
+      },
+    ];
+
+    return html`
+      <md-data-grid
+        row-height="auto"
+        checkbox-selection
+        disable-column-sorting
+        style="height: 480px; width: 640px; display: block;"
+        ${ref((el) => {
+          grid = /** @type {MdDataGrid | undefined} */ (
+            /** @type {unknown} */ (el)
+          );
+          if (!grid) return;
+          grid.columns = columns;
+          grid.rows = makeInboxRows(500);
+        })}
+      ></md-data-grid>
     `;
   },
 };

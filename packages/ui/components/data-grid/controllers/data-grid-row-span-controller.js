@@ -31,6 +31,7 @@ export class RowSpanController {
    */
   isSpannable(column) {
     if (!this.host.rowSpanning) return false;
+    if (this.host.rowHeight === "auto") return false;
     // Disallowed for now — a cell that's simultaneously wider AND taller
     // than normal turns the covered-cell bookkeeping into a 2D problem
     // instead of two independent 1D ones, for a combination MUI itself

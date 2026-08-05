@@ -2,11 +2,35 @@ import { ResizeController } from "@lit-labs/observers/resize-controller.js";
 import { VirtualizerController } from "@tanstack/lit-virtual";
 
 /**
- * Owns scroll position and viewport measurement for `md-data-grid`'s fixed
- * row-height virtualization, delegating the actual windowing math to
- * `@tanstack/lit-virtual`'s `VirtualizerController` rather than hand-rolled
- * scrollTop/rAF bookkeeping. Doesn't know about pagination or rows — row
- * counts are passed in as parameters by the host.
+ * Initial per-row height guess for `rowHeight: "auto"`, used only until each
+ * row is actually measured (see `measureRow()`) — same value as
+ * `data-grid.js`'s own `DEFAULT_ROW_HEIGHT`, not imported from there to
+ * avoid a needless cross-module coupling for one shared number.
+ */
+const AUTO_ESTIMATED_ROW_HEIGHT = 52;
+
+/**
+ * @param {import("../data-grid.js").MdDataGrid} host
+ * @returns {number}
+ */
+function estimateRowHeight(host) {
+  return typeof host.rowHeight === "number"
+    ? host.rowHeight
+    : AUTO_ESTIMATED_ROW_HEIGHT;
+}
+
+/**
+ * Owns scroll position and viewport measurement for `md-data-grid`'s
+ * virtualization — either fixed (`rowHeight` a number) or dynamic
+ * (`rowHeight: "auto"`, each row's real height measured via `measureRow()`)
+ * — delegating the actual windowing math to `@tanstack/lit-virtual`'s
+ * `VirtualizerController` rather than hand-rolled scrollTop/rAF bookkeeping.
+ * `@tanstack/virtual-core` (the library underneath) already has a complete
+ * per-item measurement system built in (`measureElement`/`resizeItem`/an
+ * `itemSizeCache`, updated incrementally rather than by rebuilding the whole
+ * positions array) — auto mode leans on that directly instead of
+ * reimplementing it. Doesn't know about pagination or rows — row counts are
+ * passed in as parameters by the host.
  *
  * The wrapped virtualizer owns scroll listening itself (attached directly
  * to the viewport element via its `getScrollElement()` callback, and
@@ -44,7 +68,7 @@ export class VirtualizationController {
     this._virtualizerController = new VirtualizerController(host, {
       count: host.rows.length,
       getScrollElement: () => this.viewportEl,
-      estimateSize: () => host.rowHeight,
+      estimateSize: () => estimateRowHeight(host),
       overscan: host.overscan,
     });
 
@@ -52,7 +76,7 @@ export class VirtualizationController {
     // very first call as already-synced, matching the state actually set.
     /** @private @type {number} */
     this._syncedRowCount = host.rows.length;
-    /** @private @type {number} */
+    /** @private @type {number | "auto"} */
     this._syncedRowHeight = host.rowHeight;
     /** @private @type {number} */
     this._syncedOverscan = host.overscan;
@@ -137,7 +161,7 @@ export class VirtualizationController {
     this._virtualizer.setOptions({
       ...this._virtualizer.options,
       count: rowCount,
-      estimateSize: () => this.host.rowHeight,
+      estimateSize: () => estimateRowHeight(this.host),
       overscan,
     });
   }
@@ -154,8 +178,17 @@ export class VirtualizationController {
    * `@tanstack/lit-virtual`. Falling back to that same explicit, wider
    * window here (keyed off our own `viewportHeight`, not the virtualizer's
    * item count) keeps first-paint behavior identical either way.
+   *
+   * `offsetY` (how far to translateY the rendered row window) comes from
+   * here too, alongside the indices — it's `items[0].start`, the first
+   * visible item's actual position, which only equals `startIndex *
+   * rowHeight` when every row is exactly `estimateSize` tall. In fixed mode
+   * that's always true, so this is a no-op change from the old hand-computed
+   * `startIndex * rowHeight`; in `"auto"` mode, rows above the window can be
+   * taller or shorter than the estimate once measured, so only the
+   * virtualizer's own tracked position is actually correct.
    * @param {number} rowCount
-   * @returns {{ startIndex: number, endIndex: number }}
+   * @returns {{ startIndex: number, endIndex: number, offsetY: number }}
    */
   visibleRange(rowCount) {
     this._syncOptions(rowCount);
@@ -163,16 +196,53 @@ export class VirtualizationController {
       return {
         startIndex: 0,
         endIndex: Math.min(rowCount, this.host.overscan * 2),
+        offsetY: 0,
       };
     }
     const items = this._virtualizer.getVirtualItems();
     if (items.length === 0) {
-      return { startIndex: 0, endIndex: 0 };
+      return { startIndex: 0, endIndex: 0, offsetY: 0 };
     }
     return {
       startIndex: items[0].index,
       endIndex: items[items.length - 1].index + 1,
+      offsetY: items[0].start,
     };
+  }
+
+  /**
+   * Total scrollable height of all `rowCount` rows — `getTotalSize()`
+   * accounts for every row actually measured so far (via `measureRow()`)
+   * plus `estimateSize()` for the rest, rather than assuming every row is
+   * exactly `rowHeight` tall. Equivalent to the old `rowCount * rowHeight`
+   * whenever nothing has been measured yet (fixed mode never measures), so
+   * this is a behavior-preserving switch for that case.
+   * @param {number} rowCount
+   * @returns {number}
+   */
+  totalSize(rowCount) {
+    this._syncOptions(rowCount);
+    return this._virtualizer.getTotalSize();
+  }
+
+  /**
+   * Feeds a rendered row's *real* height back into the virtualizer for
+   * `rowHeight: "auto"` — call for every currently-rendered row on every
+   * update. `measureElement()` reads the row's own `data-index` attribute
+   * to know which logical row it's measuring (required since row divs are
+   * DOM-recycled — data-grid.js's row `repeat()` rebinds the same node to a
+   * different row as you scroll, rather than remounting — so a one-time
+   * "measure on mount" ref wouldn't track that rebinding), synchronously
+   * re-measures immediately, and additionally registers a `ResizeObserver`
+   * on the node so a *later* reflow (e.g. content that wraps differently
+   * after a column resize) is caught too without an explicit call. Calling
+   * this repeatedly for a row whose measured size hasn't actually changed
+   * is a cheap no-op internally — `resizeItem()` only notifies/re-renders on
+   * a real delta — so this is safe to call unconditionally, not just once.
+   * @param {Element} rowEl
+   */
+  measureRow(rowEl) {
+    this._virtualizer.measureElement(rowEl);
   }
 
   /**

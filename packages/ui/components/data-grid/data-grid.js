@@ -138,7 +138,13 @@ export class MdDataGrid extends LitElement {
   static properties = {
     columns: { state: true },
     rows: { state: true },
-    rowHeight: { type: Number, attribute: "row-height" },
+    rowHeight: {
+      attribute: "row-height",
+      converter: {
+        fromAttribute: (value) => (value === "auto" ? "auto" : Number(value)),
+        toAttribute: (value) => String(value),
+      },
+    },
     headerHeight: { type: Number, attribute: "header-height" },
     overscan: { type: Number },
     getRowId: { state: true },
@@ -202,7 +208,7 @@ export class MdDataGrid extends LitElement {
     /** @type {Record<string, unknown>[]} */
     this.rows = [];
 
-    /** @type {number} */
+    /** @type {number | "auto"} */
     this.rowHeight = DEFAULT_ROW_HEIGHT;
 
     /** @type {number} */
@@ -332,6 +338,30 @@ export class MdDataGrid extends LitElement {
     }
     if (changed.has("rows") || changed.has("sortModel")) {
       this._selection.resetAnchor();
+    }
+    if (this.rowHeight === "auto") {
+      this._measureAutoRows();
+    }
+  }
+
+  /**
+   * Feeds every currently-rendered row's *real* rendered height back into
+   * the virtualizer for `rowHeight: "auto"` — runs after every update
+   * (rather than once), since row divs are DOM-recycled (the row `repeat()`
+   * in `render()` below is keyed by slot position, not row identity, so the
+   * same node gets rebound to a different row as you scroll instead of
+   * remounted) and `measureRow()` re-reads each node's current `data-index`
+   * every call, which is what makes it track that rebinding correctly. Cheap
+   * to call unconditionally: a row whose measured size hasn't changed since
+   * last time is a no-op inside `measureRow()` (see its own doc comment).
+   * @private
+   */
+  _measureAutoRows() {
+    const rows = this.renderRoot.querySelectorAll(
+      ".data-grid__rows > .data-grid__row",
+    );
+    for (const row of rows) {
+      this._virtualization.measureRow(row);
     }
   }
 
@@ -464,15 +494,16 @@ export class MdDataGrid extends LitElement {
       ? `${gridTemplateColumns} ${scrollbarWidth}px`
       : gridTemplateColumns;
     const effectiveRows = this._pagination.effectiveRows(this._sortedRows);
-    const { startIndex, endIndex } = this._virtualization.visibleRange(
+    const { startIndex, endIndex, offsetY } = this._virtualization.visibleRange(
       effectiveRows.length,
     );
     const visibleRows = effectiveRows.slice(startIndex, endIndex);
-    const totalHeight = effectiveRows.length * this.rowHeight;
-    const offsetY = startIndex * this.rowHeight;
+    const totalHeight = this._virtualization.totalSize(effectiveRows.length);
     const rowSpans = this._rowSpan.computeSpans(effectiveRows);
     const showSkeletonRows = this.loading && effectiveRows.length === 0;
     const showLoadingOverlay = this.loading && effectiveRows.length > 0;
+    const skeletonRowHeight =
+      typeof this.rowHeight === "number" ? this.rowHeight : DEFAULT_ROW_HEIGHT;
 
     return html`
       <div class="data-grid" part="root" @keydown=${this._onKeydown}>
@@ -542,8 +573,7 @@ export class MdDataGrid extends LitElement {
                         <div
                           class="data-grid__row"
                           part="row"
-                          style="grid-template-columns: ${gridTemplateColumns}; height: ${this
-                            .rowHeight}px;"
+                          style="grid-template-columns: ${gridTemplateColumns}; height: ${skeletonRowHeight}px;"
                         >
                           ${columns.map(
                             (_column, colIndex) => html`
@@ -595,14 +625,18 @@ export class MdDataGrid extends LitElement {
                         for (const cls of rowClassName.split(" ")) {
                           if (cls) rowClasses[cls] = true;
                         }
+                        const heightStyle =
+                          typeof this.rowHeight === "number"
+                            ? `height: ${this.rowHeight}px; --height: ${this.rowHeight}px;`
+                            : "";
                         return html`
                           <div
                             class=${classMap(rowClasses)}
                             part="row ${rowClassName}"
                             role="row"
                             aria-selected=${selected}
-                            style="grid-template-columns: ${gridTemplateColumns}; height: ${this
-                              .rowHeight}px; --height: ${this.rowHeight}px;"
+                            data-index=${rowIndex}
+                            style="grid-template-columns: ${gridTemplateColumns}; ${heightStyle}"
                             @mousedown=${this._onRowMouseDown}
                             @click=${(/** @type {MouseEvent} */ event) =>
                               this._onRowClick(

@@ -124,49 +124,12 @@ export class MdDataCell extends LitElement {
   /** @param {import("lit").PropertyValues} changed */
   willUpdate(changed) {
     if (changed.has("colIndex") || changed.has("colSpan")) {
-      // Explicit start (1-based CSS grid line) + span, not just a bare
-      // `span N` left to auto-placement. A row-spanning owner cell in a
-      // DIFFERENT row can cover this column for THIS row, in which case
-      // this row's own cell for that column renders `nothing` — not an
-      // empty placeholder, no DOM node at all. Auto-placement has no way
-      // to know a "virtual" cell was skipped there; it just packs whatever
-      // real DOM children this row actually has into the next available
-      // tracks in order, shifting every cell after the gap one column
-      // left per cell omitted before it — explicit placement makes each
-      // cell's column independent of how many siblings happen to exist.
       this.style.gridColumn = `${this.colIndex + 1} / span ${this.colSpan}`;
     }
     if (
       (changed.has("rowIndex") || changed.has("colIndex")) &&
       this.matches(":focus-within")
     ) {
-      // Virtualized scrolling recycles row/cell DOM nodes (data-grid.js's
-      // row repeat() is keyed by slot position, not row identity, so the
-      // same element gets rebound to a different row instead of torn down
-      // and recreated). If THIS exact node (or an inner element delegated
-      // to by focusCell(), hence :focus-within rather than :focus) currently
-      // holds real browser focus and is being reassigned to a different
-      // row/column, release that focus explicitly — left alone, focus would
-      // silently "follow" the recycled node onto content the user never
-      // actually focused, while dataGridContext's focusedCell (last set by
-      // this cell's own "focusin" listener below, when it was still the
-      // ORIGINAL row/column) stays pointed there — desyncing the highlight
-      // and arrow-key navigation from where focus visibly/actually is.
-      // Matches what already happens when a focused cell scrolls out of a
-      // non-recycled virtualized window (its DOM node is removed, so focus
-      // already reverts to the document) — recycling shouldn't change that
-      // outcome, just how it gets there.
-      //
-      // `rowIndex`/`colIndex` are already the NEW (post-recycling) values
-      // here — property setters apply before willUpdate() runs — so the
-      // "focusout" listener below, which reads `this.rowIndex`/
-      // `this.colIndex` when the native focusout event fires, would clear
-      // focusedCell using the WRONG (new) identity, and its own stale-blur
-      // guard would then (correctly, given that wrong input) treat it as a
-      // no-op, leaving focusedCell stuck pointing at a cell that's no longer
-      // focused. Clearing explicitly first, with the ORIGINAL identity from
-      // `changed`, does the real work; releasing DOM focus below only needs
-      // to make that release actually happen.
       this._gridConsumer.value?.clearCellFocus(
         /** @type {number} */ (changed.get("rowIndex") ?? this.rowIndex),
         /** @type {number} */ (changed.get("colIndex") ?? this.colIndex),
@@ -191,17 +154,6 @@ export class MdDataCell extends LitElement {
       this._gridConsumer.value?.focusedRegion === "cell" &&
       this._gridConsumer.value?.focusedCell?.rowIndex === rowIndex &&
       this._gridConsumer.value?.focusedCell?.colIndex === colIndex;
-    // Native focus (click or roving-tabindex keyboard nav) already updates
-    // focusedCell via the "focusin" listener above — `focused` reflects that
-    // logical state directly rather than relying on :focus/:focus-visible,
-    // which don't reliably fire the same way across click vs. keyboard.
-    // hasFocus additionally gates out focusedCell's (0, 0) default, which is
-    // only there so *some* cell has tabindex="0" — it shouldn't look
-    // highlighted before the user has actually interacted. focusedRegion
-    // gates the header/cell regions apart — a cell keeps its logical
-    // focusedCell position (so Tab can return to it) even while the header
-    // temporarily owns the grid's single Tab stop, so this can't rely on
-    // focusedCell alone.
     const highlighted =
       focused &&
       this._gridConsumer.value?.hasFocus &&
@@ -232,15 +184,10 @@ export class MdDataCell extends LitElement {
       }
       this._appliedCellClassName = cellClassName;
     }
-
-    // Depends on the grid's rowHeight (via context, not a declared property
-    // of this component), so it's recomputed unconditionally here rather
-    // than gated behind willUpdate()'s changed-property check — same reason
-    // focused/highlighted above are.
-    const rowHeight = this._gridConsumer.value?.rowHeight ?? 0;
+    const rowHeight = /** @type {number} */ (
+      this._gridConsumer.value?.rowHeight ?? 0
+    );
     this.classList.toggle("data-grid-cell_row-span", this.rowSpan > 1);
-    // Matches :host's own `height` (not `block-size`) in data-grid-cell.css
-    // exactly, so this inline override unambiguously wins over it.
     this.style.height = this.rowSpan > 1 ? `${rowHeight * this.rowSpan}px` : "";
   }
 
