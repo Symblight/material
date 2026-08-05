@@ -2,6 +2,7 @@ import { html, LitElement, nothing } from "lit";
 import { customElement } from "lit/decorators.js";
 import { ContextProvider } from "@lit/context";
 import { repeat } from "lit/directives/repeat.js";
+import { classMap } from "lit/directives/class-map.js";
 
 import "./components/column-header/data-grid-column-header.js";
 import "./components/cell/data-grid-cell.js";
@@ -427,12 +428,6 @@ export class MdDataGrid extends LitElement {
    */
   _onRowClick(event, row, rowIndex, rows) {
     if (!this.disableRowSelectionOnClick) {
-      // With checkboxSelection on, a plain row click behaves like the
-      // checkbox's own click — additive (add/remove just this row) rather
-      // than replacing the whole selection with it — matching what the
-      // visible checkboxes imply: clicking a row is another way to check
-      // its box, not a single-select action that would silently uncheck
-      // every other one. Shift-click still range-selects either way.
       const modifiers = this.checkboxSelection
         ? { shiftKey: event.shiftKey, ctrlKey: true, metaKey: true }
         : event;
@@ -473,14 +468,7 @@ export class MdDataGrid extends LitElement {
     const visibleRows = effectiveRows.slice(startIndex, endIndex);
     const totalHeight = effectiveRows.length * this.rowHeight;
     const offsetY = startIndex * this.rowHeight;
-    // Computed over the full (post-sort, post-pagination) effectiveRows —
-    // not just visibleRows — so a run's owner still reports its true span
-    // even when part of the run is outside the current virtualized window.
     const rowSpans = this._rowSpan.computeSpans(effectiveRows);
-    // Skeleton rows replace the empty state while there's no data yet to
-    // show real virtualized rows for; once some rows exist, a reload is
-    // shown as the thin progress bar + overlay instead (below) — the two
-    // are mutually exclusive, never both at once.
     const showSkeletonRows = this.loading && effectiveRows.length === 0;
     const showLoadingOverlay = this.loading && effectiveRows.length > 0;
 
@@ -494,10 +482,6 @@ export class MdDataGrid extends LitElement {
             .headerHeight}px;"
         >
           ${(() => {
-            // `repeat()` invokes this callback once per column, in array
-            // order, synchronously within this render pass — a closured
-            // counter is enough to track how far a preceding colSpan reaches
-            // and skip the header cells it covers.
             let coveredUntil = -1;
             return repeat(
               columns,
@@ -599,31 +583,23 @@ export class MdDataGrid extends LitElement {
                   >
                     ${repeat(
                       visibleRows,
-                      // Keyed by *slot position* within the current window,
-                      // not row identity (getRowId) — deliberately, so a
-                      // fast scroll recycles the same row/cell DOM nodes
-                      // (rebinding them to whatever row now occupies that
-                      // position) instead of tearing down and reconstructing
-                      // every md-data-cell that scrolls into view. The
-                      // window size (visibleRows.length) is stable for the
-                      // whole middle of a scroll session (only overscan/
-                      // rowHeight/viewport height change it), so positional
-                      // keys stay a valid, non-colliding key set from one
-                      // render to the next — see md-data-cell's willUpdate()
-                      // for the corresponding focus-safety half of this: a
-                      // recycled node can't be allowed to silently keep
-                      // real DOM focus while its bound row changes under it.
                       (_row, i) => i,
                       (row, i) => {
                         const rowIndex = startIndex + i;
                         const rowClassName =
                           this.getRowClassName?.(row, rowIndex) ?? "";
                         const selected = this._selection.isSelected(row);
+                        /** @type {Record<string, boolean>} */
+                        const rowClasses = {
+                          "data-grid__row": true,
+                          "data-grid__row_selected": selected,
+                        };
+                        for (const cls of rowClassName.split(" ")) {
+                          if (cls) rowClasses[cls] = true;
+                        }
                         return html`
                           <div
-                            class="data-grid__row ${rowClassName} ${selected
-                              ? "data-grid__row_selected"
-                              : ""}"
+                            class=${classMap(rowClasses)}
                             part="row ${rowClassName}"
                             role="row"
                             aria-selected=${selected}
