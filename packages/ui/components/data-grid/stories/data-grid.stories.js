@@ -8,6 +8,7 @@ import deleteIcon from "@material-design-icons/svg/outlined/delete.svg?raw";
 import starIcon from "@material-design-icons/svg/outlined/star.svg?raw";
 import starBorderIcon from "@material-design-icons/svg/outlined/star_border.svg?raw";
 import pdfIcon from "@material-design-icons/svg/outlined/picture_as_pdf.svg?raw";
+import sellIcon from "@material-design-icons/svg/outlined/sell.svg?raw";
 
 import "../index.js";
 import "../../card/card.js";
@@ -15,6 +16,7 @@ import "../../chips/assist-chip.js";
 import "../../button/button.js";
 import "../../icon-button/icon-button.js";
 import "../../icon/icon.js";
+import "../../badge/badge.js";
 import "../../list/list.js";
 import "../../dialog/dialog.js";
 import "../../text-field/text-field.js";
@@ -89,6 +91,58 @@ export const BasicEmpty = {
         grid.rows = [];
       })}
     ></md-data-grid>
+  `,
+};
+
+// ─── Declarative overrides — slot="empty-label" replaces the default "No
+// rows" text, slot="footer" replaces the internal pagination footer
+// entirely (still shown even with no paginationModel, since it's ordinary
+// <slot> fallback-content behavior, not conditional on pagination) ─────────
+
+/** @type {Story} */
+export const SlotOverrides = {
+  render: () => html`
+    <md-data-grid
+      style="height: 320px; width: 720px; display: block;"
+      ${ref((el) => {
+        const grid = /** @type {MdDataGrid | undefined} */ (
+          /** @type {unknown} */ (el)
+        );
+        if (!grid) return;
+        grid.rows = [];
+      })}
+    >
+      <md-data-grid-column
+        field="id"
+        header-name="ID"
+        width="80"
+      ></md-data-grid-column>
+      <md-data-grid-column
+        field="name"
+        header-name="Name"
+      ></md-data-grid-column>
+      <md-data-grid-column
+        field="email"
+        header-name="Email"
+      ></md-data-grid-column>
+      <md-data-grid-column
+        field="department"
+        header-name="Department"
+        width="140"
+      ></md-data-grid-column>
+      <md-data-grid-column
+        field="status"
+        header-name="Status"
+        width="120"
+      ></md-data-grid-column>
+      <span slot="empty-label">No results match your filters.</span>
+      <div
+        slot="footer"
+        style="padding: 0.5rem 1rem; font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);"
+      >
+        Custom footer content
+      </div>
+    </md-data-grid>
   `,
 };
 
@@ -866,6 +920,23 @@ export const AutoRowHeight = {
       {
         field: "subject",
         headerName: "Message",
+        // renderHeader in addition to renderCell — a custom header isn't
+        // tied to auto row height at all, just shown alongside it here
+        // since this story already demonstrates renderCell throughout.
+        renderHeader: () => html`
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <md-icon
+              style="font-size: 1.125rem; color: var(--md-sys-color-on-surface-variant);"
+            >
+              ${unsafeSVG(sellIcon)}
+            </md-icon>
+            <span>Promotions</span>
+            <md-badge
+              value="3"
+              style="--md-badge-color: #2e7d32; --md-badge-on-color: #fff;"
+            ></md-badge>
+          </div>
+        `,
         // Reuses renderCell to lay out the two things that actually vary a
         // row's content height: the subject/preview line (always present,
         // truncated to one line) and an attachment chip (only on some rows)

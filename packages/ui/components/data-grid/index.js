@@ -1,6 +1,7 @@
 export { MdDataGrid } from "./data-grid.js";
 export { MdDataCell } from "./components/cell/data-grid-cell.js";
-export { MdDataColumnHeader } from "./components/column-header/data-grid-column-header.js";
+export { MdDataHeaderCell } from "./components/header-cell/data-grid-header-cell.js";
+export { MdDataGridColumn } from "./components/column/data-grid-column.js";
 export { MdDataFooter } from "./components/footer/data-grid-footer.js";
 
 /** @typedef {import("./data-grid.js").DataGridColumn} DataGridColumn */

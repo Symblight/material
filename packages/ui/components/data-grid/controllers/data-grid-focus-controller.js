@@ -2,7 +2,7 @@
  * Owns focus/roving-tabindex state for `md-data-grid` — the `cell` region
  * and the `columnHeader` region, mutually exclusive: `focusedRegion` says
  * which one currently holds the grid's single Tab stop, so exactly one
- * `md-data-cell`/`md-data-column-header` has `tabindex="0"` at a time no
+ * `md-data-cell`/`md-data-header-cell` has `tabindex="0"` at a time no
  * matter which region it's in, per the WAI-ARIA APG composite-widget rule.
  * Deliberately split out from `KeyboardNavController`, which only
  * *interprets* key events and calls into this controller to actually move
@@ -128,8 +128,8 @@ export class FocusController {
     await this.host.updateComplete;
     if (!this.canTakeFocus()) return;
     const headers =
-      /** @type {NodeListOf<import("../components/column-header/data-grid-column-header.js").MdDataColumnHeader>} */ (
-        this.host.renderRoot.querySelectorAll("md-data-column-header")
+      /** @type {NodeListOf<import("../components/header-cell/data-grid-header-cell.js").MdDataHeaderCell>} */ (
+        this.host.renderRoot.querySelectorAll("md-data-header-cell")
       );
     for (const header of headers) {
       if (header.colIndex === colIndex) {

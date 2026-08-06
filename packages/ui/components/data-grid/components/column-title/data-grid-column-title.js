@@ -13,13 +13,13 @@ import styles from "./data-grid-column-title.css?inline";
  * reason: without it, a long label forces its column's track wider than
  * intended instead of showing "…".
  *
- * Deliberately kept separate from `md-data-column-header` itself (rather
+ * Deliberately kept separate from `md-data-header-cell` itself (rather
  * than putting `overflow: hidden` there) — `md-data-column-separator`
  * hangs half outside the header's own box by design (its hit-area is
  * centered on the column boundary), and `overflow: hidden` on the header
  * would clip that hit-area along with the text.
  *
- * Composed internally by `md-data-column-header` — not intended to be used
+ * Composed internally by `md-data-header-cell` — not intended to be used
  * standalone.
  */
 @customElement("md-data-column-title")

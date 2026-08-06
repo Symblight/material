@@ -3,10 +3,10 @@ import { expect, fixture, html } from "@open-wc/testing";
 import "../index.js";
 /** @import { MdDataGrid } from "../data-grid.js" */
 
-// md-data-column-header always renders inside an md-data-grid (it consumes
+// md-data-header-cell always renders inside an md-data-grid (it consumes
 // dataGridContext), so we exercise it through a minimal real grid rather than
 // hand-rolling a synthetic context provider.
-describe("md-data-column-header", () => {
+describe("md-data-header-cell", () => {
   it("renders the column's headerName", async () => {
     const el = /** @type {MdDataGrid} */ (
       await fixture(html`<md-data-grid></md-data-grid>`)
@@ -16,7 +16,7 @@ describe("md-data-column-header", () => {
     await el.updateComplete;
 
     const header = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-column-header")
+      el.shadowRoot.querySelector("md-data-header-cell")
     );
     await header.updateComplete;
     expect(header.shadowRoot.textContent).to.contain("Full Name");
@@ -31,7 +31,7 @@ describe("md-data-column-header", () => {
     await el.updateComplete;
 
     const header = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-column-header")
+      el.shadowRoot.querySelector("md-data-header-cell")
     );
     await header.updateComplete;
     expect(header.shadowRoot.textContent).to.contain("email");
@@ -51,7 +51,7 @@ describe("md-data-column-header", () => {
     await el.updateComplete;
 
     const header = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-column-header")
+      el.shadowRoot.querySelector("md-data-header-cell")
     );
     await header.updateComplete;
     expect(header.shadowRoot.querySelector("i")).to.exist;
@@ -67,10 +67,10 @@ describe("md-data-column-header", () => {
     await el.updateComplete;
 
     const header = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-column-header")
+      el.shadowRoot.querySelector("md-data-header-cell")
     );
     await header.updateComplete;
-    expect(header.classList.contains("data-grid-column-header_align-right")).to
-      .be.true;
+    expect(header.classList.contains("data-grid-header-cell_align-right")).to.be
+      .true;
   });
 });

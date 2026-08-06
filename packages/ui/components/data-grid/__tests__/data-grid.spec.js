@@ -31,7 +31,7 @@ describe("md-data-grid", () => {
       expect(el.shadowRoot).to.exist;
     });
 
-    it("renders one md-data-column-header per column, in order", async () => {
+    it("renders one md-data-header-cell per column, in order", async () => {
       const el = /** @type {MdDataGrid} */ (
         await fixture(html`<md-data-grid></md-data-grid>`)
       );
@@ -39,7 +39,7 @@ describe("md-data-grid", () => {
       el.rows = makeRows(3);
       await el.updateComplete;
 
-      const headers = el.shadowRoot.querySelectorAll("md-data-column-header");
+      const headers = el.shadowRoot.querySelectorAll("md-data-header-cell");
       expect(headers.length).to.equal(2);
       expect(/** @type {any} */ (headers[0]).column.field).to.equal("id");
       expect(/** @type {any} */ (headers[1]).column.field).to.equal("name");
@@ -94,7 +94,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
       );
       await header.updateComplete;
       expect(header.getBoundingClientRect().width).to.be.at.most(60);
@@ -924,7 +924,7 @@ describe("md-data-grid", () => {
       el.rows = [];
       await el.updateComplete;
 
-      const headers = el.shadowRoot.querySelectorAll("md-data-column-header");
+      const headers = el.shadowRoot.querySelectorAll("md-data-header-cell");
       expect(headers.length).to.equal(2);
       expect(/** @type {any} */ (headers[0]).colSpan).to.equal(1);
     });
@@ -938,7 +938,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const headers = /** @type {any[]} */ (
-        Array.from(el.shadowRoot.querySelectorAll("md-data-column-header"))
+        Array.from(el.shadowRoot.querySelectorAll("md-data-header-cell"))
       );
       // "b"'s header cell is covered by "a"'s span and never renders.
       expect(headers.map((h) => h.column.field)).to.deep.equal(["a", "c"]);
@@ -955,7 +955,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-column-header")
+        el.shadowRoot.querySelector("md-data-header-cell")
       );
       await header.updateComplete;
       expect(header.style.gridColumn).to.equal("1 / span 3");
@@ -970,7 +970,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const headers = /** @type {any[]} */ (
-        Array.from(el.shadowRoot.querySelectorAll("md-data-column-header"))
+        Array.from(el.shadowRoot.querySelectorAll("md-data-header-cell"))
       );
       expect(headers.map((h) => h.column.field)).to.deep.equal(["a", "b"]);
       expect(headers[1].colSpan).to.equal(1); // clamped from 5 down to the 1 remaining column
@@ -1109,6 +1109,79 @@ describe("md-data-grid", () => {
     });
   });
 
+  describe("footer slot", () => {
+    it("falls back to the internal md-data-footer when nothing is slotted and pagination is active", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.paginationModel = { page: 0, pageSize: 10 };
+      await el.updateComplete;
+
+      const slot = /** @type {HTMLSlotElement} */ (
+        el.shadowRoot.querySelector('slot[name="footer"]')
+      );
+      expect(slot.assignedElements()).to.have.lengthOf(0);
+      expect(slot.querySelector("md-data-footer")).to.exist;
+    });
+
+    it("renders nothing in the fallback when there's no paginationModel", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      const slot = /** @type {HTMLSlotElement} */ (
+        el.shadowRoot.querySelector('slot[name="footer"]')
+      );
+      expect(slot.querySelector("md-data-footer")).to.be.null;
+    });
+
+    it("replaces the internal md-data-footer with slot=footer content, even with pagination active", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`
+          <md-data-grid>
+            <div slot="footer">Custom footer</div>
+          </md-data-grid>
+        `)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.paginationModel = { page: 0, pageSize: 10 };
+      await el.updateComplete;
+
+      const slot = /** @type {HTMLSlotElement} */ (
+        el.shadowRoot.querySelector('slot[name="footer"]')
+      );
+      const assigned = slot.assignedElements();
+      expect(assigned).to.have.lengthOf(1);
+      expect(assigned[0].textContent.trim()).to.equal("Custom footer");
+      expect(el.shadowRoot.querySelector("md-data-footer")).to.be.null;
+    });
+
+    it("keeps slot=footer content even with hidePagination set", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`
+          <md-data-grid hide-pagination>
+            <div slot="footer">Custom footer</div>
+          </md-data-grid>
+        `)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.paginationModel = { page: 0, pageSize: 10 };
+      await el.updateComplete;
+
+      const slot = /** @type {HTMLSlotElement} */ (
+        el.shadowRoot.querySelector('slot[name="footer"]')
+      );
+      expect(slot.assignedElements()).to.have.lengthOf(1);
+    });
+  });
+
   describe("CSS parts", () => {
     it("puts part on the spacer and rows containers", async () => {
       const el = /** @type {MdDataGrid} */ (
@@ -1136,12 +1209,12 @@ describe("md-data-grid", () => {
       const cell = el.shadowRoot.querySelector("md-data-cell");
       expect(cell.getAttribute("part")).to.equal("cell");
       expect(cell.getAttribute("exportparts")).to.be.null;
-      // md-data-column-header has no wrapper div — part="header-cell" lives
+      // md-data-header-cell has no wrapper div — part="header-cell" lives
       // on its own tag (a light-DOM child of md-data-grid's shadow root),
       // so it's already reachable directly and needs no exportparts entry.
       // "separator" still lives one shadow root deeper (on
       // md-data-column-separator's own tag) and does need forwarding.
-      const header = el.shadowRoot.querySelector("md-data-column-header");
+      const header = el.shadowRoot.querySelector("md-data-header-cell");
       expect(header.getAttribute("part")).to.equal("header-cell");
       expect(header.getAttribute("exportparts")).to.equal(
         "separator, title, sort-icon",
@@ -1213,7 +1286,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       const handle = await getHandle(header);
       expect(handle).to.exist;
@@ -1244,7 +1317,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1284,7 +1357,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1319,7 +1392,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1341,7 +1414,7 @@ describe("md-data-grid", () => {
       ];
       await el.updateComplete;
       const header2 = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       const handle2 = await getHandle(header2);
       pointerDown(handle2, 100);
@@ -1367,7 +1440,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1394,7 +1467,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1430,7 +1503,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       await header.updateComplete;
       const separator = header.shadowRoot.querySelector(
@@ -1456,7 +1529,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const headers = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-column-header"),
+        ...el.shadowRoot.querySelectorAll("md-data-header-cell"),
       ]);
       for (const header of headers) {
         const handle = await getHandle(header);
@@ -1476,7 +1549,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const headers = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-column-header"),
+        ...el.shadowRoot.querySelectorAll("md-data-header-cell"),
       ]);
       const handle = await getHandle(headers[1]);
       expect(handle).to.exist;
@@ -1500,9 +1573,9 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       // colSpan collapses columns[1]'s own header cell, so the spanning
-      // header (columns[0]) is the first rendered md-data-column-header.
+      // header (columns[0]) is the first rendered md-data-header-cell.
       const spanningHeader = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       await spanningHeader.updateComplete;
       expect(spanningHeader.resizeColIndex).to.equal(1);
@@ -1534,7 +1607,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1569,7 +1642,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
       );
       await header.updateComplete;
 
@@ -1641,7 +1714,7 @@ describe("md-data-grid", () => {
       );
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
       );
       await header.updateComplete;
       header.dispatchEvent(new Event("click", { bubbles: true }));
@@ -1662,7 +1735,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
       );
       await header.updateComplete;
       expect(header.hasAttribute("sortable")).to.be.false;
@@ -1683,7 +1756,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
       );
       await header.updateComplete;
       expect(header.hasAttribute("sortable")).to.be.false;
@@ -1702,7 +1775,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const [idHeader, ratingHeader] = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-column-header"),
+        ...el.shadowRoot.querySelectorAll("md-data-header-cell"),
       ]);
 
       el.sortModel = [{ field: "rating", sort: "asc" }];
@@ -1714,7 +1787,7 @@ describe("md-data-grid", () => {
       expect(ratingHeader.getAttribute("sort")).to.equal("asc");
       expect(
         ratingHeader.shadowRoot.querySelector(
-          ".data-grid-column-header__sort-icon",
+          ".data-grid-header-cell__sort-icon",
         ),
       ).to.exist;
 
@@ -1733,11 +1806,11 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
       );
       await header.updateComplete;
       const icon = header.shadowRoot.querySelector(
-        ".data-grid-column-header__sort-icon",
+        ".data-grid-header-cell__sort-icon",
       );
       // Present in the DOM (so :hover can reveal it via CSS alone, with no
       // extra render) but invisible by default — not the active sort field.
@@ -1770,7 +1843,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       await header.updateComplete;
       const separator = header.shadowRoot.querySelector(
@@ -2646,7 +2719,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const headers = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-column-header"),
+        ...el.shadowRoot.querySelectorAll("md-data-header-cell"),
       ]);
       expect(headers[0].classList.contains("id-header")).to.be.true;
       expect(headers[1].classList.contains("id-header")).to.be.false;
@@ -2667,7 +2740,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-column-header")
+        el.shadowRoot.querySelector("md-data-header-cell")
       );
       expect(header.classList.contains("header-for-id")).to.be.true;
     });
@@ -2683,7 +2756,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-column-header")
+        el.shadowRoot.querySelector("md-data-header-cell")
       );
       expect(header.classList.contains("first-class")).to.be.true;
 
@@ -2720,7 +2793,7 @@ describe("md-data-grid", () => {
     /** @param {MdDataGrid} el */
     async function getHeaderCheckbox(el) {
       const headerCell = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       await headerCell.updateComplete;
       const checkboxHeader = headerCell.shadowRoot.querySelector(
@@ -2780,7 +2853,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const checkboxHeaderCell = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[0]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
       );
       expect(checkboxHeaderCell.resizable).to.be.false;
       expect(checkboxHeaderCell.sortable).to.be.false;
@@ -3022,7 +3095,7 @@ describe("md-data-grid", () => {
       // Column "a" is merged index 1 (checkbox is 0) — its resize handle
       // lives on the header at that position.
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-column-header")[1]
+        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
       );
       await header.updateComplete;
       const handle = header.shadowRoot.querySelector(

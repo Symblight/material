@@ -9,12 +9,12 @@ import "../../../icon/icon.js";
 import "../column-separator/data-grid-column-separator.js";
 import "../column-title/data-grid-column-title.js";
 import { dataGridContext } from "../../data-grid-context.js";
-import styles from "./data-grid-column-header.css?inline";
+import styles from "./data-grid-header-cell.css?inline";
 
 /** @typedef {import("../../data-grid.js").DataGridColumn} DataGridColumn */
 
 /**
- * @tag md-data-column-header
+ * @tag md-data-header-cell
  * @summary One header cell of an `md-data-grid`. The host itself is the
  * positioned/rendered cell (no wrapper div) — `part`/`role` are set once in
  * the constructor, the align modifier class, `column.headerClassName`, and
@@ -30,8 +30,8 @@ import styles from "./data-grid-column-header.css?inline";
  * cells go through `KeyboardNavController` instead, same as body cells.
  * Composed internally by the grid — not intended to be used standalone.
  */
-@customElement("md-data-column-header")
-export class MdDataColumnHeader extends LitElement {
+@customElement("md-data-header-cell")
+export class MdDataHeaderCell extends LitElement {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {
     column: { attribute: false },
@@ -104,11 +104,11 @@ export class MdDataColumnHeader extends LitElement {
     if (changed.has("column")) {
       const align = this.column.align ?? "left";
       this.classList.toggle(
-        "data-grid-column-header_align-right",
+        "data-grid-header-cell_align-right",
         align === "right",
       );
       this.classList.toggle(
-        "data-grid-column-header_align-center",
+        "data-grid-header-cell_align-center",
         align === "center",
       );
 
@@ -158,20 +158,24 @@ export class MdDataColumnHeader extends LitElement {
 
     return html`
       <md-data-column-title>
-        ${column.renderHeader
-          ? column.renderHeader(column)
-          : (column.headerName ?? column.field)}
+        ${
+          column.renderHeader
+            ? column.renderHeader(column)
+            : (column.headerName ?? column.field)
+        }
       </md-data-column-title>
-      ${this.sortable
-        ? html`
-            <md-icon
-              class="data-grid-column-header__sort-icon"
-              part="sort-icon"
-            >
-              ${unsafeSVG(arrowUpward)}
-            </md-icon>
-          `
-        : nothing}
+      ${
+        this.sortable
+          ? html`
+              <md-icon
+                class="data-grid-header-cell__sort-icon"
+                part="sort-icon"
+              >
+                ${unsafeSVG(arrowUpward)}
+              </md-icon>
+            `
+          : nothing
+      }
       <md-data-column-separator
         .resizeColIndex=${this.resizeColIndex}
         .resizable=${this.resizable}

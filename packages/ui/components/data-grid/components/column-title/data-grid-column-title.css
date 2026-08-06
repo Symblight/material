@@ -1,5 +1,5 @@
 :host {
-  /* The only real (in-flow) flex item in md-data-column-header's flex row
+  /* The only real (in-flow) flex item in md-data-header-cell's flex row
      — md-data-column-separator is position: absolute, out of flow. Grow
      and shrink to fill the header's available width so overflow/ellipsis
      has something to actually clip against. */

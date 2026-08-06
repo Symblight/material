@@ -13,7 +13,7 @@ import styles from "./data-grid-cell.css?inline";
  * rendered/focusable cell (no wrapper div) — `part`/`role` are set once in
  * the constructor, an explicit `grid-column` (from `colIndex`/`colSpan`,
  * not left to auto-placement) is kept in sync in `willUpdate()` (mirrors
- * `md-data-column-header`), and `tabindex`/the align/highlighted/row-span
+ * `md-data-header-cell`), and `tabindex`/the align/highlighted/row-span
  * modifiers are kept in sync in `updated()`
  * (focus state and `rowHeight` both come from a context subscription rather
  * than a declared reactive property, so they can't be targeted by
@@ -195,8 +195,10 @@ export class MdDataCell extends LitElement {
     const { row, column, rowIndex } = this;
     const value = this._value;
 
-    return html`${column.renderCell
-      ? column.renderCell({ row, column, rowIndex, value })
-      : value}`;
+    return html`${
+      column.renderCell
+        ? column.renderCell({ row, column, rowIndex, value })
+        : value
+    }`;
   }
 }

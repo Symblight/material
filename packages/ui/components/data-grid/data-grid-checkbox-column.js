@@ -28,7 +28,7 @@ export const GRID_CHECKBOX_SELECTION_COL_DEF = {
   sortable: false,
   rowSpannable: false,
   align: "center",
-  headerClassName: "data-grid-column-header_checkbox",
+  headerClassName: "data-grid-header-cell_checkbox",
   cellClassName: "data-grid-cell_checkbox",
   renderHeader: () =>
     html`<md-data-grid-checkbox-header></md-data-grid-checkbox-header>`,

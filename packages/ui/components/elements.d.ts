@@ -26,7 +26,7 @@ import IconButton from "./icon-button/icon-button.js";
 import Icon from "./icon/icon.js";
 import { MdDataGrid } from "./data-grid/data-grid.js";
 import { MdDataCell } from "./data-grid/components/cell/data-grid-cell.js";
-import { MdDataColumnHeader } from "./data-grid/components/column-header/data-grid-column-header.js";
+import { MdDataHeaderCell } from "./data-grid/components/header-cell/data-grid-header-cell.js";
 import { MdDataColumnSeparator } from "./data-grid/components/column-separator/data-grid-column-separator.js";
 import { MdDataColumnTitle } from "./data-grid/components/column-title/data-grid-column-title.js";
 import { MdDataFooter } from "./data-grid/components/footer/data-grid-footer.js";
@@ -64,7 +64,7 @@ declare global {
     "md-icon": Icon;
     "md-data-grid": MdDataGrid;
     "md-data-cell": MdDataCell;
-    "md-data-column-header": MdDataColumnHeader;
+    "md-data-header-cell": MdDataHeaderCell;
     "md-data-column-separator": MdDataColumnSeparator;
     "md-data-column-title": MdDataColumnTitle;
     "md-data-footer": MdDataFooter;

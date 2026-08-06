@@ -18,7 +18,7 @@ const ACTIVE_CLASS = "data-grid-column-separator_active";
  * functions, matching `md-data-cell`'s focus-via-context pattern. The host
  * itself is the positioned/interactive element (no wrapper div) — styles
  * and pointer listeners live directly on `:host`/`this`. Composed
- * internally by `md-data-column-header` — not intended to be used
+ * internally by `md-data-header-cell` — not intended to be used
  * standalone.
  */
 @customElement("md-data-column-separator")

@@ -2,7 +2,39 @@
 
 A virtualized Material Design 3 data grid web component built with Lit.
 
-`md-data-grid` has no light-DOM children — `columns` and `rows` are set imperatively as JS properties (they hold objects and functions, which can't be expressed as HTML attributes). Internally it composes `md-data-column-header`, `md-data-cell`, and `md-data-footer`; these are implementation detail and not meant to be used standalone. The one exception is `slot="empty-label"` — see [Slots](#slots) below.
+`rows` is always set imperatively as a JS property (row data can't be expressed as HTML attributes). `columns` can be too, or declared instead as `<md-data-grid-column>` light-DOM children — see [Declarative columns](#declarative-columns) below. Internally the grid composes `md-data-header-cell`, `md-data-cell`, and `md-data-footer`; these are implementation detail and not meant to be used standalone. Two other light-DOM exceptions — `slot="empty-label"` and `slot="footer"` — let you declaratively override that internal rendering; see [Slots](#slots) below.
+
+## Declarative columns
+
+Instead of (or alongside) setting `columns` imperatively, columns can be declared as `<md-data-grid-column>` children — useful for static column sets authored directly as markup (SSG output, a template-engine-driven page, etc.):
+
+```html
+<md-data-grid id="grid" style="height: 400px; display: block;">
+  <md-data-grid-column
+    field="id"
+    header-name="ID"
+    width="80"
+  ></md-data-grid-column>
+  <md-data-grid-column field="name" header-name="Name"></md-data-grid-column>
+  <md-data-grid-column
+    field="status"
+    header-name="Status"
+    width="140"
+  ></md-data-grid-column>
+</md-data-grid>
+```
+
+`<md-data-grid-column>` renders nothing itself — it's purely a data carrier, read into `columns` whenever a child is added, removed, reordered, or has an attribute changed. Its attributes mirror `DataGridColumn`'s serializable fields (`field`, `header-name`, `width`, `min-width`, `max-width`, `col-span`, `resizable`, `sortable`, `row-spannable`, `align`, `cell-class-name`, `header-class-name`). `resizable`/`sortable`/`row-spannable` are three-state, not the usual boolean-attribute two — omit the attribute to inherit the default, or set it to exactly `"false"` to opt out (same convention `aria-*` attributes use, for the same reason: `DataGridColumn`'s own boolean fields default to `true` when _unspecified_, which a plain presence/absence attribute can't represent).
+
+`DataGridColumn`'s function-valued fields (`valueGetter`, `renderCell`, `renderHeader`, `rowSpanValueGetter`) can't be HTML attributes at all — set them as JS properties on the element itself:
+
+```js
+document.querySelector('md-data-grid-column[field="status"]').renderCell = ({
+  row,
+}) => html`<span class="pill">${row.status}</span>`;
+```
+
+When one or more `<md-data-grid-column>` children are present, they always win — mixing them with an imperative `grid.columns = [...]` assignment on the same grid isn't a supported combination. Doing it anyway prints a one-time `console.warn` and the assignment is rejected outright (not applied even momentarily) in favor of the declarative children.
 
 ## Usage
 
@@ -83,7 +115,7 @@ A virtualized Material Design 3 data grid web component built with Lit.
 | `renderHeader`       | `(column: DataGridColumn) => TemplateResult \| string`               | Custom header renderer                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `rowSpanValueGetter` | `(params: DataGridCellParams) => unknown`                            | Only used when `rowSpanning` is on. Computes the equality key used to detect consecutive-equal-value runs (`===` comparison) — falls back to `valueGetter`, then the raw field value, when omitted                                                                                                                                                                                                                                                                                         |
 | `cellClassName`      | `string \| ((params: DataGridCellParams) => string)`                 | Extra class name(s) (space-separated) applied to every `md-data-cell` in this column — a static string, or computed per cell. `GRID_CHECKBOX_SELECTION_COL_DEF` uses this to zero out the cell's default padding                                                                                                                                                                                                                                                                           |
-| `headerClassName`    | `string \| ((column: DataGridColumn) => string)`                     | Extra class name(s) (space-separated) applied to this column's `md-data-column-header` — a static string, or computed from the column. `GRID_CHECKBOX_SELECTION_COL_DEF` uses this to zero out the header's default padding too                                                                                                                                                                                                                                                            |
+| `headerClassName`    | `string \| ((column: DataGridColumn) => string)`                     | Extra class name(s) (space-separated) applied to this column's `md-data-header-cell` — a static string, or computed from the column. `GRID_CHECKBOX_SELECTION_COL_DEF` uses this to zero out the header's default padding too                                                                                                                                                                                                                                                              |
 
 `DataGridCellParams` is `{ row, column, rowIndex, value }`.
 
@@ -130,28 +162,33 @@ grid.updateRows([
 
 ## Slots
 
-| Slot          | Description                                                                                                                                                                                                                          |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `empty-label` | Optional content shown instead of the default "No rows" text when there are zero rows (or zero rows on the current page). Plain text or any markup — the default is just fallback content, replaced entirely by whatever you slot in |
+| Slot          | Description                                                                                                                                                                                                                                                                 |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `empty-label` | Optional content shown instead of the default "No rows" text when there are zero rows (or zero rows on the current page). Plain text or any markup — the default is just fallback content, replaced entirely by whatever you slot in                                        |
+| `footer`      | Optional content that replaces the internal, pagination-driven `md-data-footer` entirely. Whatever you slot in wins outright — even if `paginationModel` is unset or `hidePagination` is `true` — since it's ordinary `<slot>` fallback-content behavior, not a conditional |
 
 ```html
 <md-data-grid id="grid">
   <span slot="empty-label">No results match your filters.</span>
 </md-data-grid>
+
+<md-data-grid id="grid-custom-footer">
+  <div slot="footer">42 items total</div>
+</md-data-grid>
 ```
 
 ## CSS Shadow Parts
 
-Every part below is reachable directly as `md-data-grid::part(name)` — you never need to reach into any sub-component yourself. `md-data-cell`, `md-data-column-header`, and `md-data-footer` have no wrapper element, so `part` lives directly on their own tag and is already visible one level up with no forwarding needed; parts nested deeper (inside `md-data-column-header` or `md-data-footer`'s own shadow roots — the label, separator, count text, buttons, page-size select) are forwarded up via `exportparts`.
+Every part below is reachable directly as `md-data-grid::part(name)` — you never need to reach into any sub-component yourself. `md-data-cell`, `md-data-header-cell`, and `md-data-footer` have no wrapper element, so `part` lives directly on their own tag and is already visible one level up with no forwarding needed; parts nested deeper (inside `md-data-header-cell` or `md-data-footer`'s own shadow roots — the label, separator, count text, buttons, page-size select) are forwarded up via `exportparts`.
 
 | Part                  | Element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `root`                | The grid's outer container                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `header`              | The sticky header row — has a vertical divider between columns (`border-inline`)                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `header-cell`         | A single header cell (`md-data-column-header`'s own tag — its host is the rendered cell, no wrapper element)                                                                                                                                                                                                                                                                                                                                                                                    |
-| `title`               | The header's label (on `md-data-column-header`, forwarded — rendered by `md-data-column-title`, a nested sub-component). Owns single-line truncation (`text-overflow: ellipsis`) independently from `header-cell` so a long label never forces the column wider                                                                                                                                                                                                                                 |
-| `sort-icon`           | The sort direction arrow next to a sortable column's title (on `md-data-column-header`, forwarded). Hidden until hover for an unsorted-but-sortable column; visible (and rotated 180° for `desc`) when it's the active sort column                                                                                                                                                                                                                                                              |
-| `separator`           | The vertical divider on a column's trailing edge (on `md-data-column-header`, forwarded — rendered by `md-data-column-separator`, a nested sub-component). An SVG rect, not a border, so its ends can be rounded. Doubles as the drag handle when the column is resizable, turning primary-colored on hover/drag                                                                                                                                                                                |
+| `header-cell`         | A single header cell (`md-data-header-cell`'s own tag — its host is the rendered cell, no wrapper element)                                                                                                                                                                                                                                                                                                                                                                                      |
+| `title`               | The header's label (on `md-data-header-cell`, forwarded — rendered by `md-data-column-title`, a nested sub-component). Owns single-line truncation (`text-overflow: ellipsis`) independently from `header-cell` so a long label never forces the column wider                                                                                                                                                                                                                                   |
+| `sort-icon`           | The sort direction arrow next to a sortable column's title (on `md-data-header-cell`, forwarded). Hidden until hover for an unsorted-but-sortable column; visible (and rotated 180° for `desc`) when it's the active sort column                                                                                                                                                                                                                                                                |
+| `separator`           | The vertical divider on a column's trailing edge (on `md-data-header-cell`, forwarded — rendered by `md-data-column-separator`, a nested sub-component). An SVG rect, not a border, so its ends can be rounded. Doubles as the drag handle when the column is resizable, turning primary-colored on hover/drag                                                                                                                                                                                  |
 | `header-gutter`       | Trailing spacer matching the viewport's scrollbar width, keeping header/body columns aligned                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `loading-indicator`   | The `md-progress-linear` pinned to the top of the viewport when `loading` is set and `rows` isn't empty (`md-progress-linear`'s own tag — no forwarding needed). Absolutely positioned inside `viewport`, so it doesn't affect layout and stays put regardless of scroll position                                                                                                                                                                                                               |
 | `loading-overlay`     | The translucent veil covering the viewport when `loading` is set and `rows` isn't empty, beneath `loading-indicator`                                                                                                                                                                                                                                                                                                                                                                            |

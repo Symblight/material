@@ -4,13 +4,15 @@ import { ContextProvider } from "@lit/context";
 import { repeat } from "lit/directives/repeat.js";
 import { classMap } from "lit/directives/class-map.js";
 
-import "./components/column-header/data-grid-column-header.js";
+import "./components/header-cell/data-grid-header-cell.js";
+import "./components/column/data-grid-column.js";
 import "./components/cell/data-grid-cell.js";
 import "./components/footer/data-grid-footer.js";
 import "../progress-linear/progress-linear.js";
 import "../skeleton/skeleton.js";
 
 import { dataGridContext } from "./data-grid-context.js";
+import { DeclarativeSlotController } from "./controllers/data-grid-declarative-slot-controller.js";
 import { VirtualizationController } from "./controllers/data-grid-virtualization-controller.js";
 import { PaginationController } from "./controllers/data-grid-pagination-controller.js";
 import { RowUpdatesController } from "./controllers/data-grid-row-updates-controller.js";
@@ -42,7 +44,7 @@ import styles from "./data-grid.css?inline";
  * @property {(column: DataGridColumn) => import("lit").TemplateResult | string} [renderHeader]
  * @property {(params: DataGridCellParams) => unknown} [rowSpanValueGetter] // computes the equality key used to detect consecutive-equal-value runs; falls back to valueGetter, then the raw field value
  * @property {string | ((params: DataGridCellParams) => string)} [cellClassName] // extra class name(s) (space-separated) applied to every md-data-cell in this column — a plain string, or computed per cell
- * @property {string | ((column: DataGridColumn) => string)} [headerClassName] // extra class name(s) (space-separated) applied to this column's md-data-column-header — a plain string, or computed from the column
+ * @property {string | ((column: DataGridColumn) => string)} [headerClassName] // extra class name(s) (space-separated) applied to this column's md-data-header-cell — a plain string, or computed from the column
  */
 
 /**
@@ -121,10 +123,14 @@ const defaultGetRowId = (row) => /** @type {string | number} */ (row.id);
  *
  * `columns` and `rows` are set imperatively
  * (`document.querySelector("md-data-grid").rows = [...]`) — not light-DOM
- * children. The one exception is `slot="empty-label"`: optional content
- * shown instead of the default "No rows" text when there are no rows to
- * display. Internally composes `md-data-column-header`, `md-data-cell`, and
- * `md-data-footer`.
+ * children. Two light-DOM slots exist as declarative overrides of otherwise
+ * internal rendering: `slot="empty-label"` (optional content shown instead
+ * of the default "No rows" text when there are no rows to display) and
+ * `slot="footer"` (optional content that replaces the internal, pagination-
+ * driven `md-data-footer` entirely — native `<slot>` fallback-content
+ * semantics mean whatever's slotted in wins outright, regardless of
+ * `paginationModel`/`hidePagination`). Internally composes
+ * `md-data-header-cell`, `md-data-cell`, and `md-data-footer`.
  *
  * This class is an orchestration layer: virtualization, pagination, row
  * updates, and keyboard nav each live in their own Reactive Controller
@@ -136,7 +142,12 @@ const defaultGetRowId = (row) => /** @type {string | number} */ (row.id);
 export class MdDataGrid extends LitElement {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {
-    columns: { state: true },
+    // noAccessor: true — a custom get/set pair is defined below instead, so
+    // an assignment while <md-data-grid-column> children are present can
+    // warn (DeclarativeColumnsController.sync() is the one legitimate writer
+    // in that case, and marks itself via _isSyncing so its own writes don't
+    // trip the warning).
+    columns: { state: true, noAccessor: true },
     rows: { state: true },
     rowHeight: {
       attribute: "row-height",
@@ -202,8 +213,8 @@ export class MdDataGrid extends LitElement {
   constructor() {
     super();
 
-    /** @type {DataGridColumn[]} */
-    this.columns = [];
+    /** @private @type {DataGridColumn[]} */
+    this._columnsValue = [];
 
     /** @type {Record<string, unknown>[]} */
     this.rows = [];
@@ -287,6 +298,15 @@ export class MdDataGrid extends LitElement {
     this._tree = new TreeController(this);
     this._tree.build(this.rows);
     this._selection = new RowSelectionController(this);
+    this._declarativeColumns = new DeclarativeSlotController(this, {
+      selector: "md-data-grid-column",
+      hostProperty: "columns",
+      toValue: (el) =>
+        /** @type {import("./components/column/data-grid-column.js").MdDataGridColumn} */ (
+          el
+        ).toColumnDef(),
+      changeEvent: "md-data-grid-column-change",
+    });
 
     /** @private */
     this._gridContextProvider = new ContextProvider(this, {
@@ -363,6 +383,49 @@ export class MdDataGrid extends LitElement {
     for (const row of rows) {
       this._virtualization.measureRow(row);
     }
+  }
+
+  /** @returns {DataGridColumn[]} */
+  get columns() {
+    return this._columnsValue;
+  }
+
+  /**
+   * Custom accessor (see `noAccessor: true` above) instead of a plain Lit
+   * property — the only place that can catch the exact assignment that
+   * conflicts with `<md-data-grid-column>` children, rather than lazily
+   * noticing it on some later, unrelated mutation (or never, if none ever
+   * happens again). `DeclarativeSlotController.sync()` is the one
+   * legitimate writer once declarative children exist; it marks its own
+   * writes via `isSyncing` so they don't trip this.
+   *
+   * On a real conflict, the assignment is rejected outright (not applied
+   * even transiently) and replaced with an immediate resync from the DOM —
+   * "declarative children are authoritative" needs to be a hard guarantee,
+   * not "usually true, unless nothing happens to re-trigger a sync before
+   * something reads `columns` again".
+   * @param {DataGridColumn[]} value
+   */
+  set columns(value) {
+    if (
+      this._declarativeColumns?.hasDeclarativeChildren &&
+      !this._declarativeColumns.isSyncing
+    ) {
+      if (!this._declarativeColumns.warnedAboutConflict) {
+        console.warn(
+          "<md-data-grid>: `columns` was assigned directly while " +
+            "<md-data-grid-column> children are present. The declarative " +
+            "children are authoritative and this assignment is being " +
+            "rejected — use one approach or the other, not both.",
+        );
+        this._declarativeColumns.warnedAboutConflict = true;
+      }
+      this._declarativeColumns.sync();
+      return;
+    }
+    const old = this._columnsValue;
+    this._columnsValue = value;
+    this.requestUpdate("columns", old);
   }
 
   /**
@@ -511,8 +574,9 @@ export class MdDataGrid extends LitElement {
           class="data-grid__header"
           part="header"
           role="row"
-          style="grid-template-columns: ${headerGridTemplateColumns}; height: ${this
-            .headerHeight}px;"
+          style="grid-template-columns: ${headerGridTemplateColumns}; height: ${
+            this.headerHeight
+          }px;"
         >
           ${(() => {
             let coveredUntil = -1;
@@ -531,7 +595,7 @@ export class MdDataGrid extends LitElement {
                 const sortable = this._sort.isSortable(column);
                 const sort = this._sort.getSort(column.field);
                 return html`
-                  <md-data-column-header
+                  <md-data-header-cell
                     exportparts="separator, title, sort-icon"
                     .column=${column}
                     .colIndex=${colIndex}
@@ -543,31 +607,36 @@ export class MdDataGrid extends LitElement {
                     @click=${() => {
                       if (sortable) this._sort.toggleSort(column.field);
                     }}
-                  ></md-data-column-header>
+                  ></md-data-header-cell>
                 `;
               },
             );
           })()}
-          ${scrollbarWidth
-            ? html`<div
-                class="data-grid__header-gutter"
-                part="header-gutter"
-              ></div>`
-            : nothing}
+          ${
+            scrollbarWidth
+              ? html`<div
+                  class="data-grid__header-gutter"
+                  part="header-gutter"
+                ></div>`
+              : nothing
+          }
         </div>
         <div class="data-grid__viewport" part="viewport">
-          ${showLoadingOverlay
-            ? html`<md-progress-linear
-                class="data-grid__loading-indicator"
-                part="loading-indicator"
-                aria-label="Loading"
-              ></md-progress-linear>`
-            : nothing}
-          ${effectiveRows.length === 0
-            ? showSkeletonRows
-              ? html`
-                  <div class="data-grid__skeleton-rows" part="skeleton-rows">
-                    ${Array.from(
+          ${
+            showLoadingOverlay
+              ? html`<md-progress-linear
+                  class="data-grid__loading-indicator"
+                  part="loading-indicator"
+                  aria-label="Loading"
+                ></md-progress-linear>`
+              : nothing
+          }
+          ${
+            effectiveRows.length === 0
+              ? showSkeletonRows
+                ? html`
+                    <div class="data-grid__skeleton-rows" part="skeleton-rows">
+                      ${Array.from(
                       { length: SKELETON_ROW_COUNT },
                       (_, rowIndex) => html`
                         <div
@@ -591,25 +660,25 @@ export class MdDataGrid extends LitElement {
                         </div>
                       `,
                     )}
-                  </div>
-                `
+                    </div>
+                  `
+                : html`
+                    <div class="data-grid__empty-state" part="empty-state">
+                      <slot name="empty-label">No rows</slot>
+                    </div>
+                  `
               : html`
-                  <div class="data-grid__empty-state" part="empty-state">
-                    <slot name="empty-label">No rows</slot>
-                  </div>
-                `
-            : html`
-                <div
-                  class="data-grid__spacer"
-                  part="spacer"
-                  style="height: ${totalHeight}px;"
-                >
                   <div
-                    class="data-grid__rows"
-                    part="rows"
-                    style="transform: translateY(${offsetY}px);"
+                    class="data-grid__spacer"
+                    part="spacer"
+                    style="height: ${totalHeight}px;"
                   >
-                    ${repeat(
+                    <div
+                      class="data-grid__rows"
+                      part="rows"
+                      style="transform: translateY(${offsetY}px);"
+                    >
+                      ${repeat(
                       visibleRows,
                       (_row, i) => i,
                       (row, i) => {
@@ -684,21 +753,28 @@ export class MdDataGrid extends LitElement {
                         `;
                       },
                     )}
+                    </div>
                   </div>
-                </div>
-              `}
-          ${showLoadingOverlay
-            ? html`<div
-                class="data-grid__loading-overlay"
-                part="loading-overlay"
-              ></div>`
-            : nothing}
+                `
+          }
+          ${
+            showLoadingOverlay
+              ? html`<div
+                  class="data-grid__loading-overlay"
+                  part="loading-overlay"
+                ></div>`
+              : nothing
+          }
         </div>
-        ${this.paginationModel && !this.hidePagination
-          ? html`<md-data-footer
-              exportparts="rows-per-page-label,page-size-select,page-size-option,footer-count,footer-prev,footer-next"
-            ></md-data-footer>`
-          : nothing}
+        <slot name="footer">
+          ${
+            this.paginationModel && !this.hidePagination
+              ? html`<md-data-footer
+                  exportparts="rows-per-page-label,page-size-select,page-size-option,footer-count,footer-prev,footer-next"
+                ></md-data-footer>`
+              : nothing
+          }
+        </slot>
       </div>
     `;
   }
