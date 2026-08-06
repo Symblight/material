@@ -40,5 +40,9 @@ export function buildDataGridContext(host) {
     toggleRowSelection: (row, rowIndex, modifiers) =>
       host._selection.select(row, rowIndex, modifiers, host._effectiveRows),
     toggleSelectAll: () => host._selection.toggleAll(host.rows),
+    detailPanelExpandedRowIds: host.detailPanelExpandedRowIds,
+    hasDetailPanelContent: (row, rowIndex) =>
+      host._detailPanel.hasContent(row, rowIndex),
+    toggleDetailPanel: (id) => host._detailPanel.toggle(id),
   };
 }

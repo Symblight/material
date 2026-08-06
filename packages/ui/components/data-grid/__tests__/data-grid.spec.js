@@ -1159,7 +1159,16 @@ describe("md-data-grid", () => {
       const assigned = slot.assignedElements();
       expect(assigned).to.have.lengthOf(1);
       expect(assigned[0].textContent.trim()).to.equal("Custom footer");
-      expect(el.shadowRoot.querySelector("md-data-footer")).to.be.null;
+      // Deliberately not also asserting md-data-footer is absent from
+      // el.shadowRoot here — with paginationModel set, native <slot>
+      // fallback-content semantics mean it's still constructed as an inert
+      // child of the slot (just visually superseded by the real assigned
+      // content above), so that query would find a real, non-null element.
+      // Previously asserted `.to.be.null` here, which — being a real,
+      // circularly-referenced Lit element rather than an actual null —
+      // made the *failing* assertion hang trying to serialize it for the
+      // error message instead of failing loudly. The `assigned` checks
+      // above already fully cover "slotted content wins".
     });
 
     it("keeps slot=footer content even with hidePagination set", async () => {
@@ -3133,6 +3142,321 @@ describe("md-data-grid", () => {
       expect(el.columns[0].width).to.equal(140);
       expect(el.columns[1].field).to.equal("b");
       expect(el.columns[1].width).to.equal(60);
+    });
+  });
+
+  describe("master detail", () => {
+    /**
+     * `md-data-detail-toggle-cell` itself always exists once the column is
+     * present — only its inner icon-button is conditionally omitted for a
+     * row with no detail content. Returns that button, or `null`. Never
+     * assert `.to.not.exist` against the cell/component itself instead of
+     * this — a live, circularly-referenced Lit element failing that
+     * assertion makes chai hang trying to serialize it for the failure
+     * message, rather than failing loudly (see the `footer slot` describe
+     * block above for the same lesson learned the hard way).
+     * @param {MdDataGrid} el
+     * @param {number} rowIndex
+     */
+    async function getToggleButton(el, rowIndex) {
+      const cells = /** @type {any[]} */ ([
+        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+      ]);
+      const cell = cells.find(
+        (c) => c.rowIndex === rowIndex && c.colIndex === 0,
+      );
+      await cell.updateComplete;
+      const toggleCell = cell.shadowRoot.querySelector(
+        "md-data-detail-toggle-cell",
+      );
+      await toggleCell.updateComplete;
+      return toggleCell.shadowRoot.querySelector("md-icon-button");
+    }
+
+    it("is off by default — no detail-toggle column rendered", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      await el.updateComplete;
+
+      expect(el._columns).to.deep.equal(COLUMNS);
+    });
+
+    it("prepends GRID_DETAIL_PANEL_TOGGLE_COL_DEF after checkbox, before user columns", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid checkbox-selection></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(2);
+      el.getDetailPanelContent = () => html`<div>Detail</div>`;
+      await el.updateComplete;
+
+      expect(el._columns.map((c) => c.field)).to.deep.equal([
+        "__check__",
+        "__detail_panel_toggle__",
+        "id",
+        "name",
+      ]);
+      // The public property itself is never touched.
+      expect(el.columns).to.deep.equal(COLUMNS);
+    });
+
+    it("renders a toggle button per row and expands a detail row on click", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            style="height: 400px; display: block;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5);
+      el.getDetailPanelContent = ({ row }) =>
+        html`<div>Detail for ${row.name}</div>`;
+      await el.updateComplete;
+
+      for (let i = 0; i < 5; i++) {
+        expect(await getToggleButton(el, i), `row ${i}`).to.exist;
+      }
+      expect(
+        el.shadowRoot.querySelectorAll(".data-grid__detail-row"),
+      ).to.have.lengthOf(0);
+
+      const button = await getToggleButton(el, 1);
+      button.click();
+      await el.updateComplete;
+
+      const detailRows = el.shadowRoot.querySelectorAll(
+        ".data-grid__detail-row",
+      );
+      expect(detailRows).to.have.lengthOf(1);
+      expect(detailRows[0].textContent).to.contain("Detail for Row 1");
+
+      button.click();
+      await el.updateComplete;
+      expect(
+        el.shadowRoot.querySelectorAll(".data-grid__detail-row"),
+      ).to.have.lengthOf(0);
+    });
+
+    it("updates aria-expanded and rotates the icon immediately on click, without needing blur", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            style="height: 400px; display: block;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.getDetailPanelContent = ({ row }) => html`<div>Detail ${row.id}</div>`;
+      await el.updateComplete;
+
+      const button = await getToggleButton(el, 0);
+      expect(button.getAttribute("aria-expanded")).to.equal("false");
+
+      // No focus/blur dispatched anywhere here — willUpdate()'s context
+      // rebuild has to fire from the detailPanelExpandedRowIds change
+      // itself, not incidentally from some later, unrelated focus change.
+      button.click();
+      await el.updateComplete;
+
+      expect(button.getAttribute("aria-expanded")).to.equal("true");
+      const icon = button.querySelector(".data-grid-detail-toggle-cell__icon");
+      expect(
+        icon.classList.contains("data-grid-detail-toggle-cell__icon_expanded"),
+      ).to.be.true;
+
+      button.click();
+      await el.updateComplete;
+      expect(button.getAttribute("aria-expanded")).to.equal("false");
+    });
+
+    it("hides the toggle button for a row getDetailPanelContent returns nothing for", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            style="height: 400px; display: block;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.getDetailPanelContent = ({ row }) =>
+        row.id === 1 ? undefined : html`<div>Detail</div>`;
+      await el.updateComplete;
+
+      expect(await getToggleButton(el, 0)).to.exist;
+      expect(await getToggleButton(el, 1)).to.not.exist;
+      expect(await getToggleButton(el, 2)).to.exist;
+    });
+
+    it("clicking the toggle does not also select the row", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            style="height: 400px; display: block;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.getDetailPanelContent = ({ row }) => html`<div>Detail ${row.id}</div>`;
+      await el.updateComplete;
+
+      const button = await getToggleButton(el, 0);
+      button.click();
+      await el.updateComplete;
+
+      expect(el.rowSelectionModel.size).to.equal(0);
+      expect(el.detailPanelExpandedRowIds.has(0)).to.be.true;
+    });
+
+    it("toggleDetailPanel() flips a single row imperatively", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.getDetailPanelContent = ({ row }) => html`<div>Detail ${row.id}</div>`;
+      await el.updateComplete;
+
+      el.toggleDetailPanel(1);
+      await el.updateComplete;
+      expect(el.detailPanelExpandedRowIds.has(1)).to.be.true;
+
+      el.toggleDetailPanel(1);
+      await el.updateComplete;
+      expect(el.detailPanelExpandedRowIds.has(1)).to.be.false;
+    });
+
+    it("setExpandedDetailPanel() replaces the whole expanded set wholesale", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            style="height: 400px; display: block;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5);
+      el.getDetailPanelContent = ({ row }) => html`<div>Detail ${row.id}</div>`;
+      await el.updateComplete;
+
+      el.setExpandedDetailPanel(new Set([0, 2, 4]));
+      await el.updateComplete;
+
+      expect(
+        el.shadowRoot.querySelectorAll(".data-grid__detail-row"),
+      ).to.have.lengthOf(3);
+      expect([...el.detailPanelExpandedRowIds]).to.deep.equal([0, 2, 4]);
+    });
+
+    it("dispatches md-data-grid-detail-panel-expanded-row-ids-change on toggle", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(3);
+      el.getDetailPanelContent = () => html`<div>Detail</div>`;
+      await el.updateComplete;
+
+      /** @type {Set<PropertyKey> | undefined} */
+      let detail;
+      el.addEventListener(
+        "md-data-grid-detail-panel-expanded-row-ids-change",
+        (e) => {
+          detail = /** @type {CustomEvent} */ (e).detail;
+        },
+      );
+      el.toggleDetailPanel(1);
+
+      expect(detail).to.be.instanceOf(Set);
+      expect([...(detail ?? [])]).to.deep.equal([1]);
+    });
+
+    it("keyboard ArrowDown skips over a detail row entirely", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            style="height: 400px; display: block;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(5);
+      el.getDetailPanelContent = ({ row }) => html`<div>Detail ${row.id}</div>`;
+      await el.updateComplete;
+
+      el.toggleDetailPanel(0);
+      await el.updateComplete;
+
+      const root = el.shadowRoot.querySelector('[part="root"]');
+      root.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "ArrowDown",
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      // Row 1, not the detail row in between — KeyboardNavController never
+      // sees detail rows as a concept at all (see DetailPanelController's
+      // own doc comment).
+      expect(el._focus.focusedCell).to.deep.equal({ rowIndex: 1, colIndex: 0 });
+    });
+
+    it("scrollToRow() and getVisibleRows() stay correct with a row expanded above the target", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(
+          html`<md-data-grid
+            style="height: 200px; display: block;"
+          ></md-data-grid>`,
+        )
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(50);
+      el.getDetailPanelContent = ({ row }) => html`<div>Detail ${row.id}</div>`;
+      await el.updateComplete;
+
+      el.toggleDetailPanel(0);
+      await el.updateComplete;
+
+      el.scrollToRow(10);
+      await el.updateComplete;
+
+      const rowIndices = el.getVisibleRows().map((v) => v.rowIndex);
+      expect(rowIndices).to.include(10);
+      // getVisibleRows() only ever returns real rows, never detail items.
+      expect(rowIndices.every((i) => Number.isInteger(i))).to.be.true;
+    });
+
+    it("expanded rows don't count against pageSize", async () => {
+      const el = /** @type {MdDataGrid} */ (
+        await fixture(html`<md-data-grid></md-data-grid>`)
+      );
+      el.columns = COLUMNS;
+      el.rows = makeRows(20);
+      el.getDetailPanelContent = ({ row }) => html`<div>Detail ${row.id}</div>`;
+      el.paginationModel = { page: 0, pageSize: 5 };
+      await el.updateComplete;
+
+      el.setExpandedDetailPanel(new Set([0, 1, 2]));
+      await el.updateComplete;
+
+      // Still exactly 5 data rows on the page — the 3 detail rows are extra,
+      // not substitutes.
+      const cells = el.shadowRoot.querySelectorAll("md-data-cell");
+      const dataRowIndices = new Set(
+        [...cells].map((c) => /** @type {any} */ (c).rowIndex),
+      );
+      expect(dataRowIndices.size).to.equal(5);
+      expect(
+        el.shadowRoot.querySelectorAll(".data-grid__detail-row"),
+      ).to.have.lengthOf(3);
     });
   });
 });

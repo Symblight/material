@@ -29,6 +29,9 @@ import { createContext } from "@lit/context";
  * @property {boolean} disableMultipleRowSelection             // when true, md-data-grid-checkbox-header renders nothing — "select all" doesn't apply to single-row selection
  * @property {(row: Record<string, unknown>, rowIndex: number, modifiers: { shiftKey?: boolean, ctrlKey?: boolean, metaKey?: boolean }) => void} toggleRowSelection
  * @property {() => void} toggleSelectAll
+ * @property {Set<PropertyKey>} detailPanelExpandedRowIds
+ * @property {(row: Record<string, unknown>, rowIndex: number) => boolean} hasDetailPanelContent // whether this row has anything to show — read by md-data-detail-toggle-cell to decide whether to render an affordance at all
+ * @property {(id: PropertyKey) => void} toggleDetailPanel
  */
 
 /** @type {import("@lit/context").Context<symbol, DataGridContextValue>} */

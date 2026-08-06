@@ -13,7 +13,10 @@ import "../skeleton/skeleton.js";
 
 import { dataGridContext } from "./data-grid-context.js";
 import { DeclarativeSlotController } from "./controllers/data-grid-declarative-slot-controller.js";
-import { VirtualizationController } from "./controllers/data-grid-virtualization-controller.js";
+import {
+  VirtualizationController,
+  estimateRowHeight,
+} from "./controllers/data-grid-virtualization-controller.js";
 import { PaginationController } from "./controllers/data-grid-pagination-controller.js";
 import { RowUpdatesController } from "./controllers/data-grid-row-updates-controller.js";
 import { KeyboardNavController } from "./controllers/data-grid-keyboard-nav-controller.js";
@@ -23,7 +26,9 @@ import { SortController } from "./controllers/data-grid-sort-controller.js";
 import { RowSpanController } from "./controllers/data-grid-row-span-controller.js";
 import { TreeController } from "./controllers/data-grid-tree-controller.js";
 import { RowSelectionController } from "./controllers/data-grid-selection-controller.js";
+import { DetailPanelController } from "./controllers/data-grid-detail-panel-controller.js";
 import { GRID_CHECKBOX_SELECTION_COL_DEF } from "./data-grid-checkbox-column.js";
+import { GRID_DETAIL_PANEL_TOGGLE_COL_DEF } from "./data-grid-detail-panel-column.js";
 import { buildDataGridContext } from "./data-grid-build-context.js";
 import styles from "./data-grid.css?inline";
 
@@ -83,6 +88,15 @@ const DEFAULT_HEADER_HEIGHT = 48;
 const DEFAULT_OVERSCAN = 8;
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const SKELETON_ROW_COUNT = 8;
+
+/**
+ * Initial size guess for a detail-panel row, used only until it's actually
+ * rendered and measured (same "guess corrected by real measurement" pattern
+ * `rowHeight: "auto"` already uses for ordinary rows) — content is arbitrary
+ * and typically taller than one row, so a plain row's own estimate wouldn't
+ * be a reasonable starting point.
+ */
+const DETAIL_PANEL_ESTIMATED_HEIGHT = 128;
 
 /**
  * Deterministic pseudo-random width (40–85%) for a skeleton cell, seeded by
@@ -203,6 +217,8 @@ export class MdDataGrid extends LitElement {
       attribute: "checkbox-selection",
       reflect: true,
     },
+    getDetailPanelContent: { state: true },
+    detailPanelExpandedRowIds: { state: true },
   };
 
   /** @returns {import("lit").CSSResultGroup} */
@@ -279,6 +295,14 @@ export class MdDataGrid extends LitElement {
     /** @type {boolean} */
     this.checkboxSelection = false;
 
+    /**
+     * @type {((params: { row: Record<string, unknown>, rowIndex: number }) => unknown) | undefined}
+     */
+    this.getDetailPanelContent = undefined;
+
+    /** @type {Set<PropertyKey>} */
+    this.detailPanelExpandedRowIds = new Set();
+
     // Not @private: data-grid-build-context.js reads these directly as an
     // internal sibling module — see §15 of the data-grid plan.
     this._virtualization = new VirtualizationController(this);
@@ -298,6 +322,7 @@ export class MdDataGrid extends LitElement {
     this._tree = new TreeController(this);
     this._tree.build(this.rows);
     this._selection = new RowSelectionController(this);
+    this._detailPanel = new DetailPanelController(this);
     this._declarativeColumns = new DeclarativeSlotController(this, {
       selector: "md-data-grid-column",
       hostProperty: "columns",
@@ -333,7 +358,9 @@ export class MdDataGrid extends LitElement {
       changed.has("rowCount") ||
       changed.has("disableCellHighlight") ||
       changed.has("rowSelectionModel") ||
-      changed.has("disableMultipleRowSelection")
+      changed.has("disableMultipleRowSelection") ||
+      changed.has("detailPanelExpandedRowIds") ||
+      changed.has("getDetailPanelContent")
     ) {
       this._gridContextProvider.setValue(buildDataGridContext(this));
     }
@@ -359,26 +386,34 @@ export class MdDataGrid extends LitElement {
     if (changed.has("rows") || changed.has("sortModel")) {
       this._selection.resetAnchor();
     }
-    if (this.rowHeight === "auto") {
+    // Detail-row content is always arbitrary/dynamic height, regardless of
+    // whether ordinary rows use a fixed `rowHeight` — needs the same real
+    // measurement `rowHeight: "auto"` already gets, whenever the feature's
+    // in use at all (cheap to over-trigger: see _measureAutoRows()'s own
+    // doc comment on why calling it is a no-op for anything unchanged).
+    if (this.rowHeight === "auto" || this.getDetailPanelContent) {
       this._measureAutoRows();
     }
   }
 
   /**
    * Feeds every currently-rendered row's *real* rendered height back into
-   * the virtualizer for `rowHeight: "auto"` — runs after every update
-   * (rather than once), since row divs are DOM-recycled (the row `repeat()`
-   * in `render()` below is keyed by slot position, not row identity, so the
-   * same node gets rebound to a different row as you scroll instead of
-   * remounted) and `measureRow()` re-reads each node's current `data-index`
-   * every call, which is what makes it track that rebinding correctly. Cheap
-   * to call unconditionally: a row whose measured size hasn't changed since
-   * last time is a no-op inside `measureRow()` (see its own doc comment).
+   * the virtualizer for `rowHeight: "auto"` (and, independently, for every
+   * detail-panel row regardless of `rowHeight` — see the `updated()` call
+   * site above) — runs after every update (rather than once), since row
+   * divs are DOM-recycled (the row `repeat()` in `render()` below is keyed
+   * by slot position, not row identity, so the same node gets rebound to a
+   * different row as you scroll instead of remounted) and `measureRow()`
+   * re-reads each node's current `data-index` every call, which is what
+   * makes it track that rebinding correctly. Cheap to call unconditionally:
+   * a row whose measured size hasn't actually changed since last time is a
+   * no-op inside `measureRow()` (see its own doc comment) — true for a
+   * fixed-height row measured this way too, not just "auto" ones.
    * @private
    */
   _measureAutoRows() {
     const rows = this.renderRoot.querySelectorAll(
-      ".data-grid__rows > .data-grid__row",
+      ".data-grid__rows > [data-index]",
     );
     for (const row of rows) {
       this._virtualization.measureRow(row);
@@ -429,18 +464,24 @@ export class MdDataGrid extends LitElement {
   }
 
   /**
-   * `columns` with `GRID_CHECKBOX_SELECTION_COL_DEF` prepended when
-   * `checkboxSelection` is on — the actual list rendered (header + every
-   * row) and the one every column-index-based controller (resize,
-   * keyboard nav) operates against, so the checkbox column is genuinely
-   * column 0 rather than a visual overlay bolted on separately. `columns`
-   * itself (the public property) is never touched — `ColumnResizeController`
-   * writes back to it with the checkbox's offset subtracted out again.
+   * `columns` with `GRID_CHECKBOX_SELECTION_COL_DEF`/`GRID_DETAIL_PANEL_TOGGLE_COL_DEF`
+   * prepended when `checkboxSelection`/`getDetailPanelContent` are on — the
+   * actual list rendered (header + every row) and the one every
+   * column-index-based controller (resize, keyboard nav) operates against,
+   * so these are genuinely columns 0/1 rather than a visual overlay bolted
+   * on separately. Checkbox first, then detail-toggle, then user columns —
+   * matches MUI's own reading order when both are enabled together.
+   * `columns` itself (the public property) is never touched —
+   * `ColumnResizeController` writes back to it with these synthetic
+   * columns' offset subtracted out again.
    */
   get _columns() {
-    return this.checkboxSelection
-      ? [GRID_CHECKBOX_SELECTION_COL_DEF, ...this.columns]
+    const withDetailToggle = this.getDetailPanelContent
+      ? [GRID_DETAIL_PANEL_TOGGLE_COL_DEF, ...this.columns]
       : this.columns;
+    return this.checkboxSelection
+      ? [GRID_CHECKBOX_SELECTION_COL_DEF, ...withDetailToggle]
+      : withDetailToggle;
   }
 
   /** `rows` run through the active sort — the shared starting point for pagination/virtualization/keyboard nav below. */
@@ -458,20 +499,58 @@ export class MdDataGrid extends LitElement {
     return this._pagination.pageCount;
   }
 
-  /** @param {number} index */
+  /**
+   * `undefined` when `getDetailPanelContent` is unset — lets
+   * `VirtualizationController` keep using its own plain-`rowHeight` default
+   * untouched, exactly as before this feature existed. Only built at all
+   * when there's an actual per-index difference to describe.
+   * @param {import("./controllers/data-grid-detail-panel-controller.js").DetailPanelRenderItem[]} items
+   * @returns {((index: number) => number) | undefined}
+   */
+  _estimateItemSize(items) {
+    if (!this.getDetailPanelContent) return undefined;
+    return (index) =>
+      items[index]?.kind === "detail"
+        ? DETAIL_PANEL_ESTIMATED_HEIGHT
+        : estimateRowHeight(this);
+  }
+
+  /**
+   * `index` is a data row index (position in `_effectiveRows`), same
+   * contract as before master-detail existed — translated internally into
+   * a virtual/rendered index, since an expanded row anywhere above `index`
+   * shifts everything below it by one.
+   * @param {number} index
+   */
   scrollToRow(index) {
-    this._virtualization.scrollToRow(index);
+    const { rowIndexToVirtualIndex } = this._detailPanel.buildRenderItems(
+      this._effectiveRows,
+    );
+    this._virtualization.scrollToRow(rowIndexToVirtualIndex[index] ?? index);
   }
 
   /** @returns {{ row: Record<string, unknown>, rowIndex: number }[]} */
   getVisibleRows() {
     const effectiveRows = this._pagination.effectiveRows(this._sortedRows);
+    const { items } = this._detailPanel.buildRenderItems(effectiveRows);
     const { startIndex, endIndex } = this._virtualization.visibleRange(
-      effectiveRows.length,
+      items.length,
+      this._estimateItemSize(items),
     );
-    return effectiveRows
+    return items
       .slice(startIndex, endIndex)
-      .map((row, i) => ({ row, rowIndex: startIndex + i }));
+      .filter((item) => item.kind === "row")
+      .map((item) => ({ row: item.row, rowIndex: item.rowIndex }));
+  }
+
+  /** @param {PropertyKey} id */
+  toggleDetailPanel(id) {
+    this._detailPanel.toggle(id);
+  }
+
+  /** @param {Set<PropertyKey>} ids */
+  setExpandedDetailPanel(ids) {
+    this._detailPanel.setExpanded(ids);
   }
 
   /** @param {number} page */
@@ -539,12 +618,21 @@ export class MdDataGrid extends LitElement {
 
   /** @param {KeyboardEvent} event */
   _onKeydown(event) {
-    const rowCount = this._pagination.effectiveRows(this._sortedRows).length;
+    const effectiveRows = this._pagination.effectiveRows(this._sortedRows);
+    const { items, rowIndexToVirtualIndex } =
+      this._detailPanel.buildRenderItems(effectiveRows);
     this._keyboardNav.onKeydown(event, {
-      rowCount,
+      rowCount: effectiveRows.length,
       colCount: this._columns.length,
+      // KeyboardNavController deals entirely in plain data rowIndex (it has
+      // no reason to know detail rows exist — see DetailPanelController's
+      // own doc comment) — translated into a virtual index here, the one
+      // point where that has to happen for scrolling to land correctly.
       ensureRowVisible: (rowIndex) =>
-        this._virtualization.ensureRowVisible(rowIndex, rowCount),
+        this._virtualization.ensureRowVisible(
+          rowIndexToVirtualIndex[rowIndex],
+          items.length,
+        ),
     });
   }
 
@@ -557,11 +645,22 @@ export class MdDataGrid extends LitElement {
       ? `${gridTemplateColumns} ${scrollbarWidth}px`
       : gridTemplateColumns;
     const effectiveRows = this._pagination.effectiveRows(this._sortedRows);
+    // Detail-panel rows are a rendering/virtualization-only concept — every
+    // other index below (rowSpans, selection, sort, pagination) still runs
+    // entirely over `effectiveRows`/data rowIndex, never `renderItems`. See
+    // DetailPanelController's own doc comment for why that split matters.
+    const { items: renderItems } =
+      this._detailPanel.buildRenderItems(effectiveRows);
+    const estimateItemSize = this._estimateItemSize(renderItems);
     const { startIndex, endIndex, offsetY } = this._virtualization.visibleRange(
-      effectiveRows.length,
+      renderItems.length,
+      estimateItemSize,
     );
-    const visibleRows = effectiveRows.slice(startIndex, endIndex);
-    const totalHeight = this._virtualization.totalSize(effectiveRows.length);
+    const visibleItems = renderItems.slice(startIndex, endIndex);
+    const totalHeight = this._virtualization.totalSize(
+      renderItems.length,
+      estimateItemSize,
+    );
     const rowSpans = this._rowSpan.computeSpans(effectiveRows);
     const showSkeletonRows = this.loading && effectiveRows.length === 0;
     const showLoadingOverlay = this.loading && effectiveRows.length > 0;
@@ -637,14 +736,14 @@ export class MdDataGrid extends LitElement {
                 ? html`
                     <div class="data-grid__skeleton-rows" part="skeleton-rows">
                       ${Array.from(
-                      { length: SKELETON_ROW_COUNT },
-                      (_, rowIndex) => html`
-                        <div
-                          class="data-grid__row"
-                          part="row"
-                          style="grid-template-columns: ${gridTemplateColumns}; height: ${skeletonRowHeight}px;"
-                        >
-                          ${columns.map(
+                        { length: SKELETON_ROW_COUNT },
+                        (_, rowIndex) => html`
+                          <div
+                            class="data-grid__row"
+                            part="row"
+                            style="grid-template-columns: ${gridTemplateColumns}; height: ${skeletonRowHeight}px;"
+                          >
+                            ${columns.map(
                             (_column, colIndex) => html`
                               <div class="data-grid__skeleton-cell" part="cell">
                                 <md-skeleton
@@ -657,9 +756,9 @@ export class MdDataGrid extends LitElement {
                               </div>
                             `,
                           )}
-                        </div>
-                      `,
-                    )}
+                          </div>
+                        `,
+                      )}
                     </div>
                   `
                 : html`
@@ -679,43 +778,64 @@ export class MdDataGrid extends LitElement {
                       style="transform: translateY(${offsetY}px);"
                     >
                       ${repeat(
-                      visibleRows,
-                      (_row, i) => i,
-                      (row, i) => {
-                        const rowIndex = startIndex + i;
-                        const rowClassName =
-                          this.getRowClassName?.(row, rowIndex) ?? "";
-                        const selected = this._selection.isSelected(row);
-                        /** @type {Record<string, boolean>} */
-                        const rowClasses = {
-                          "data-grid__row": true,
-                          "data-grid__row_selected": selected,
-                        };
-                        for (const cls of rowClassName.split(" ")) {
-                          if (cls) rowClasses[cls] = true;
-                        }
-                        const heightStyle =
-                          typeof this.rowHeight === "number"
-                            ? `height: ${this.rowHeight}px; --height: ${this.rowHeight}px;`
-                            : "";
-                        return html`
-                          <div
-                            class=${classMap(rowClasses)}
-                            part="row ${rowClassName}"
-                            role="row"
-                            aria-selected=${selected}
-                            data-index=${rowIndex}
-                            style="grid-template-columns: ${gridTemplateColumns}; ${heightStyle}"
-                            @mousedown=${this._onRowMouseDown}
-                            @click=${(/** @type {MouseEvent} */ event) =>
+                        visibleItems,
+                        (_item, i) => i,
+                        (item, i) => {
+                          const virtualIndex = startIndex + i;
+
+                          if (item.kind === "detail") {
+                            return html`
+                              <div
+                                class="data-grid__detail-row"
+                                part="detail-row"
+                                role="row"
+                                data-index=${virtualIndex}
+                              >
+                                <div
+                                  class="data-grid__detail-row-cell"
+                                  part="detail-cell"
+                                  role="gridcell"
+                                >
+                                  ${item.content}
+                                </div>
+                              </div>
+                            `;
+                          }
+
+                          const { row, rowIndex } = item;
+                          const rowClassName =
+                            this.getRowClassName?.(row, rowIndex) ?? "";
+                          const selected = this._selection.isSelected(row);
+                          /** @type {Record<string, boolean>} */
+                          const rowClasses = {
+                            "data-grid__row": true,
+                            "data-grid__row_selected": selected,
+                          };
+                          for (const cls of rowClassName.split(" ")) {
+                            if (cls) rowClasses[cls] = true;
+                          }
+                          const heightStyle =
+                            typeof this.rowHeight === "number"
+                              ? `height: ${this.rowHeight}px; --height: ${this.rowHeight}px;`
+                              : "";
+                          return html`
+                            <div
+                              class=${classMap(rowClasses)}
+                              part="row ${rowClassName}"
+                              role="row"
+                              aria-selected=${selected}
+                              data-index=${virtualIndex}
+                              style="grid-template-columns: ${gridTemplateColumns}; ${heightStyle}"
+                              @mousedown=${this._onRowMouseDown}
+                              @click=${(/** @type {MouseEvent} */ event) =>
                               this._onRowClick(
                                 event,
                                 row,
                                 rowIndex,
                                 effectiveRows,
                               )}
-                          >
-                            ${(() => {
+                            >
+                              ${(() => {
                               // Same coveredUntil skip as the header loop
                               // above, reset per row — a column's colSpan
                               // merges its cells across every row, not
@@ -749,10 +869,10 @@ export class MdDataGrid extends LitElement {
                                 },
                               );
                             })()}
-                          </div>
-                        `;
-                      },
-                    )}
+                            </div>
+                          `;
+                        },
+                      )}
                     </div>
                   </div>
                 `

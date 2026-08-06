@@ -44,7 +44,8 @@
   border-color: var(--md-data-grid-cell-focus-ring-color);
 }
 
-:host(.data-grid-cell_checkbox) {
+:host(.data-grid-cell_checkbox),
+:host(.data-grid-cell_detail-toggle) {
   padding: 0px;
 }
 

@@ -31,6 +31,11 @@
     var(--md-sys-color-primary),
     transparent 86%
   );
+  --md-data-grid-detail-row-background: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 97%
+  );
 
   display: block;
   background-color: transparent;
@@ -139,6 +144,20 @@
    whenever a selected row is also being hovered. */
 :where(.data-grid__row_selected) {
   background-color: var(--md-data-grid-row-selected-color);
+}
+
+/* Full-width — deliberately outside the column grid `.data-grid__row` uses,
+   since detail content isn't per-column. Sized to its own content (no fixed
+   height), unlike a normal row — see VirtualizationController's `estimateSize`
+   widening and md-data-grid.js's `_measureAutoRows()` gate. */
+.data-grid__detail-row {
+  border-bottom: 1px solid var(--md-data-grid-row-divider-color);
+  background-color: var(--md-data-grid-detail-row-background);
+}
+
+.data-grid__detail-row-cell {
+  box-sizing: border-box;
+  padding: 1rem;
 }
 
 :where(.data-grid__row_selected:hover) {

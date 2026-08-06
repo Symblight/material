@@ -10,10 +10,14 @@ import { VirtualizerController } from "@tanstack/lit-virtual";
 const AUTO_ESTIMATED_ROW_HEIGHT = 52;
 
 /**
+ * Exported for `data-grid.js` to reuse as the "this index is a plain row"
+ * branch of its own master-detail-aware `estimateSize` — keeps the one
+ * definition of "how tall is an ordinary row" in one place rather than
+ * duplicating the `rowHeight` ternary a second time at the call site.
  * @param {import("../data-grid.js").MdDataGrid} host
  * @returns {number}
  */
-function estimateRowHeight(host) {
+export function estimateRowHeight(host) {
   return typeof host.rowHeight === "number"
     ? host.rowHeight
     : AUTO_ESTIMATED_ROW_HEIGHT;
@@ -59,23 +63,42 @@ export class VirtualizationController {
     });
 
     /**
+     * Per-index size estimate for whatever list is currently being
+     * virtualized — plain rows by default (`estimateRowHeight`, ignoring
+     * `index` entirely, same as before this existed), or a caller-supplied
+     * function when the rendered list isn't just rows 1:1 (master-detail's
+     * interleaved detail items, which need a different, typically smaller,
+     * estimate than a data row until they're actually measured). Kept as
+     * mutable state rather than baked into the `VirtualizerController`
+     * options directly — see `_syncOptions()` for why the wrapper below has
+     * to stay a stable reference while what it delegates to is allowed to
+     * change on every render.
+     * @private @type {(index: number) => number}
+     */
+    this._estimateSize = (_index) => estimateRowHeight(host);
+
+    /**
      * `count`/`estimateSize`/`overscan` are only really known once `render()`
      * first runs (and can change on every subsequent one) — `_syncOptions()`
      * keeps them current, called from `visibleRange()` and `ensureRowVisible()`
-     * below, the same two places that need a fresh virtualizer anyway.
+     * below, the same two places that need a fresh virtualizer anyway. The
+     * `estimateSize` passed here is a stable wrapper (never recreated) that
+     * simply delegates to `this._estimateSize` at call time — `setOptions()`
+     * below only actually needs to know about the wrapper existing once, not
+     * about which underlying function it currently forwards to.
      * @private
      */
     this._virtualizerController = new VirtualizerController(host, {
       count: host.rows.length,
       getScrollElement: () => this.viewportEl,
-      estimateSize: () => estimateRowHeight(host),
+      estimateSize: (index) => this._estimateSize(index),
       overscan: host.overscan,
     });
 
     // Mirrors the values passed above — lets _syncOptions() recognize its
     // very first call as already-synced, matching the state actually set.
     /** @private @type {number} */
-    this._syncedRowCount = host.rows.length;
+    this._syncedItemCount = host.rows.length;
     /** @private @type {number | "auto"} */
     this._syncedRowHeight = host.rowHeight;
     /** @private @type {number} */
@@ -134,34 +157,46 @@ export class VirtualizationController {
    * `visibleRange()` (and therefore this) runs on every render — including
    * every scroll-driven one, which during a fast fling can fire many times
    * a second. `setOptions()` invalidates the virtualizer's own memoized
-   * measurements even when nothing actually changed, and a fresh
-   * `estimateSize` closure every call defeats that memoization too (it's a
-   * new function reference each time, so nothing can tell it's the *same*
-   * function as last time) — extra work stacked on every scroll frame is
-   * exactly what makes the rendered window fall further behind a fast
-   * scroll, which is what shows up as blank space until it catches up.
-   * Skipping the call entirely when row count/height/overscan are all
-   * unchanged (the common case for every frame *within* a scroll gesture,
-   * as opposed to a data change) removes that self-inflicted cost.
+   * measurements even when nothing actually changed, so this only actually
+   * calls it when `itemCount`/`rowHeight`/`overscan` differ from last time
+   * (the common case for every frame *within* a scroll gesture, as opposed
+   * to a data change, is that none of them do) — extra work stacked on
+   * every scroll frame is exactly what makes the rendered window fall
+   * further behind a fast scroll, which is what shows up as blank space
+   * until it catches up.
+   *
+   * `estimateSize` is handled separately from that comparison — it's
+   * updated unconditionally (when provided) on every call, never gating
+   * whether `setOptions()` itself runs. It has to be: `render()` builds a
+   * fresh closure over the current render-items list every single call (see
+   * `data-grid.js`), so comparing it by reference would make `setOptions()`
+   * fire on every render — exactly the per-scroll-frame cost this method
+   * exists to avoid. The `estimateSize` wrapper actually handed to the
+   * virtualizer (in the constructor) is a stable reference that forwards to
+   * `this._estimateSize` at call time, so redirecting what it forwards to
+   * doesn't require touching the virtualizer's own options at all — only
+   * `itemCount`/`rowHeight`/`overscan` changing does.
    * @private
-   * @param {number} rowCount
+   * @param {number} itemCount
+   * @param {(index: number) => number} [estimateSize]
    */
-  _syncOptions(rowCount) {
+  _syncOptions(itemCount, estimateSize) {
+    if (estimateSize) this._estimateSize = estimateSize;
+
     const { rowHeight, overscan } = this.host;
     if (
-      rowCount === this._syncedRowCount &&
+      itemCount === this._syncedItemCount &&
       rowHeight === this._syncedRowHeight &&
       overscan === this._syncedOverscan
     ) {
       return;
     }
-    this._syncedRowCount = rowCount;
+    this._syncedItemCount = itemCount;
     this._syncedRowHeight = rowHeight;
     this._syncedOverscan = overscan;
     this._virtualizer.setOptions({
       ...this._virtualizer.options,
-      count: rowCount,
-      estimateSize: () => estimateRowHeight(this.host),
+      count: itemCount,
       overscan,
     });
   }
@@ -187,15 +222,22 @@ export class VirtualizationController {
    * `startIndex * rowHeight`; in `"auto"` mode, rows above the window can be
    * taller or shorter than the estimate once measured, so only the
    * virtualizer's own tracked position is actually correct.
-   * @param {number} rowCount
+   *
+   * `itemCount`/`estimateSize` describe whatever list is actually being
+   * rendered — plain rows by default, or master-detail's row-plus-detail
+   * interleaved list when that's in use (see `DetailPanelController.
+   * buildRenderItems()`). This method itself stays unaware of which one
+   * it's looking at either way.
+   * @param {number} itemCount
+   * @param {(index: number) => number} [estimateSize]
    * @returns {{ startIndex: number, endIndex: number, offsetY: number }}
    */
-  visibleRange(rowCount) {
-    this._syncOptions(rowCount);
+  visibleRange(itemCount, estimateSize) {
+    this._syncOptions(itemCount, estimateSize);
     if (!this.viewportHeight) {
       return {
         startIndex: 0,
-        endIndex: Math.min(rowCount, this.host.overscan * 2),
+        endIndex: Math.min(itemCount, this.host.overscan * 2),
         offsetY: 0,
       };
     }
@@ -211,17 +253,19 @@ export class VirtualizationController {
   }
 
   /**
-   * Total scrollable height of all `rowCount` rows — `getTotalSize()`
-   * accounts for every row actually measured so far (via `measureRow()`)
-   * plus `estimateSize()` for the rest, rather than assuming every row is
-   * exactly `rowHeight` tall. Equivalent to the old `rowCount * rowHeight`
-   * whenever nothing has been measured yet (fixed mode never measures), so
-   * this is a behavior-preserving switch for that case.
-   * @param {number} rowCount
+   * Total scrollable height of all `itemCount` rendered items —
+   * `getTotalSize()` accounts for every item actually measured so far (via
+   * `measureRow()`) plus `estimateSize()` for the rest, rather than assuming
+   * every item is exactly `rowHeight` tall. Equivalent to the old
+   * `rowCount * rowHeight` whenever nothing has been measured yet (fixed
+   * mode never measures), so this is a behavior-preserving switch for that
+   * case.
+   * @param {number} itemCount
+   * @param {(index: number) => number} [estimateSize]
    * @returns {number}
    */
-  totalSize(rowCount) {
-    this._syncOptions(rowCount);
+  totalSize(itemCount, estimateSize) {
+    this._syncOptions(itemCount, estimateSize);
     return this._virtualizer.getTotalSize();
   }
 
@@ -275,9 +319,18 @@ export class VirtualizationController {
   }
 
   /**
-   * Scrolls `rows[index]` to the top of the viewport (`align: "start"`) —
-   * unconditional, unlike `ensureRowVisible()` below, which only scrolls
-   * when the row isn't already in view.
+   * Scrolls the item at `index` to the top of the viewport (`align:
+   * "start"`) — unconditional, unlike `ensureRowVisible()` below, which
+   * only scrolls when the row isn't already in view.
+   *
+   * `index` is a position in whatever list is currently virtualized — plain
+   * `rows`, or the row-plus-detail interleaved list master-detail renders.
+   * This method has no way to tell which one it's being handed, so the
+   * caller (`data-grid.js`) is responsible for translating a data
+   * `rowIndex` into that index first when detail rows are in play (see
+   * `DetailPanelController.buildRenderItems()`'s `rowIndexToVirtualIndex`)
+   * — passing a plain data `rowIndex` straight through only lands on the
+   * right item as long as nothing above it is currently expanded.
    * @param {number} index
    */
   scrollToRow(index) {
@@ -285,16 +338,16 @@ export class VirtualizationController {
   }
 
   /**
-   * @param {number} rowIndex
-   * @param {number} rowCount
+   * @param {number} index same caller-translated index `scrollToRow()` takes
+   * @param {number} itemCount
    */
-  ensureRowVisible(rowIndex, rowCount) {
-    this._syncOptions(rowCount);
-    // "auto" is a no-op if rowIndex is already fully in view, and otherwise
+  ensureRowVisible(index, itemCount) {
+    this._syncOptions(itemCount);
+    // "auto" is a no-op if the item is already fully in view, and otherwise
     // scrolls the minimum distance needed to bring it into view (from
     // whichever edge is closer) — matches arrow-key navigation's own
     // "only scroll as far as necessary" expectation.
-    this._virtualizer.scrollToIndex(rowIndex, { align: "auto" });
+    this._virtualizer.scrollToIndex(index, { align: "auto" });
   }
 
   resetScroll() {

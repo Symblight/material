@@ -9,6 +9,8 @@ import starIcon from "@material-design-icons/svg/outlined/star.svg?raw";
 import starBorderIcon from "@material-design-icons/svg/outlined/star_border.svg?raw";
 import pdfIcon from "@material-design-icons/svg/outlined/picture_as_pdf.svg?raw";
 import sellIcon from "@material-design-icons/svg/outlined/sell.svg?raw";
+import inventoryIcon from "@material-design-icons/svg/outlined/inventory_2.svg?raw";
+import localShippingIcon from "@material-design-icons/svg/outlined/local_shipping.svg?raw";
 
 import "../index.js";
 import "../../card/card.js";
@@ -265,6 +267,145 @@ export const CheckboxSelection = {
         >
           Check a row's box to select it — checking another adds to the
           selection. The header checkbox selects/clears all 20 rows.
+        </span>
+      </div>
+    `;
+  },
+};
+
+// ─── Master detail — getDetailPanelContent expands a row into a full-width,
+// arbitrary-content row below it, toggled via a prepended icon-button column
+// (GRID_DETAIL_PANEL_TOGGLE_COL_DEF) ─────────────────────────────────────────
+
+/** @type {DataGridColumn[]} */
+const ORDER_COLUMNS = [
+  { field: "id", headerName: "Order", width: 100 },
+  { field: "customer", headerName: "Customer" },
+  { field: "total", headerName: "Total", width: 120, align: "right" },
+];
+
+const ORDER_STATUSES = ["Processing", "Shipped", "Delivered"];
+
+const ORDERS = Array.from({ length: 10 }, (_, i) => {
+  const items =
+    // Every third order has no line items — no detail toggle renders for those.
+    i % 3 === 0
+      ? []
+      : Array.from({ length: (i % 4) + 1 }, (_, j) => ({
+          name: `Item ${j + 1}`,
+          qty: j + 1,
+          price: 12.5 + j * 4.25,
+        }));
+  const total = items.reduce((sum, item) => sum + item.qty * item.price, 0);
+  return {
+    id: 1000 + i,
+    customer: `Customer ${i}`,
+    total: `$${total.toFixed(2)}`,
+    status: ORDER_STATUSES[i % ORDER_STATUSES.length],
+    items,
+  };
+});
+
+/** @type {Story} */
+export const MasterDetail = {
+  render: () => {
+    /** @type {HTMLElement | undefined} */
+    let log;
+    return html`
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <md-data-grid
+          style="height: 400px; width: 720px; display: block;"
+          @md-data-grid-detail-panel-expanded-row-ids-change=${(
+            /** @type {CustomEvent} */ e,
+          ) => {
+            if (!log) return;
+            const ids = [...e.detail];
+            log.textContent =
+              ids.length === 0 ? "No rows expanded." : `Expanded: ${ids}`;
+          }}
+          ${ref((el) => {
+            const grid = /** @type {MdDataGrid | undefined} */ (
+              /** @type {unknown} */ (el)
+            );
+            if (!grid) return;
+            grid.columns = ORDER_COLUMNS;
+            grid.rows = ORDERS;
+            grid.getDetailPanelContent = (
+              /** @type {{ row: Record<string, unknown> }} */ { row },
+            ) => {
+              const items =
+                /** @type {{ name: string, qty: number, price: number }[]} */ (
+                  row.items
+                );
+              if (!items.length) return undefined;
+              const subtotal = items.reduce(
+                (sum, item) => sum + item.qty * item.price,
+                0,
+              );
+              return html`
+                <div
+                  style="display: flex; flex-direction: column; gap: 0.75rem; padding: 0.75rem 1rem;"
+                >
+                  <div
+                    style="display: flex; align-items: center; justify-content: space-between;"
+                  >
+                    <strong style="font-size: 0.9375rem;"
+                      >Items in order #${row.id}</strong
+                    >
+                    <md-assist-chip variant="outlined">
+                      <md-icon slot="leading-icon"
+                        >${unsafeSVG(localShippingIcon)}</md-icon
+                      >
+                      ${row.status}
+                    </md-assist-chip>
+                  </div>
+                  <div
+                    style="display: flex; flex-direction: column; gap: 0.375rem;"
+                  >
+                    ${items.map(
+                      (item) => html`
+                        <div
+                          style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 0.5rem; background-color: var(--md-sys-color-surface-container-low, #f2f2f7);"
+                        >
+                          <md-icon
+                            style="color: var(--md-sys-color-on-surface-variant); font-size: 1.25rem;"
+                          >
+                            ${unsafeSVG(inventoryIcon)}
+                          </md-icon>
+                          <span style="flex: 1;">${item.name}</span>
+                          <md-badge
+                            value=${item.qty}
+                            style="--md-badge-color: var(--md-sys-color-secondary-container, #e0e0e0); --md-badge-on-color: var(--md-sys-color-on-secondary-container, #333);"
+                          ></md-badge>
+                          <span
+                            style="min-width: 4.5rem; text-align: right; font-variant-numeric: tabular-nums;"
+                          >
+                            $${(item.qty * item.price).toFixed(2)}
+                          </span>
+                        </div>
+                      `,
+                    )}
+                  </div>
+                  <div
+                    style="display: flex; align-items: baseline; justify-content: flex-end; gap: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--md-sys-color-outline-variant);"
+                  >
+                    <span
+                      style="color: var(--md-sys-color-on-surface-variant); font-size: 0.8125rem;"
+                      >Subtotal</span
+                    >
+                    <strong>$${subtotal.toFixed(2)}</strong>
+                  </div>
+                </div>
+              `;
+            };
+          })}
+        ></md-data-grid>
+        <span
+          ${ref((el) => (log = /** @type {HTMLElement | undefined} */ (el)))}
+          style="font-family: monospace; font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant);"
+        >
+          Click the arrow to expand an order's line items. Orders with no items
+          (every third row) have no arrow at all.
         </span>
       </div>
     `;
