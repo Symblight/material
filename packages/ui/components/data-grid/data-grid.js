@@ -29,6 +29,7 @@ import { RowSelectionController } from "./controllers/data-grid-selection-contro
 import { DetailPanelController } from "./controllers/data-grid-detail-panel-controller.js";
 import { GRID_CHECKBOX_SELECTION_COL_DEF } from "./data-grid-checkbox-column.js";
 import { GRID_DETAIL_PANEL_TOGGLE_COL_DEF } from "./data-grid-detail-panel-column.js";
+import { GRID_TREE_DATA_GROUPING_COL_DEF } from "./data-grid-tree-data-column.js";
 import { buildDataGridContext } from "./data-grid-build-context.js";
 import styles from "./data-grid.css?inline";
 
@@ -219,6 +220,10 @@ export class MdDataGrid extends LitElement {
     },
     getDetailPanelContent: { state: true },
     detailPanelExpandedRowIds: { state: true },
+    treeData: { type: Boolean, attribute: "tree-data", reflect: true },
+    getDataPath: { state: true },
+    treeDataExpandedGroupIds: { state: true },
+    autoGroupColumnDef: { state: true },
   };
 
   /** @returns {import("lit").CSSResultGroup} */
@@ -303,6 +308,24 @@ export class MdDataGrid extends LitElement {
     /** @type {Set<PropertyKey>} */
     this.detailPanelExpandedRowIds = new Set();
 
+    /** @type {boolean} */
+    this.treeData = false;
+
+    /** @type {((row: Record<string, unknown>) => PropertyKey[] | undefined) | undefined} */
+    this.getDataPath = undefined;
+
+    /** @type {Set<PropertyKey>} */
+    this.treeDataExpandedGroupIds = new Set();
+
+    /**
+     * Shallow-merged onto `GRID_TREE_DATA_GROUPING_COL_DEF` — same shape as
+     * an ordinary `DataGridColumn`, lets you override `headerName`/
+     * `valueGetter`/etc. for the grouping/toggle column without redefining
+     * it from scratch.
+     * @type {Partial<DataGridColumn> | undefined}
+     */
+    this.autoGroupColumnDef = undefined;
+
     // Not @private: data-grid-build-context.js reads these directly as an
     // internal sibling module — see §15 of the data-grid plan.
     this._virtualization = new VirtualizationController(this);
@@ -316,7 +339,14 @@ export class MdDataGrid extends LitElement {
         this._gridContextProvider.setValue(buildDataGridContext(this)),
     });
     this._keyboardNav = new KeyboardNavController(this);
-    this._columnResize = new ColumnResizeController(this);
+    this._columnResize = new ColumnResizeController(this, {
+      // resizingColumnField isn't a Lit reactive property either — same
+      // reasoning as _focus's onFocusChange above, fired only on drag
+      // start/end, never per pointermove (see the controller's own doc
+      // comment on why per-move state deliberately bypasses Lit).
+      onResizeStateChange: () =>
+        this._gridContextProvider.setValue(buildDataGridContext(this)),
+    });
     this._sort = new SortController(this);
     this._rowSpan = new RowSpanController(this);
     this._tree = new TreeController(this);
@@ -348,6 +378,19 @@ export class MdDataGrid extends LitElement {
 
   /** @param {import("lit").PropertyValues} changed */
   willUpdate(changed) {
+    // Must run before render() below (not in updated(), which runs after
+    // it) — render() consumes the tree indirectly via _sortedRows once
+    // treeData is on, so a stale/pre-change tree here would make the very
+    // update that changed rows/treeData/getDataPath render against the
+    // *previous* tree instead of the new one, one full cycle late.
+    if (
+      changed.has("rows") ||
+      changed.has("getRowId") ||
+      changed.has("treeData") ||
+      changed.has("getDataPath")
+    ) {
+      this._tree.build();
+    }
     if (
       changed.has("rowHeight") ||
       changed.has("getRowId") ||
@@ -360,8 +403,14 @@ export class MdDataGrid extends LitElement {
       changed.has("rowSelectionModel") ||
       changed.has("disableMultipleRowSelection") ||
       changed.has("detailPanelExpandedRowIds") ||
-      changed.has("getDetailPanelContent")
+      changed.has("getDetailPanelContent") ||
+      changed.has("treeData") ||
+      changed.has("getDataPath") ||
+      changed.has("treeDataExpandedGroupIds") ||
+      changed.has("autoGroupColumnDef")
     ) {
+      // Reads this._tree (rebuilt above, same pass) via getRowDepth/
+      // hasChildren/getTreeDataCheckboxState/rows — must come after it.
       this._gridContextProvider.setValue(buildDataGridContext(this));
     }
   }
@@ -380,10 +429,14 @@ export class MdDataGrid extends LitElement {
       // No-op if the current page is still in range.
       this._pagination.setPage(this.paginationModel.page);
     }
-    if (changed.has("rows") || changed.has("getRowId")) {
-      this._tree.build();
-    }
-    if (changed.has("rows") || changed.has("sortModel")) {
+    if (
+      changed.has("rows") ||
+      changed.has("sortModel") ||
+      changed.has("treeDataExpandedGroupIds")
+    ) {
+      // Expand/collapse changes which index a row lands at in
+      // _effectiveRows, same as a sort or a rows swap already does —
+      // invalidates any shift-range anchor the same way.
       this._selection.resetAnchor();
     }
     // Detail-row content is always arbitrary/dynamic height, regardless of
@@ -464,28 +517,50 @@ export class MdDataGrid extends LitElement {
   }
 
   /**
-   * `columns` with `GRID_CHECKBOX_SELECTION_COL_DEF`/`GRID_DETAIL_PANEL_TOGGLE_COL_DEF`
-   * prepended when `checkboxSelection`/`getDetailPanelContent` are on — the
-   * actual list rendered (header + every row) and the one every
-   * column-index-based controller (resize, keyboard nav) operates against,
-   * so these are genuinely columns 0/1 rather than a visual overlay bolted
-   * on separately. Checkbox first, then detail-toggle, then user columns —
-   * matches MUI's own reading order when both are enabled together.
-   * `columns` itself (the public property) is never touched —
-   * `ColumnResizeController` writes back to it with these synthetic
-   * columns' offset subtracted out again.
+   * `columns` with `GRID_CHECKBOX_SELECTION_COL_DEF`/
+   * `GRID_TREE_DATA_GROUPING_COL_DEF`/`GRID_DETAIL_PANEL_TOGGLE_COL_DEF`
+   * prepended when `checkboxSelection`/`treeData`+`getDataPath`/
+   * `getDetailPanelContent` are on — the actual list rendered (header +
+   * every row) and the one every column-index-based controller (resize,
+   * keyboard nav) operates against, so these are genuinely columns 0/1/2
+   * rather than a visual overlay bolted on separately. Checkbox first, then
+   * tree-toggle, then detail-toggle, then user columns — checkbox stays
+   * first (matches MUI's own reading order), tree-toggle next since it's
+   * structural to row identity/hierarchy. `columns` itself (the public
+   * property) is never touched — `ColumnResizeController` writes back to it
+   * with these synthetic columns' offset subtracted out again.
    */
   get _columns() {
     const withDetailToggle = this.getDetailPanelContent
       ? [GRID_DETAIL_PANEL_TOGGLE_COL_DEF, ...this.columns]
       : this.columns;
+    const withTreeToggle =
+      this.treeData && this.getDataPath
+        ? [
+            { ...GRID_TREE_DATA_GROUPING_COL_DEF, ...this.autoGroupColumnDef },
+            ...withDetailToggle,
+          ]
+        : withDetailToggle;
     return this.checkboxSelection
-      ? [GRID_CHECKBOX_SELECTION_COL_DEF, ...withDetailToggle]
-      : withDetailToggle;
+      ? [GRID_CHECKBOX_SELECTION_COL_DEF, ...withTreeToggle]
+      : withTreeToggle;
   }
 
-  /** `rows` run through the active sort — the shared starting point for pagination/virtualization/keyboard nav below. */
+  /**
+   * `rows` run through the active sort — the shared starting point for
+   * pagination/virtualization/keyboard nav below. Under `treeData`, this is
+   * the collapse-aware, hierarchy-preserving flattening of the tree instead
+   * — sorting happens *within* each group's own children (see
+   * `TreeController.sortedVisibleRows()`), never across the whole tree at
+   * once, so the hierarchy itself is never disturbed by `sortModel`.
+   */
   get _sortedRows() {
+    if (this.treeData && this.getDataPath) {
+      return this._tree.sortedVisibleRows(
+        this._sort.createComparator(),
+        this.treeDataExpandedGroupIds,
+      );
+    }
     return this._sort.sortedRows(this.rows);
   }
 
@@ -553,6 +628,20 @@ export class MdDataGrid extends LitElement {
     this._detailPanel.setExpanded(ids);
   }
 
+  /**
+   * Expands/collapses one tree-data group's children, by group id (real
+   * row id, or a synthetic auto-generated group's own id).
+   * @param {PropertyKey} id
+   */
+  toggleTreeDataGroup(id) {
+    this._tree.toggleExpanded(id);
+  }
+
+  /** @param {Set<PropertyKey>} ids */
+  setExpandedTreeDataGroups(ids) {
+    this._tree.setExpanded(ids);
+  }
+
   /** @param {number} page */
   setPage(page) {
     this._pagination.setPage(page);
@@ -602,10 +691,27 @@ export class MdDataGrid extends LitElement {
    */
   _onRowClick(event, row, rowIndex, rows) {
     if (!this.disableRowSelectionOnClick) {
-      const modifiers = this.checkboxSelection
-        ? { shiftKey: event.shiftKey, ctrlKey: true, metaKey: true }
-        : event;
-      this._selection.select(row, rowIndex, modifiers, rows);
+      // With both checkboxSelection and treeData on, a plain row click goes
+      // through the same cascading path as the checkbox itself
+      // (_toggleRowSelection -> _selectTreeDataGroup) rather than the flat
+      // single-row `select()` below — otherwise checking a box cascades to
+      // the parent but clicking the row it's on doesn't, which reads as
+      // broken rather than as two intentionally different selection modes.
+      // Without checkboxSelection there's no checkbox to be consistent
+      // with, so a plain click keeps its existing single-row/shift/ctrl
+      // highlight-selection behavior even when treeData is on.
+      if (this.checkboxSelection && this.treeData && this.getDataPath) {
+        this._toggleRowSelection(row, rowIndex, {
+          shiftKey: event.shiftKey,
+          ctrlKey: true,
+          metaKey: true,
+        });
+      } else {
+        const modifiers = this.checkboxSelection
+          ? { shiftKey: event.shiftKey, ctrlKey: true, metaKey: true }
+          : event;
+        this._selection.select(row, rowIndex, modifiers, rows);
+      }
     }
     this.dispatchEvent(
       new CustomEvent("md-data-grid-row-click", {
@@ -614,6 +720,63 @@ export class MdDataGrid extends LitElement {
         composed: true,
       }),
     );
+  }
+
+  /**
+   * Checkbox-cell click path (via `dataGridContext.toggleRowSelection`),
+   * also reused by `_onRowClick()` above for a plain row click once
+   * checkboxSelection and treeData are both on — see that call site's own
+   * comment for why the two need to agree. Keyed by the tree node's own
+   * `.key` under treeData rather than `getRowId(row)` — same reasoning as
+   * `RowSelectionController._rowId()`/`MdDataGridCheckboxCell._id()`: `row`
+   * here can be a synthetic auto-generated group with no real fields for
+   * `getRowId()` to read at all.
+   * @param {Record<string, unknown>} row
+   * @param {number} rowIndex
+   * @param {{ shiftKey?: boolean, ctrlKey?: boolean, metaKey?: boolean }} modifiers
+   */
+  _toggleRowSelection(row, rowIndex, modifiers) {
+    if (!this.treeData || !this.getDataPath) {
+      this._selection.select(row, rowIndex, modifiers, this._effectiveRows);
+      return;
+    }
+    this._selectTreeDataGroup(
+      /** @type {PropertyKey} */ (
+        /** @type {{ key: PropertyKey }} */ (row).key
+      ),
+    );
+  }
+
+  /**
+   * A group checkbox's cascading select/deselect, including upward
+   * propagation to ancestors (see `TreeController
+   * .computeCascadingSelection()`'s own doc comment for why that's needed —
+   * without it, checking every child individually, never the parent's own
+   * checkbox, would leave the parent permanently `indeterminate`). Named
+   * distinctly from the public `toggleTreeDataGroup(id)` above, which
+   * expands/collapses a group's *children* rather than selecting them — the
+   * two are unrelated concepts that happen to both apply to a "group id"
+   * and are easy to conflate by name alone. Keyed directly by the tree
+   * node's id rather than a row object — a synthetic group has no real row
+   * to resolve via `getRowId()`.
+   * @param {PropertyKey} id
+   */
+  _selectTreeDataGroup(id) {
+    this._selection.applyIds(
+      this._tree.computeCascadingSelection(id, this.rowSelectionModel),
+    );
+  }
+
+  /** Header checkbox "select all" — spans real rows and, under treeData, synthetic group ids too, matching `TreeController.rows`' own collapse-state-ignorant "whole dataset" contract. */
+  _toggleSelectAll() {
+    if (!this.treeData || !this.getDataPath) {
+      this._selection.toggleAll(this.rows);
+      return;
+    }
+    const ids = /** @type {PropertyKey[]} */ (
+      this._tree.rows.map((node) => node.key)
+    );
+    this._selection.toggleAllIds(ids);
   }
 
   /** @param {KeyboardEvent} event */
@@ -744,18 +907,21 @@ export class MdDataGrid extends LitElement {
                             style="grid-template-columns: ${gridTemplateColumns}; height: ${skeletonRowHeight}px;"
                           >
                             ${columns.map(
-                            (_column, colIndex) => html`
-                              <div class="data-grid__skeleton-cell" part="cell">
-                                <md-skeleton
-                                  part="skeleton"
-                                  style="width: ${skeletonWidth(
+                              (_column, colIndex) => html`
+                                <div
+                                  class="data-grid__skeleton-cell"
+                                  part="cell"
+                                >
+                                  <md-skeleton
+                                    part="skeleton"
+                                    style="width: ${skeletonWidth(
                                     rowIndex,
                                     colIndex,
                                   )}%;"
-                                ></md-skeleton>
-                              </div>
-                            `,
-                          )}
+                                  ></md-skeleton>
+                                </div>
+                              `,
+                            )}
                           </div>
                         `,
                       )}
@@ -828,47 +994,51 @@ export class MdDataGrid extends LitElement {
                               style="grid-template-columns: ${gridTemplateColumns}; ${heightStyle}"
                               @mousedown=${this._onRowMouseDown}
                               @click=${(/** @type {MouseEvent} */ event) =>
-                              this._onRowClick(
-                                event,
-                                row,
-                                rowIndex,
-                                effectiveRows,
-                              )}
+                                this._onRowClick(
+                                  event,
+                                  row,
+                                  rowIndex,
+                                  effectiveRows,
+                                )}
                             >
                               ${(() => {
-                              // Same coveredUntil skip as the header loop
-                              // above, reset per row — a column's colSpan
-                              // merges its cells across every row, not
-                              // just the header.
-                              let coveredUntil = -1;
-                              return repeat(
-                                columns,
-                                (column) => column.field,
-                                (column, colIndex) => {
-                                  if (colIndex <= coveredUntil) return nothing;
-                                  const span = clampColSpan(columns, colIndex);
-                                  coveredUntil = colIndex + span - 1;
-                                  const spanInfo = rowSpans.get(column.field)?.[
-                                    rowIndex
-                                  ];
-                                  // Covered by an earlier row's row-span run
-                                  // for this column — that owner cell paints
-                                  // over this slot by overflowing downward.
-                                  if (spanInfo && !spanInfo.owner)
-                                    return nothing;
-                                  return html`
-                                    <md-data-cell
-                                      .row=${row}
-                                      .column=${column}
-                                      .rowIndex=${rowIndex}
-                                      .colIndex=${colIndex}
-                                      .colSpan=${span}
-                                      .rowSpan=${spanInfo?.span ?? 1}
-                                    ></md-data-cell>
-                                  `;
-                                },
-                              );
-                            })()}
+                                // Same coveredUntil skip as the header loop
+                                // above, reset per row — a column's colSpan
+                                // merges its cells across every row, not
+                                // just the header.
+                                let coveredUntil = -1;
+                                return repeat(
+                                  columns,
+                                  (column) => column.field,
+                                  (column, colIndex) => {
+                                    if (colIndex <= coveredUntil)
+                                      return nothing;
+                                    const span = clampColSpan(
+                                      columns,
+                                      colIndex,
+                                    );
+                                    coveredUntil = colIndex + span - 1;
+                                    const spanInfo = rowSpans.get(
+                                      column.field,
+                                    )?.[rowIndex];
+                                    // Covered by an earlier row's row-span run
+                                    // for this column — that owner cell paints
+                                    // over this slot by overflowing downward.
+                                    if (spanInfo && !spanInfo.owner)
+                                      return nothing;
+                                    return html`
+                                      <md-data-cell
+                                        .row=${row}
+                                        .column=${column}
+                                        .rowIndex=${rowIndex}
+                                        .colIndex=${colIndex}
+                                        .colSpan=${span}
+                                        .rowSpan=${spanInfo?.span ?? 1}
+                                      ></md-data-cell>
+                                    `;
+                                  },
+                                );
+                              })()}
                             </div>
                           `;
                         },

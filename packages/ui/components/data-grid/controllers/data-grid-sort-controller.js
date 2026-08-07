@@ -56,22 +56,27 @@ export class SortController {
   }
 
   /**
-   * `rows` sorted per `host.sortModel`. Entries whose `sort` is
-   * `null`/`undefined` are skipped (their rule doesn't apply). Returns
-   * `rows` itself (no copy) when nothing is actually sorting, so callers
-   * can cheaply tell "did this change anything" via reference equality.
-   * @param {Record<string, unknown>[]} rows
-   * @returns {Record<string, unknown>[]}
+   * Builds a pairwise comparator for the currently active `sortModel`, or
+   * `null` when nothing is actively sorting (an entry's `sort` is
+   * `null`/`undefined`, or `sortModel` is empty) — callers treat `null` as
+   * "leave order alone." Extracted as a factory (computed once) rather than
+   * a bare `compareRows(a, b)` method precisely so `active`/`columnsByField`
+   * aren't recomputed on every pairwise comparison — `sortedRows()` below
+   * calls this once per sort; `TreeController.sortedVisibleRows()` calls it
+   * once per render pass and reuses the same comparator across every
+   * group's own `.sort()`, which is the whole reason this needed pulling
+   * out of the single flat `.sort()` call it used to live inside.
+   * @returns {((a: Record<string, unknown>, b: Record<string, unknown>) => number) | null}
    */
-  sortedRows(rows) {
+  createComparator() {
     const active = this.host.sortModel.filter((item) => item.sort);
-    if (active.length === 0) return rows;
+    if (active.length === 0) return null;
 
     const columnsByField = new Map(
       this.host.columns.map((column) => [column.field, column]),
     );
 
-    return rows.slice().sort((a, b) => {
+    return (a, b) => {
       for (const { field, sort } of active) {
         const column = columnsByField.get(field);
         const cmp = this._compare(
@@ -81,7 +86,20 @@ export class SortController {
         if (cmp !== 0) return sort === "desc" ? -cmp : cmp;
       }
       return 0;
-    });
+    };
+  }
+
+  /**
+   * `rows` sorted per `host.sortModel`. Entries whose `sort` is
+   * `null`/`undefined` are skipped (their rule doesn't apply). Returns
+   * `rows` itself (no copy) when nothing is actually sorting, so callers
+   * can cheaply tell "did this change anything" via reference equality.
+   * @param {Record<string, unknown>[]} rows
+   * @returns {Record<string, unknown>[]}
+   */
+  sortedRows(rows) {
+    const comparator = this.createComparator();
+    return comparator ? rows.slice().sort(comparator) : rows;
   }
 
   /**

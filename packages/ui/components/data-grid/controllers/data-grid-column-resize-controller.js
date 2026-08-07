@@ -30,9 +30,21 @@ function preventClick(event) {
  * over (its own diff will happily overwrite whatever we set directly).
  */
 export class ColumnResizeController {
-  /** @param {import("../data-grid.js").MdDataGrid} host */
-  constructor(host) {
+  /**
+   * @param {import("../data-grid.js").MdDataGrid} host
+   * @param {{ onResizeStateChange?: () => void }} [options]
+   *   `onResizeStateChange` fires synchronously from `startColumnResize()`/
+   *   `endColumnResize()` (drag start/end — never on every `pointermove`,
+   *   which paints directly to the DOM and deliberately bypasses Lit for
+   *   perf, same as `resizingColumnField` itself). Mirrors
+   *   `FocusController`'s `onFocusChange` option exactly: `resizingColumnField`
+   *   isn't a Lit reactive property, so the host uses this to rebuild the
+   *   shared context immediately rather than waiting for a tracked-property
+   *   update that a resize drag never actually triggers on its own.
+   */
+  constructor(host, options = {}) {
     this.host = host;
+    this._onResizeStateChange = options.onResizeStateChange;
 
     /** @private */
     this._dragging = false;
@@ -50,6 +62,17 @@ export class ColumnResizeController {
     this._pendingWidth = 0;
     /** @private */
     this._pendingPartnerWidth = 0;
+
+    /**
+     * The `field` of whichever column is currently being dragged, or
+     * `undefined` when no resize is in progress — read through
+     * `dataGridContext` (`ctx.resizingColumnField`) by anything that wants
+     * to react to a resize in progress, e.g. a custom `renderCell`
+     * suppressing its own hover affordance mid-drag. Mirrors MUI X's
+     * `resizingColumnField` grid-state field.
+     * @type {string | undefined}
+     */
+    this.resizingColumnField = undefined;
   }
 
   /**
@@ -78,6 +101,10 @@ export class ColumnResizeController {
     this._startPartnerWidth = this._measureWidth(this._partnerColIndex);
     this._pendingWidth = this._startWidth;
     this._pendingPartnerWidth = this._startPartnerWidth;
+
+    this.resizingColumnField = this.host._columns[resizeColIndex]?.field;
+    this._onResizeStateChange?.();
+    this.host.requestUpdate();
 
     // Pinned on <body> rather than relying on the handle's own CSS :hover
     // cursor — once setPointerCapture is active, a fast drag can easily
@@ -113,6 +140,9 @@ export class ColumnResizeController {
     this._dragging = false;
     this._resizeColIndex = -1;
     this._partnerColIndex = -1;
+    this.resizingColumnField = undefined;
+    this._onResizeStateChange?.();
+    this.host.requestUpdate();
     document.body.style.removeProperty("cursor");
     setTimeout(
       () => document.removeEventListener("click", preventClick, true),
@@ -209,17 +239,27 @@ export class ColumnResizeController {
    * The single point during a drag where `host.columns` actually changes —
    * triggers one normal Lit re-render, which reconciles away whatever
    * `_previewWidth()` painted directly onto the DOM. `_resizeColIndex`/
-   * `_partnerColIndex` are indices into `host._columns` (the checkbox
-   * column, when present, counted in) — `host.columns` itself never
-   * includes that synthetic column, so writing back means shifting the
-   * index down by one to compensate, rather than accidentally baking
-   * `GRID_CHECKBOX_SELECTION_COL_DEF` permanently into the public array.
+   * `_partnerColIndex` are indices into `host._columns` (every synthetic
+   * column `_columns` itself prepends — checkbox, tree-data grouping,
+   * master-detail toggle — counted in, in that order) — `host.columns`
+   * itself never includes any of those, so writing back means shifting the
+   * index down by however many of them are actually prepended right now,
+   * rather than accidentally baking one of them permanently into the
+   * public array. This has to track `_columns`' own composition exactly —
+   * see its doc comment — or the write-back lands on the wrong column
+   * entirely (one of this grid's own past bugs: this offset originally
+   * only counted the checkbox column, so as soon as `treeData` or
+   * `getDetailPanelContent` added a second/third prepended column, a drag
+   * on the first real column silently resized the second instead).
    * @private
    */
   _commitWidth() {
     const width = this._pendingWidth;
     const partnerWidth = this._pendingPartnerWidth;
-    const offset = this.host.checkboxSelection ? 1 : 0;
+    const offset =
+      (this.host.checkboxSelection ? 1 : 0) +
+      (this.host.treeData && this.host.getDataPath ? 1 : 0) +
+      (this.host.getDetailPanelContent ? 1 : 0);
     this.host.columns = this.host.columns.map((col, index) => {
       const mergedIndex = index + offset;
       if (mergedIndex === this._resizeColIndex) return { ...col, width };

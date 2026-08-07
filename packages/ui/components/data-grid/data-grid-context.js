@@ -24,6 +24,7 @@ import { createContext } from "@lit/context";
  * @property {(resizeColIndex: number, clientX: number) => void} startColumnResize
  * @property {(clientX: number) => void} resizeColumn
  * @property {(clientX: number) => void} endColumnResize
+ * @property {string | undefined} resizingColumnField // field of the column currently being drag-resized, or undefined when no resize is in progress — mirrors MUI X's resizingColumnField grid-state field
  * @property {Record<string, unknown>[]} rows                 // the whole dataset, unsorted/unpaginated — only used for the checkbox column's "select all" state, which spans every page
  * @property {Set<PropertyKey>} rowSelectionModel
  * @property {boolean} disableMultipleRowSelection             // when true, md-data-grid-checkbox-header renders nothing — "select all" doesn't apply to single-row selection
@@ -32,6 +33,14 @@ import { createContext } from "@lit/context";
  * @property {Set<PropertyKey>} detailPanelExpandedRowIds
  * @property {(row: Record<string, unknown>, rowIndex: number) => boolean} hasDetailPanelContent // whether this row has anything to show — read by md-data-detail-toggle-cell to decide whether to render an affordance at all
  * @property {(id: PropertyKey) => void} toggleDetailPanel
+ * @property {boolean} treeData
+ * @property {Set<PropertyKey>} treeDataExpandedGroupIds
+ * @property {(id: PropertyKey) => void} toggleTreeDataGroup // expand/collapse a group's children — mirrors the public MdDataGrid method of the same name
+ * @property {(id: PropertyKey) => void} toggleTreeDataGroupSelection // a group checkbox's cascading select/deselect — distinct from toggleTreeDataGroup above (expand/collapse), keyed directly by the tree node's id since a synthetic group has no real row to resolve via getRowId()
+ * @property {(id: PropertyKey) => number} getRowDepth
+ * @property {(id: PropertyKey) => boolean} hasChildren
+ * @property {(id: PropertyKey) => { checked: boolean, indeterminate: boolean }} getTreeDataCheckboxState
+ * @property {(id: PropertyKey) => PropertyKey | undefined} getGroupingKey // the raw path segment a tree node was built from — real or synthetic alike (see TreeController's own `groupingKey` field) — the grouping column's default label when no valueGetter override is given
  */
 
 /** @type {import("@lit/context").Context<symbol, DataGridContextValue>} */

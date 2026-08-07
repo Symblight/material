@@ -12,10 +12,12 @@ import styles from "./data-grid-checkbox-header.css?inline";
  * @summary The header "select all" checkbox rendered by
  * `GRID_CHECKBOX_SELECTION_COL_DEF` when `md-data-grid`'s
  * `checkboxSelection` is on. Selects/clears every row in the whole
- * dataset (`host.rows`, not just the current page) — matching MUI's own
- * default. Renders nothing when `disableMultipleRowSelection` is set — a
- * "select all" affordance doesn't make sense when only one row can ever be
- * selected. Composed internally — not intended to be used standalone.
+ * dataset (`ctx.rows` — `host.rows`, or under `treeData` every tree node,
+ * real and synthetic alike; see `buildDataGridContext`), not just the
+ * current page — matching MUI's own default. Renders nothing when
+ * `disableMultipleRowSelection` is set — a "select all" affordance doesn't
+ * make sense when only one row can ever be selected. Composed internally —
+ * not intended to be used standalone.
  */
 @customElement("md-data-grid-checkbox-header")
 export class MdDataGridCheckboxHeader extends LitElement {
@@ -45,7 +47,14 @@ export class MdDataGridCheckboxHeader extends LitElement {
     const ctx = this._gridConsumer.value;
     if (!ctx || ctx.disableMultipleRowSelection) return nothing;
 
-    const ids = ctx.rows.map((row) => ctx.getRowId(row));
+    // Under treeData, ctx.rows is tree nodes (real rows *and* synthetic
+    // groups) — a synthetic node has no real fields, so getRowId(row) can't
+    // be called on it safely; its identity is its own tree-node .key
+    // instead, which TreeController already set to getRowId(row) for a
+    // real row anyway, so this is correct for both cases uniformly.
+    const ids = ctx.treeData
+      ? ctx.rows.map((row) => /** @type {{ key: PropertyKey }} */ (row).key)
+      : ctx.rows.map((row) => ctx.getRowId(row));
     const selectedCount = ids.filter((id) =>
       ctx.rowSelectionModel.has(id),
     ).length;

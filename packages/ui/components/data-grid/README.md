@@ -2,7 +2,7 @@
 
 A virtualized Material Design 3 data grid web component built with Lit.
 
-`rows` is always set imperatively as a JS property (row data can't be expressed as HTML attributes). `columns` can be too, or declared instead as `<md-data-grid-column>` light-DOM children — see [Declarative columns](#declarative-columns) below. Internally the grid composes `md-data-header-cell`, `md-data-cell`, and `md-data-footer`; these are implementation detail and not meant to be used standalone. Two other light-DOM exceptions — `slot="empty-label"` and `slot="footer"` — let you declaratively override that internal rendering; see [Slots](#slots) below. Rows can also be expanded into a full-width, arbitrary-content detail row — see [Master detail](#master-detail).
+`rows` is always set imperatively as a JS property (row data can't be expressed as HTML attributes). `columns` can be too, or declared instead as `<md-data-grid-column>` light-DOM children — see [Declarative columns](#declarative-columns) below. Internally the grid composes `md-data-header-cell`, `md-data-cell`, and `md-data-footer`; these are implementation detail and not meant to be used standalone. Two other light-DOM exceptions — `slot="empty-label"` and `slot="footer"` — let you declaratively override that internal rendering; see [Slots](#slots) below. Rows can also be expanded into a full-width, arbitrary-content detail row — see [Master detail](#master-detail) — or grouped into a collapsible hierarchy — see [Tree data](#tree-data).
 
 ## Declarative columns
 
@@ -97,6 +97,10 @@ When one or more `<md-data-grid-column>` children are present, they always win �
 | `checkboxSelection`           | `checkbox-selection`             | `boolean`                                                              | `false`             | Prepends a non-resizable, non-sortable `md-checkbox` column (`GRID_CHECKBOX_SELECTION_COL_DEF`) driving the same `rowSelectionModel`. See [Checkbox selection](#checkbox-selection)                                                                                                                                                                                                                                                              |
 | `getDetailPanelContent`       | —                                | `(params: { row, rowIndex }) => TemplateResult \| string \| undefined` | —                   | Setting this enables master detail — prepends a non-resizable, non-sortable expand-toggle column (`GRID_DETAIL_PANEL_TOGGLE_COL_DEF`). Return `undefined`/`null` for a row to leave it without a toggle at all. See [Master detail](#master-detail)                                                                                                                                                                                              |
 | `detailPanelExpandedRowIds`   | —                                | `Set<string \| number>`                                                | `new Set()`         | Controlled expand state — set to initialize, or read/listen for the current state. See [Master detail](#master-detail)                                                                                                                                                                                                                                                                                                                           |
+| `treeData`                    | `tree-data`                      | `boolean`                                                              | `false`             | Setting this (with `getDataPath` also set) enables tree data — prepends a resizable, non-sortable grouping/toggle column (`GRID_TREE_DATA_GROUPING_COL_DEF`). Set alone, with no `getDataPath`, it's a no-op — rows render flat. See [Tree data](#tree-data)                                                                                                                                                                                     |
+| `getDataPath`                 | —                                | `(row) => string[] \| undefined`                                       | —                   | A row's position in the hierarchy, root to self inclusive (e.g. `row => row.path`). Required alongside `treeData`. See [Tree data](#tree-data)                                                                                                                                                                                                                                                                                                   |
+| `autoGroupColumnDef`          | —                                | `Partial<DataGridColumn>`                                              | —                   | Shallow-merged onto `GRID_TREE_DATA_GROUPING_COL_DEF` — override `headerName`/`valueGetter`/`width`/etc. for the grouping/toggle column. See [Tree data](#tree-data)                                                                                                                                                                                                                                                                             |
+| `treeDataExpandedGroupIds`    | —                                | `Set<string \| number>`                                                | `new Set()`         | Controlled expand state for tree groups — set to initialize, or read/listen for the current state. Collapsed by default. See [Tree data](#tree-data)                                                                                                                                                                                                                                                                                             |
 
 ### `DataGridColumn`
 
@@ -125,15 +129,17 @@ When one or more `<md-data-grid-column>` children are present, they always win �
 
 ## Methods
 
-| Method                        | Description                                                                                     |
-| ----------------------------- | ----------------------------------------------------------------------------------------------- |
-| `scrollToRow(index)`          | Scrolls the viewport so `rows[index]` is within view                                            |
-| `getVisibleRows()`            | Returns `{ row, rowIndex }[]` for the rows currently rendered (including overscan)              |
-| `setPage(page)`               | Changes the current page (clamped, no-op if pagination isn't enabled)                           |
-| `setPageSize(pageSize)`       | Changes the page size and resets to page `0`                                                    |
-| `updateRows(changes)`         | Applies a batch of row add/update/delete changes without replacing `rows` wholesale — see below |
-| `toggleDetailPanel(id)`       | Expands/collapses one row's detail panel, by row id (as returned by `getRowId`)                 |
-| `setExpandedDetailPanel(ids)` | Replaces `detailPanelExpandedRowIds` wholesale with a new `Set` of row ids                      |
+| Method                           | Description                                                                                                |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `scrollToRow(index)`             | Scrolls the viewport so `rows[index]` is within view                                                       |
+| `getVisibleRows()`               | Returns `{ row, rowIndex }[]` for the rows currently rendered (including overscan)                         |
+| `setPage(page)`                  | Changes the current page (clamped, no-op if pagination isn't enabled)                                      |
+| `setPageSize(pageSize)`          | Changes the page size and resets to page `0`                                                               |
+| `updateRows(changes)`            | Applies a batch of row add/update/delete changes without replacing `rows` wholesale — see below            |
+| `toggleDetailPanel(id)`          | Expands/collapses one row's detail panel, by row id (as returned by `getRowId`)                            |
+| `setExpandedDetailPanel(ids)`    | Replaces `detailPanelExpandedRowIds` wholesale with a new `Set` of row ids                                 |
+| `toggleTreeDataGroup(id)`        | Expands/collapses one tree-data group's children, by group id (real row id, or a synthetic group's own id) |
+| `setExpandedTreeDataGroups(ids)` | Replaces `treeDataExpandedGroupIds` wholesale with a new `Set` of group ids                                |
 
 ### `updateRows(changes)`
 
@@ -164,6 +170,7 @@ grid.updateRows([
 | `md-data-grid-sort-model-change`                    | `DataGridSortItem[]` (the new `sortModel`)                    | Fired when a sortable column's title is clicked — cycles none → asc → desc → none, replacing `sortModel` wholesale (single-column sort)                                                                                                                                                                                                                                                                            |
 | `md-data-grid-row-selection-model-change`           | `Set<string \| number>` (the new `rowSelectionModel`)         | Fired whenever a row click changes the selection — see [Row selection](#row-selection)                                                                                                                                                                                                                                                                                                                             |
 | `md-data-grid-detail-panel-expanded-row-ids-change` | `Set<string \| number>` (the new `detailPanelExpandedRowIds`) | Fired whenever a toggle click, `toggleDetailPanel()`, or `setExpandedDetailPanel()` changes which rows are expanded — see [Master detail](#master-detail)                                                                                                                                                                                                                                                          |
+| `md-data-grid-tree-data-expanded-group-ids-change`  | `Set<string \| number>` (the new `treeDataExpandedGroupIds`)  | Fired whenever a group's toggle is clicked, changing which groups are expanded — see [Tree data](#tree-data)                                                                                                                                                                                                                                                                                                       |
 
 ## Slots
 
@@ -324,6 +331,8 @@ Every column gets a drag handle on its trailing edge by default (except the last
 </script>
 ```
 
+While a drag is in progress, the internal `dataGridContext` (consumed by every built-in cell/header component, not part of the public API surface) carries `resizingColumnField` — the `field` of whichever column is currently being resized, or `undefined` otherwise. It's what an internal component would read to suppress its own hover/interactive affordance mid-drag; nothing in this package's own cells currently do that, but the signal is there for it.
+
 ### Loading indicator
 
 `loading` is purely visual — the grid never fetches data itself, so drive it from whatever's actually loading your rows (a fetch, a server-mode page change, etc.). What it renders depends on whether there's data to show yet:
@@ -479,6 +488,78 @@ A row with nothing to show (`getDetailPanelContent` returning `undefined`/`null`
 Detail rows are a rendering/virtualization concern only — they're never counted against `paginationModel.pageSize` (a page of 10 always shows 10 data rows, plus however many of those happen to be expanded), and every other index-based concern (`rowSelectionModel`, keyboard navigation, `rowSpanning`, sorting) operates entirely on data rows, unaware detail rows exist. Clicking inside detail content never selects the row it belongs to.
 
 **Known limitation**: an expanded row visually interrupts a `rowSpanning` run it would otherwise be part of — the two features work together, but a spanning cell's run breaks across an expanded row in between, same category of tradeoff as [Row spanning](#row-spanning)'s own scroll-out limitation above.
+
+### Tree data
+
+Set `treeData` (with `getDataPath` also set) to group rows into a collapsible hierarchy. `getDataPath` returns each row's position in that hierarchy, root to self inclusive:
+
+```html
+<md-data-grid id="grid" tree-data checkbox-selection></md-data-grid>
+
+<script type="module">
+  grid.getDataPath = (row) => row.path;
+
+  grid.columns = [{ field: "headcount", headerName: "Headcount" }];
+  grid.rows = [
+    { id: "eng", path: ["Engineering"], headcount: 42 },
+    { id: "fe", path: ["Engineering", "Frontend"], headcount: 18 },
+    { id: "ada", path: ["Engineering", "Frontend", "Ada"] },
+    // "Sales" has no row of its own — an auto-generated group renders for
+    // it, built from these two leaves' paths.
+    { id: "rachel", path: ["Sales", "Rachel"] },
+    { id: "tom", path: ["Sales", "Tom"] },
+  ];
+</script>
+```
+
+`treeData` set alone, with no `getDataPath`, is a no-op — rows render flat, same as if neither were set. This is deliberately two separate properties (not one combined opt-in) — matching MUI X's own `treeData`/`getTreeDataPath` shape — rather than `getDataPath`'s presence alone being the switch, unlike `getDetailPanelContent`.
+
+Internally this prepends `GRID_TREE_DATA_GROUPING_COL_DEF` (exported for reference) as the grouping/toggle column — after the checkbox column, before the master-detail toggle column, if either is also on:
+
+```
+checkbox? → tree-toggle? → detail-toggle? → your own columns
+```
+
+Groups are **collapsed by default** — set `treeDataExpandedGroupIds` to pre-expand some, or drive it entirely yourself, same controlled convention as `detailPanelExpandedRowIds`:
+
+```js
+grid.treeDataExpandedGroupIds = new Set(["eng"]); // pre-expand one group
+grid.toggleTreeDataGroup("eng"); // flip one
+grid.setExpandedTreeDataGroups(new Set(["eng", "sales"])); // replace wholesale
+
+grid.addEventListener("md-data-grid-tree-data-expanded-group-ids-change", (e) =>
+  console.log([...e.detail]),
+);
+```
+
+#### Auto-generated groups
+
+A path segment with no row of its own (`"Sales"` above) auto-generates a synthetic group row — the common case for folder/category-style grouping, not an edge case. A path segment that _does_ have a matching row (`"Engineering"`/`"Frontend"` above) uses that row directly as the group — it can carry its own data (`headcount`) **and** have children at the same time.
+
+#### The grouping column
+
+Indentation, the expand/collapse toggle, and the row's label all render in one cell (`md-data-tree-toggle-cell`). The label defaults to the row's own path segment (`"Engineering"`, `"Frontend"`, …) — override it, or anything else about the column, via `autoGroupColumnDef`, shallow-merged onto `GRID_TREE_DATA_GROUPING_COL_DEF`:
+
+```js
+grid.autoGroupColumnDef = {
+  headerName: "Team",
+  valueGetter: ({ row }) => row.name ?? row.groupingKey,
+};
+```
+
+Indent width per level is themeable via `--md-data-grid-tree-indent` (default `20px`).
+
+#### Sorting
+
+`sortModel` sorts **within** each group — a group's children are sorted among themselves, at every level including top-level groups, but the hierarchy itself never flattens. A synthetic group has no real field to sort by, so synthetic siblings compare equal and fall back to insertion order.
+
+#### Checkbox selection cascades
+
+With `checkboxSelection` also on, checking a group (real or synthetic) selects every descendant; the group's own checkbox shows `indeterminate` when only some descendants are checked. Selection also propagates **upward**: checking every one of a group's children — individually, one at a time, never touching the group's own checkbox — selects the group itself too, at every level up to the root, the same as if you'd clicked the group's own checkbox directly; unchecking any one child un-selects the group again. `rowSelectionModel` itself reflects this (a fully-selected group's own id really is a member, not just a display quirk), so anything reading `rowSelectionModel` directly — a bulk-action button, say — sees a consistent result regardless of which checkbox the user actually clicked. The header "select all" checkbox spans the whole tree — real rows and synthetic groups alike — regardless of what's currently collapsed, same as it already does for master pages under plain `checkboxSelection`.
+
+A plain (non-checkbox) row click keeps its ordinary single-row/shift/ctrl highlight-selection behavior, even on a group row — cascading is scoped to checkbox clicks specifically. Shift-clicking a checkbox has no defined cascading behavior yet; it's treated as a plain click.
+
+**Known limitations**: `rowSpanning` and `getDetailPanelContent` haven't been made tree-aware — combining either with `treeData` isn't validated and may behave unexpectedly on synthetic group rows, same category of documented tradeoff as this grid's other feature-combination caveats above.
 
 ### Hiding the built-in footer
 

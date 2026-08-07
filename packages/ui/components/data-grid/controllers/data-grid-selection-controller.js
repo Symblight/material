@@ -33,7 +33,29 @@ export class RowSelectionController {
    * @returns {boolean}
    */
   isSelected(row) {
-    return this.host.rowSelectionModel.has(this.host.getRowId(row));
+    return this.host.rowSelectionModel.has(this._rowId(row));
+  }
+
+  /**
+   * Row identity for selection purposes — `host.getRowId(row)` normally,
+   * but under `treeData` the rendered `row` is a tree node (real fields
+   * merged on for a real row, or nothing at all for a synthetic
+   * auto-generated group), so identity comes from the node's own `.key`
+   * instead: `TreeController` already resolved that to `getRowId(row)` for
+   * a real row and a deterministic synthetic id otherwise, so this is
+   * simply correct for a real row too, not just a synthetic one — never
+   * calls the consumer's `getRowId` on an object it was never meant to see.
+   * @private
+   * @param {Record<string, unknown>} row
+   * @returns {PropertyKey}
+   */
+  _rowId(row) {
+    const host = this.host;
+    return host.treeData && host.getDataPath
+      ? /** @type {PropertyKey} */ (
+          /** @type {{ key: PropertyKey }} */ (row).key
+        )
+      : host.getRowId(row);
   }
 
   /**
@@ -47,7 +69,7 @@ export class RowSelectionController {
    */
   select(row, rowIndex, modifiers, rows) {
     const host = this.host;
-    const id = host.getRowId(row);
+    const id = this._rowId(row);
     const multiEnabled = !host.disableMultipleRowSelection;
 
     /** @type {Set<PropertyKey> | null} */
@@ -98,7 +120,7 @@ export class RowSelectionController {
   _shiftRange(clickedIndex, rows) {
     const host = this.host;
     const anchorIndex = /** @type {number} */ (this._anchorIndex);
-    const clickedId = host.getRowId(rows[clickedIndex]);
+    const clickedId = this._rowId(rows[clickedIndex]);
     const growing = !host.rowSelectionModel.has(clickedId);
 
     if (!growing && anchorIndex === clickedIndex) return null;
@@ -115,7 +137,7 @@ export class RowSelectionController {
 
     const next = new Set(host.rowSelectionModel);
     for (let i = start; i <= end; i++) {
-      const rangeId = host.getRowId(rows[i]);
+      const rangeId = this._rowId(rows[i]);
       if (growing) next.add(rangeId);
       else next.delete(rangeId);
     }
@@ -135,14 +157,37 @@ export class RowSelectionController {
    * @param {Record<string, unknown>[]} rows
    */
   toggleAll(rows) {
+    this.toggleAllIds(rows.map((row) => this.host.getRowId(row)));
+  }
+
+  /**
+   * Id-based counterpart to `toggleAll()` — for callers that already have
+   * ids rather than row objects (treeData's "select all" spans real rows
+   * *and* synthetic group nodes, which have no row to run through
+   * `getRowId()`). Same wholesale-replace semantics.
+   * @param {PropertyKey[]} ids
+   */
+  toggleAllIds(ids) {
     const host = this.host;
     const allSelected =
-      rows.length > 0 &&
-      rows.every((row) => host.rowSelectionModel.has(host.getRowId(row)));
-    const next = allSelected
-      ? new Set()
-      : new Set(rows.map((row) => host.getRowId(row)));
+      ids.length > 0 && ids.every((id) => host.rowSelectionModel.has(id));
+    const next = allSelected ? new Set() : new Set(ids);
     this._apply(next);
+  }
+
+  /**
+   * Replaces `rowSelectionModel` with an already-fully-computed `Set`,
+   * verbatim — no toggle/diff logic of its own, unlike `toggleAllIds()`
+   * above. For callers that need to compute the exact final membership
+   * themselves before applying it in one atomic update — treeData's
+   * cascade-down-then-propagate-up selection
+   * (`TreeController.computeCascadingSelection()`, called from
+   * `data-grid.js`, the one place allowed to know about both that
+   * controller and this one) is the one caller today.
+   * @param {Set<PropertyKey>} next
+   */
+  applyIds(next) {
+    this._apply(new Set(next));
   }
 
   /**

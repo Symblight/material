@@ -1150,3 +1150,94 @@ export const AutoRowHeight = {
     `;
   },
 };
+
+// ─── Tree data — hierarchical rows via getDataPath, expand/collapse through
+// a prepended grouping/toggle column (GRID_TREE_DATA_GROUPING_COL_DEF,
+// customized here via autoGroupColumnDef), cascading checkbox selection ────
+
+/** @type {DataGridColumn[]} */
+const TREE_DATA_COLUMNS = [
+  { field: "headcount", headerName: "Headcount", width: 120, align: "right" },
+  { field: "location", headerName: "Location", width: 160 },
+];
+
+const TREE_DATA_ROWS = [
+  // "Engineering"/"Frontend"/"Backend" are real rows — each has its own
+  // headcount/location *and* children, showing a real row can be an
+  // ancestor too, not just a leaf.
+  {
+    id: "eng",
+    path: ["Engineering"],
+    headcount: 42,
+    location: "Remote",
+  },
+  {
+    id: "fe",
+    path: ["Engineering", "Frontend"],
+    headcount: 18,
+    location: "Berlin",
+  },
+  { id: "ada", path: ["Engineering", "Frontend", "Ada"], location: "Berlin" },
+  {
+    id: "grace",
+    path: ["Engineering", "Frontend", "Grace"],
+    location: "Berlin",
+  },
+  {
+    id: "be",
+    path: ["Engineering", "Backend"],
+    headcount: 24,
+    location: "Austin",
+  },
+  { id: "alan", path: ["Engineering", "Backend", "Alan"], location: "Austin" },
+  // "Sales" has no row of its own — GRID_TREE_DATA_GROUPING_COL_DEF
+  // auto-generates a synthetic group for it from these two leaves' paths.
+  { id: "rachel", path: ["Sales", "Rachel"], location: "New York" },
+  { id: "tom", path: ["Sales", "Tom"], location: "Chicago" },
+];
+
+/** @type {Story} */
+export const TreeData = {
+  render: () => {
+    /** @type {HTMLElement | undefined} */
+    let log;
+    return html`
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <md-data-grid
+          tree-data
+          checkbox-selection
+          style="height: 400px; width: 640px; display: block;"
+          @md-data-grid-row-selection-model-change=${(
+            /** @type {CustomEvent} */ e,
+          ) => {
+            if (!log) return;
+            const ids = [...e.detail];
+            log.textContent =
+              ids.length === 0 ? "No rows selected." : `Selected: ${ids}`;
+          }}
+          ${ref((el) => {
+            const grid = /** @type {MdDataGrid | undefined} */ (
+              /** @type {unknown} */ (el)
+            );
+            if (!grid) return;
+            grid.getDataPath = (row) =>
+              /** @type {{ path: string[] }} */ (row).path;
+            grid.autoGroupColumnDef = { headerName: "Team" };
+            grid.columns = TREE_DATA_COLUMNS;
+            grid.rows = TREE_DATA_ROWS;
+          })}
+        ></md-data-grid>
+        <span
+          ${ref((el) => (log = /** @type {HTMLElement | undefined} */ (el)))}
+          style="font-family: monospace; font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant);"
+        >
+          Collapsed by default — click a group's arrow to expand it.
+          "Engineering"/"Frontend"/"Backend" are real rows with their own
+          headcount; "Sales" has no row of its own and is auto-generated from
+          its two members' paths. Checking a group's box cascades to every
+          descendant, with an indeterminate state on partial selection.
+        </span>
+      </div>
+    `;
+  },
+};
