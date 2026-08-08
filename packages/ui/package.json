@@ -1,7 +1,7 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.0.18",
+  "version": "0.0.20",
   "description": "Material Design 3 web components library built with Lit",
   "author": "Aleksei Tkachenko <leshtkachenko@gmail.com>",
   "license": "MIT",
@@ -116,6 +116,10 @@
     "./select": {
       "import": "./dist/select/index.js",
       "types": "./dist/select/index.d.ts"
+    },
+    "./skeleton": {
+      "import": "./dist/skeleton/skeleton2.js",
+      "types": "./dist/skeleton/skeleton.d.ts"
     },
     "./text-field": {
       "import": "./dist/text-field/text-field2.js",
