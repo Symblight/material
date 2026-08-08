@@ -1,7 +1,7 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "Material Design 3 web components library built with Lit",
   "author": "Aleksei Tkachenko <leshtkachenko@gmail.com>",
   "license": "MIT",
@@ -151,7 +151,6 @@
   "dependencies": {
     "@lit-labs/observers": "^2.1.0",
     "@lit/context": "^1.1.6",
-    "@tanstack/lit-virtual": "^3.13.36",
     "rollup-plugin-postcss-lit": "^2.2.0"
   },
   "devDependencies": {
@@ -183,7 +182,7 @@
     "storybook": "^10.3.1",
     "typescript": "^5.9.3",
     "vite": "^8.0.1",
-    "vite-plugin-babel": "^1.7.3",
+    "vite-plugin-babel": "^2.0.0-rc.2",
     "vite-plugin-dts": "^4.5.4",
     "wireit": "^0.14.12"
   },

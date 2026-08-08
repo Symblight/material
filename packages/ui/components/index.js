@@ -2,7 +2,6 @@ import "./badge/badge.js";
 import "./button/button.js";
 import "./card/card.js";
 import "./chips/index.js";
-import "./data-grid/index.js";
 import "./icon/icon.js";
 import "./icon-button/icon-button.js";
 import "./list/index.js";

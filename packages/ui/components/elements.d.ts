@@ -24,14 +24,6 @@ import MdSwitch from "./switch/switch.js";
 import Select from "./select/select.js";
 import IconButton from "./icon-button/icon-button.js";
 import Icon from "./icon/icon.js";
-import { MdDataGrid } from "./data-grid/data-grid.js";
-import { MdDataCell } from "./data-grid/components/cell/data-grid-cell.js";
-import { MdDataHeaderCell } from "./data-grid/components/header-cell/data-grid-header-cell.js";
-import { MdDataColumnSeparator } from "./data-grid/components/column-separator/data-grid-column-separator.js";
-import { MdDataColumnTitle } from "./data-grid/components/column-title/data-grid-column-title.js";
-import { MdDataFooter } from "./data-grid/components/footer/data-grid-footer.js";
-import { MdDataGridCheckboxCell } from "./data-grid/components/checkbox-cell/data-grid-checkbox-cell.js";
-import { MdDataGridCheckboxHeader } from "./data-grid/components/checkbox-header/data-grid-checkbox-header.js";
 import { MdSkeleton } from "./skeleton/skeleton.js";
 
 declare global {
@@ -62,14 +54,6 @@ declare global {
     "md-select": Select;
     "md-icon-button": IconButton;
     "md-icon": Icon;
-    "md-data-grid": MdDataGrid;
-    "md-data-cell": MdDataCell;
-    "md-data-header-cell": MdDataHeaderCell;
-    "md-data-column-separator": MdDataColumnSeparator;
-    "md-data-column-title": MdDataColumnTitle;
-    "md-data-footer": MdDataFooter;
-    "md-data-grid-checkbox-cell": MdDataGridCheckboxCell;
-    "md-data-grid-checkbox-header": MdDataGridCheckboxHeader;
     "md-skeleton": MdSkeleton;
   }
 }
