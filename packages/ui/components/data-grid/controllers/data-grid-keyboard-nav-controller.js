@@ -12,7 +12,7 @@
  * as parameters, supplied by the host.
  */
 export class KeyboardNavController {
-  /** @param {import("../data-grid.js").MdDataGrid} host */
+  /** @param {import("../base/data-grid.js").MdDataGrid} host */
   constructor(host) {
     this.host = host;
   }

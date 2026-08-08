@@ -1,6 +1,6 @@
 import { html } from "lit";
 
-import "./components/tree-toggle-cell/data-grid-tree-toggle-cell.js";
+import "../components/tree-toggle-cell/data-grid-tree-toggle-cell.js";
 
 /**
  * Reserved `field` for the treeData grouping/toggle column — never a real
@@ -22,7 +22,7 @@ export const GRID_TREE_DATA_GROUPING_FIELD = "__tree_data_group__";
  * `headerName`/`valueGetter`/etc. by shallow-merging onto this base — not
  * wired up yet (tracked alongside `_columns`/`_effectiveRows` treeData
  * rendering wiring, the next slice of this feature).
- * @type {import("./data-grid.js").DataGridColumn}
+ * @type {import("../base/data-grid.js").DataGridColumn}
  */
 export const GRID_TREE_DATA_GROUPING_COL_DEF = {
   field: GRID_TREE_DATA_GROUPING_FIELD,
@@ -31,9 +31,9 @@ export const GRID_TREE_DATA_GROUPING_COL_DEF = {
   sortable: false,
   rowSpannable: false,
   renderCell: ({ row, column, rowIndex }) =>
-    html`<md-data-tree-toggle-cell
+    html`<md-data-grid-tree-toggle-cell
       .row=${row}
       .column=${column}
       .rowIndex=${rowIndex}
-    ></md-data-tree-toggle-cell>`,
+    ></md-data-grid-tree-toggle-cell>`,
 };

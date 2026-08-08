@@ -5,12 +5,12 @@
  * changed, not just via this controller.
  */
 export class RowUpdatesController {
-  /** @param {import("../data-grid.js").MdDataGrid} host */
+  /** @param {import("../base/data-grid.js").MdDataGrid} host */
   constructor(host) {
     this.host = host;
   }
 
-  /** @param {import("../data-grid.js").DataGridRowUpdate | import("../data-grid.js").DataGridRowUpdate[]} changes */
+  /** @param {import("../base/data-grid.js").DataGridRowUpdate | import("../base/data-grid.js").DataGridRowUpdate[]} changes */
   update(changes) {
     const host = this.host;
     const entries = Array.isArray(changes) ? changes : [changes];

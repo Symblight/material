@@ -2,26 +2,26 @@ import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 import { ContextConsumer } from "@lit/context";
 
-import { dataGridContext } from "../../data-grid-context.js";
+import { dataGridContext } from "../../base/data-grid-context.js";
 import styles from "./data-grid-column-separator.css?inline";
 
 const ACTIVE_CLASS = "data-grid-column-separator_active";
 
 /**
- * @tag md-data-column-separator
+ * @tag md-data-grid-column-separator
  * @summary The vertical divider between two header cells of an
  * `md-data-grid`, rendered as an SVG rect rather than a CSS border — a
  * border can't have rounded ends (`rx`) without an extra wrapper element.
  * Always renders (so every column boundary still shows a divider), and
  * doubles as the drag-to-resize handle when `resizable` is set: owns the
  * raw pointer mechanics itself and calls into `dataGridContext`'s resize
- * functions, matching `md-data-cell`'s focus-via-context pattern. The host
- * itself is the positioned/interactive element (no wrapper div) — styles
- * and pointer listeners live directly on `:host`/`this`. Composed
- * internally by `md-data-header-cell` — not intended to be used
+ * functions, matching `md-data-grid-cell`'s focus-via-context pattern. The
+ * host itself is the positioned/interactive element (no wrapper div) —
+ * styles and pointer listeners live directly on `:host`/`this`. Composed
+ * internally by `md-data-grid-header-cell` — not intended to be used
  * standalone.
  */
-@customElement("md-data-column-separator")
+@customElement("md-data-grid-column-separator")
 export class MdDataColumnSeparator extends LitElement {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {

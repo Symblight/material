@@ -1,7 +1,7 @@
 import { html } from "lit";
 
-import "./components/checkbox-cell/data-grid-checkbox-cell.js";
-import "./components/checkbox-header/data-grid-checkbox-header.js";
+import "../components/checkbox-cell/data-grid-checkbox-cell.js";
+import "../components/checkbox-header/data-grid-checkbox-header.js";
 
 /**
  * Reserved `field` for the checkbox column — never a real row field, so it
@@ -18,7 +18,7 @@ export const GRID_CHECKBOX_SELECTION_FIELD = "__check__";
  * already use) rather than needing anything from `params` beyond `row`/
  * `rowIndex` — this column has no special-cased rendering path inside the
  * grid itself.
- * @type {import("./data-grid.js").DataGridColumn}
+ * @type {import("../base/data-grid.js").DataGridColumn}
  */
 export const GRID_CHECKBOX_SELECTION_COL_DEF = {
   field: GRID_CHECKBOX_SELECTION_FIELD,

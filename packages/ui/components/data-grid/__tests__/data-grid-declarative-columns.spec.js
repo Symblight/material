@@ -1,7 +1,7 @@
 import { expect, fixture, html } from "@open-wc/testing";
 
 import "../index.js";
-/** @import { MdDataGrid } from "../data-grid.js" */
+/** @import { MdDataGrid } from "../base/data-grid.js" */
 
 async function settle() {
   await new Promise((r) => setTimeout(r, 0));
@@ -49,10 +49,10 @@ describe("md-data-grid: declarative <md-data-grid-column> children", () => {
     await settle();
     await el.updateComplete;
 
-    const header = el.shadowRoot.querySelector("md-data-header-cell");
+    const header = el.shadowRoot.querySelector("md-data-grid-header-cell");
     expect(header.shadowRoot.textContent).to.contain("Full Name");
 
-    const cell = el.shadowRoot.querySelector("md-data-cell");
+    const cell = el.shadowRoot.querySelector("md-data-grid-cell");
     await cell.updateComplete;
     expect(cell.shadowRoot.textContent).to.contain("Ada Lovelace");
   });
@@ -148,7 +148,7 @@ describe("md-data-grid: declarative <md-data-grid-column> children", () => {
     await el.updateComplete;
 
     const cell = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-cell")
+      el.shadowRoot.querySelector("md-data-grid-cell")
     );
     await cell.updateComplete;
     expect(cell.shadowRoot.querySelector("b")?.textContent).to.equal("Ada!");

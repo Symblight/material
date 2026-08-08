@@ -13,6 +13,7 @@ import inventoryIcon from "@material-design-icons/svg/outlined/inventory_2.svg?r
 import localShippingIcon from "@material-design-icons/svg/outlined/local_shipping.svg?raw";
 
 import "../index.js";
+import "../tree/data-grid-tree.js";
 import "../../card/card.js";
 import "../../chips/assist-chip.js";
 import "../../button/button.js";
@@ -23,8 +24,9 @@ import "../../list/list.js";
 import "../../dialog/dialog.js";
 import "../../text-field/text-field.js";
 
-/** @import { DataGridColumn } from "../data-grid.js" */
-/** @import { MdDataGrid } from "../data-grid.js" */
+/** @import { DataGridColumn } from "../base/data-grid.js" */
+/** @import { MdDataGrid } from "../base/data-grid.js" */
+/** @import { MdDataGridTree } from "../tree/data-grid-tree.js" */
 
 const DEPARTMENTS = ["Engineering", "Design", "Marketing", "Sales", "Support"];
 
@@ -1196,6 +1198,10 @@ const TREE_DATA_ROWS = [
   { id: "tom", path: ["Sales", "Tom"], location: "Chicago" },
 ];
 
+// Renders <md-data-grid-tree>, not the shared meta.component "md-data-grid"
+// above — the only story in this file that does, since treeData now lives
+// on that dedicated subclass (data-grid-tree.js) rather than as a flag on
+// the base grid.
 /** @type {Story} */
 export const TreeData = {
   render: () => {
@@ -1203,8 +1209,7 @@ export const TreeData = {
     let log;
     return html`
       <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <md-data-grid
-          tree-data
+        <md-data-grid-tree
           checkbox-selection
           style="height: 400px; width: 640px; display: block;"
           @md-data-grid-row-selection-model-change=${(
@@ -1216,7 +1221,7 @@ export const TreeData = {
               ids.length === 0 ? "No rows selected." : `Selected: ${ids}`;
           }}
           ${ref((el) => {
-            const grid = /** @type {MdDataGrid | undefined} */ (
+            const grid = /** @type {MdDataGridTree | undefined} */ (
               /** @type {unknown} */ (el)
             );
             if (!grid) return;
@@ -1226,7 +1231,7 @@ export const TreeData = {
             grid.columns = TREE_DATA_COLUMNS;
             grid.rows = TREE_DATA_ROWS;
           })}
-        ></md-data-grid>
+        ></md-data-grid-tree>
         <span
           ${ref((el) => (log = /** @type {HTMLElement | undefined} */ (el)))}
           style="font-family: monospace; font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant);"

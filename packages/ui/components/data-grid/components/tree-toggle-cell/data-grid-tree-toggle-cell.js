@@ -9,11 +9,11 @@ import keyboardArrowRight from "@material-design-icons/svg/outlined/keyboard_arr
 import "../../../icon-button/icon-button.js";
 import "../../../icon/icon.js";
 
-import { dataGridContext } from "../../data-grid-context.js";
+import { dataGridContext } from "../../base/data-grid-context.js";
 import styles from "./data-grid-tree-toggle-cell.css?inline";
 
 /**
- * @tag md-data-tree-toggle-cell
+ * @tag md-data-grid-tree-toggle-cell
  * @summary The per-row expand/collapse + indentation + label cell rendered
  * by `GRID_TREE_DATA_GROUPING_COL_DEF` when `md-data-grid`'s `treeData` is
  * on. Reads everything through `dataGridContext` by row id (`getRowDepth`,
@@ -22,11 +22,11 @@ import styles from "./data-grid-tree-toggle-cell.css?inline";
  * see that method's own doc comment for why: `row` is a tree node here,
  * and a synthetic auto-generated group has no real fields for `getRowId()`
  * to read at all). Renders no toggle icon at all (just indentation + label)
- * for a row with no children, matching `md-data-detail-toggle-cell`'s own
- * "nothing to act on, no affordance" precedent. Composed internally — not
- * intended to be used standalone.
+ * for a row with no children, matching `md-data-grid-detail-toggle-cell`'s
+ * own "nothing to act on, no affordance" precedent. Composed internally —
+ * not intended to be used standalone.
  */
-@customElement("md-data-tree-toggle-cell")
+@customElement("md-data-grid-tree-toggle-cell")
 export class MdDataTreeToggleCell extends LitElement {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {
@@ -46,7 +46,7 @@ export class MdDataTreeToggleCell extends LitElement {
     /** @type {Record<string, unknown>} */
     this.row = {};
 
-    /** @type {import("../../data-grid.js").DataGridColumn | undefined} */
+    /** @type {import("../../base/data-grid.js").DataGridColumn | undefined} */
     this.column = undefined;
 
     /** @type {number} */
@@ -62,7 +62,7 @@ export class MdDataTreeToggleCell extends LitElement {
      * position, not row identity (see its own doc comment), so collapsing
      * one group shifts every row below it into different slots and this
      * same cell instance/DOM node ends up representing a different row.
-     * Without this check, `.tree-toggle-cell__icon`'s CSS transition
+     * Without this check, `.data-grid-tree-toggle-cell__icon`'s CSS transition
      * animates that incidental state change as if the user had clicked
      * *this* row's toggle, producing a spurious rotate animation on a row
      * nobody interacted with.
@@ -111,8 +111,8 @@ export class MdDataTreeToggleCell extends LitElement {
   /**
    * Stops the click from also reaching the row's own `@click` handler (it
    * bubbles there otherwise) — expanding/collapsing a group shouldn't also
-   * select it, same reasoning as `md-data-detail-toggle-cell`'s own click
-   * handler.
+   * select it, same reasoning as `md-data-grid-detail-toggle-cell`'s own
+   * click handler.
    * @param {MouseEvent} event
    */
   _onToggleClick(event) {
@@ -129,7 +129,7 @@ export class MdDataTreeToggleCell extends LitElement {
    * this node was built from — works for a real row or a synthetic group
    * alike, since `TreeController` stamps `groupingKey` on both.
    * @private
-   * @param {import("../../data-grid-context.js").DataGridContextValue} ctx
+   * @param {import("../../base/data-grid-context.js").DataGridContextValue} ctx
    * @param {PropertyKey} id
    * @returns {unknown}
    */
@@ -146,7 +146,7 @@ export class MdDataTreeToggleCell extends LitElement {
   }
 
   /**
-   * Indentation is set imperatively (mirrors `md-data-cell` setting
+   * Indentation is set imperatively (mirrors `md-data-grid-cell` setting
    * `style.gridColumn`/`style.height` the same way) rather than templated —
    * depth comes from a context lookup, not a declared reactive property, so
    * there's no `changed` map entry to gate on; recomputing unconditionally
@@ -178,16 +178,16 @@ export class MdDataTreeToggleCell extends LitElement {
         expandable
           ? html`
               <md-icon-button
-                class="tree-toggle-cell__button"
+                class="data-grid-tree-toggle-cell__button"
                 aria-label=${expanded ? "Collapse group" : "Expand group"}
                 aria-expanded=${expanded}
                 @click=${this._onToggleClick}
               >
                 <md-icon
                   class=${classMap({
-                    "tree-toggle-cell__icon": true,
-                    "tree-toggle-cell__icon_expanded": expanded,
-                    "tree-toggle-cell__icon_no-transition":
+                    "data-grid-tree-toggle-cell__icon": true,
+                    "data-grid-tree-toggle-cell__icon_expanded": expanded,
+                    "data-grid-tree-toggle-cell__icon_no-transition":
                       this._skipIconTransition,
                   })}
                 >
@@ -195,9 +195,11 @@ export class MdDataTreeToggleCell extends LitElement {
                 </md-icon>
               </md-icon-button>
             `
-          : html`<span class="tree-toggle-cell__spacer"></span>`
+          : html`<span class="data-grid-tree-toggle-cell__spacer"></span>`
       }
-      <span class="tree-toggle-cell__label">${this._label(ctx, id)}</span>
+      <span class="data-grid-tree-toggle-cell__label"
+        >${this._label(ctx, id)}</span
+      >
     `;
   }
 }

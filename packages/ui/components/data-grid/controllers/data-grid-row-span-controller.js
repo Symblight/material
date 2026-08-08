@@ -10,7 +10,7 @@
  * host's `rowSpanning` flag (off by default — unlike resize/sort, silently
  * merging cells is a real behavior change a consumer should ask for).
  *
- * Rendering itself doesn't live here — `md-data-cell` paints a spanning
+ * Rendering itself doesn't live here — `md-data-grid-cell` paints a spanning
  * cell by growing past its own row's box (`height: rowHeight * span` +
  * `overflow: visible`) rather than the row's own layout changing at all,
  * so virtualization's scroll/height math never needs to know spanning
@@ -20,13 +20,13 @@
  * README, not solved here.
  */
 export class RowSpanController {
-  /** @param {import("../data-grid.js").MdDataGrid} host */
+  /** @param {import("../base/data-grid.js").MdDataGrid} host */
   constructor(host) {
     this.host = host;
   }
 
   /**
-   * @param {import("../data-grid.js").DataGridColumn} column
+   * @param {import("../base/data-grid.js").DataGridColumn} column
    * @returns {boolean}
    */
   isSpannable(column) {
@@ -62,7 +62,7 @@ export class RowSpanController {
   /**
    * @private
    * @param {Record<string, unknown>[]} rows
-   * @param {import("../data-grid.js").DataGridColumn} column
+   * @param {import("../base/data-grid.js").DataGridColumn} column
    * @returns {DataGridRowSpanInfo[]}
    */
   _computeColumnSpans(rows, column) {
@@ -91,7 +91,7 @@ export class RowSpanController {
    * (e.g. rounding, case-insensitivity) beyond strict equality.
    * @private
    * @param {Record<string, unknown>} row
-   * @param {import("../data-grid.js").DataGridColumn} column
+   * @param {import("../base/data-grid.js").DataGridColumn} column
    * @returns {unknown}
    */
   _spanKey(row, column) {

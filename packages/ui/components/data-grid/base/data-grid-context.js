@@ -11,7 +11,7 @@ import { createContext } from "@lit/context";
  * @property {"cell" | "columnHeader"} focusedRegion // which one owns the grid's single Tab stop right now
  * @property {number} focusedHeaderColIndex
  * @property {(colIndex: number) => void} setHeaderFocus
- * @property {boolean} disableCellHighlight // when true, md-data-cell skips the focused-cell border highlight
+ * @property {boolean} disableCellHighlight // when true, md-data-grid-cell skips the focused-cell border highlight
  * @property {number} page                 // current page index, 0 when pagination disabled
  * @property {number} pageSize
  * @property {number} pageCount
@@ -31,7 +31,7 @@ import { createContext } from "@lit/context";
  * @property {(row: Record<string, unknown>, rowIndex: number, modifiers: { shiftKey?: boolean, ctrlKey?: boolean, metaKey?: boolean }) => void} toggleRowSelection
  * @property {() => void} toggleSelectAll
  * @property {Set<PropertyKey>} detailPanelExpandedRowIds
- * @property {(row: Record<string, unknown>, rowIndex: number) => boolean} hasDetailPanelContent // whether this row has anything to show — read by md-data-detail-toggle-cell to decide whether to render an affordance at all
+ * @property {(row: Record<string, unknown>, rowIndex: number) => boolean} hasDetailPanelContent // whether this row has anything to show — read by md-data-grid-detail-toggle-cell to decide whether to render an affordance at all
  * @property {(id: PropertyKey) => void} toggleDetailPanel
  * @property {boolean} treeData
  * @property {Set<PropertyKey>} treeDataExpandedGroupIds

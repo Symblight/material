@@ -7,7 +7,7 @@ function preventClick(event) {
 }
 
 /**
- * Owns drag-to-resize for column headers. `md-data-header-cell` performs
+ * Owns drag-to-resize for column headers. `md-data-grid-header-cell` performs
  * the raw pointer mechanics (setPointerCapture, pointermove/up) and calls
  * into this controller through `dataGridContext` — the same channel
  * `setCellFocus` already uses — rather than a dedicated event bus.
@@ -31,7 +31,7 @@ function preventClick(event) {
  */
 export class ColumnResizeController {
   /**
-   * @param {import("../data-grid.js").MdDataGrid} host
+   * @param {import("../base/data-grid.js").MdDataGrid} host
    * @param {{ onResizeStateChange?: () => void }} [options]
    *   `onResizeStateChange` fires synchronously from `startColumnResize()`/
    *   `endColumnResize()` (drag start/end — never on every `pointermove`,
@@ -76,7 +76,7 @@ export class ColumnResizeController {
   }
 
   /**
-   * @param {import("../data-grid.js").DataGridColumn} column
+   * @param {import("../base/data-grid.js").DataGridColumn} column
    * @param {number} resizeColIndex
    * @returns {boolean}
    */
@@ -240,26 +240,26 @@ export class ColumnResizeController {
    * triggers one normal Lit re-render, which reconciles away whatever
    * `_previewWidth()` painted directly onto the DOM. `_resizeColIndex`/
    * `_partnerColIndex` are indices into `host._columns` (every synthetic
-   * column `_columns` itself prepends — checkbox, tree-data grouping,
-   * master-detail toggle — counted in, in that order) — `host.columns`
-   * itself never includes any of those, so writing back means shifting the
-   * index down by however many of them are actually prepended right now,
-   * rather than accidentally baking one of them permanently into the
-   * public array. This has to track `_columns`' own composition exactly —
-   * see its doc comment — or the write-back lands on the wrong column
-   * entirely (one of this grid's own past bugs: this offset originally
-   * only counted the checkbox column, so as soon as `treeData` or
-   * `getDetailPanelContent` added a second/third prepended column, a drag
-   * on the first real column silently resized the second instead).
+   * column `_columns` itself prepends — checkbox, and whatever a subclass
+   * like `MdDataGridTree` adds via `_withLeadingColumns()`, plus master-
+   * detail toggle) — `host.columns` itself never includes any of those, so
+   * writing back means shifting the index down by however many of them are
+   * actually prepended right now, rather than accidentally baking one of
+   * them permanently into the public array. Derived structurally
+   * (`host._columns.length - host.columns.length`) rather than re-summing
+   * each individual flag here — this has to track `_columns`' own
+   * composition exactly, and re-deriving it structurally means it can never
+   * drift out of sync with `_columns` again (one of this grid's own past
+   * bugs: this offset originally only counted the checkbox column
+   * one-flag-at-a-time, so as soon as a second/third prepended column was
+   * added, a drag on the first real column silently resized the second
+   * instead — a structural count can't repeat that class of bug).
    * @private
    */
   _commitWidth() {
     const width = this._pendingWidth;
     const partnerWidth = this._pendingPartnerWidth;
-    const offset =
-      (this.host.checkboxSelection ? 1 : 0) +
-      (this.host.treeData && this.host.getDataPath ? 1 : 0) +
-      (this.host.getDetailPanelContent ? 1 : 0);
+    const offset = this.host._columns.length - this.host.columns.length;
     this.host.columns = this.host.columns.map((col, index) => {
       const mergedIndex = index + offset;
       if (mergedIndex === this._resizeColIndex) return { ...col, width };

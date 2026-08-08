@@ -8,13 +8,13 @@ import arrowUpward from "@material-design-icons/svg/outlined/arrow_upward.svg?ra
 import "../../../icon/icon.js";
 import "../column-separator/data-grid-column-separator.js";
 import "../column-title/data-grid-column-title.js";
-import { dataGridContext } from "../../data-grid-context.js";
+import { dataGridContext } from "../../base/data-grid-context.js";
 import styles from "./data-grid-header-cell.css?inline";
 
-/** @typedef {import("../../data-grid.js").DataGridColumn} DataGridColumn */
+/** @typedef {import("../../base/data-grid.js").DataGridColumn} DataGridColumn */
 
 /**
- * @tag md-data-header-cell
+ * @tag md-data-grid-header-cell
  * @summary One header cell of an `md-data-grid`. The host itself is the
  * positioned/rendered cell (no wrapper div) — `part`/`role` are set once in
  * the constructor, the align modifier class, `column.headerClassName`, and
@@ -30,7 +30,7 @@ import styles from "./data-grid-header-cell.css?inline";
  * cells go through `KeyboardNavController` instead, same as body cells.
  * Composed internally by the grid — not intended to be used standalone.
  */
-@customElement("md-data-header-cell")
+@customElement("md-data-grid-header-cell")
 export class MdDataHeaderCell extends LitElement {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {
@@ -90,7 +90,7 @@ export class MdDataHeaderCell extends LitElement {
     this.setAttribute("part", "header-cell");
     this.setAttribute("role", "columnheader");
 
-    // No matching "focusout" — unlike md-data-cell's highlight, a header
+    // No matching "focusout" — unlike md-data-grid-cell's highlight, a header
     // cell's only focused-state visual is the browser's own native :focus
     // outline, which already goes away on blur by itself. See
     // FocusController.setHeaderFocus()'s doc comment for the full reasoning.
@@ -128,7 +128,7 @@ export class MdDataHeaderCell extends LitElement {
     }
     if (changed.has("colIndex") || changed.has("colSpan")) {
       // Explicit start (1-based CSS grid line) + span — matches
-      // md-data-cell's own placement (see its willUpdate() for the full
+      // md-data-grid-cell's own placement (see its willUpdate() for the full
       // rationale: a row whose cell for this column is entirely absent
       // from the DOM, not just empty, throws off auto-placement for
       // every following cell in that row). The header itself never omits
@@ -144,7 +144,7 @@ export class MdDataHeaderCell extends LitElement {
     super.updated(changed);
 
     // Depends on dataGridContext (a subscription, not a declared reactive
-    // property), so — same as md-data-cell's own focused/highlighted —
+    // property), so — same as md-data-grid-cell's own focused/highlighted —
     // this is recomputed unconditionally here rather than gated behind
     // willUpdate()'s changed-property check.
     const focused =
@@ -157,13 +157,13 @@ export class MdDataHeaderCell extends LitElement {
     const { column } = this;
 
     return html`
-      <md-data-column-title>
+      <md-data-grid-column-title>
         ${
           column.renderHeader
             ? column.renderHeader(column)
             : (column.headerName ?? column.field)
         }
-      </md-data-column-title>
+      </md-data-grid-column-title>
       ${
         this.sortable
           ? html`
@@ -176,10 +176,10 @@ export class MdDataHeaderCell extends LitElement {
             `
           : nothing
       }
-      <md-data-column-separator
+      <md-data-grid-column-separator
         .resizeColIndex=${this.resizeColIndex}
         .resizable=${this.resizable}
-      ></md-data-column-separator>
+      ></md-data-grid-column-separator>
     `;
   }
 }

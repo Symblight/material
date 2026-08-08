@@ -4,14 +4,14 @@ import { ContextConsumer } from "@lit/context";
 
 import "../../../checkbox/checkbox.js";
 
-import { dataGridContext } from "../../data-grid-context.js";
+import { dataGridContext } from "../../base/data-grid-context.js";
 import styles from "./data-grid-checkbox-cell.css?inline";
 
 /**
  * @tag md-data-grid-checkbox-cell
  * @summary The per-row checkbox rendered by `GRID_CHECKBOX_SELECTION_COL_DEF`
  * when `md-data-grid`'s `checkboxSelection` is on. Reads/writes selection
- * through `dataGridContext` — reused as-is by `md-data-cell`'s generic
+ * through `dataGridContext` — reused as-is by `md-data-grid-cell`'s generic
  * `renderCell` mechanism, so this is just an ordinary custom column, not a
  * special case baked into the grid itself. `md-checkbox`'s own default
  * touch-target padding (`0.688rem` on every side, on top of its `1.125rem`
@@ -65,7 +65,7 @@ export class MdDataGridCheckboxCell extends LitElement {
    * for a real row too, not just a synthetic one, since `TreeController`
    * already resolved a real row's `.key` to `getRowId(row)`.
    * @private
-   * @param {import("../../data-grid-context.js").DataGridContextValue} ctx
+   * @param {import("../../base/data-grid-context.js").DataGridContextValue} ctx
    * @returns {PropertyKey}
    */
   _id(ctx) {

@@ -84,13 +84,12 @@ export function createEmptyIndexTree() {
 /**
  * The subset of `md-data-grid` a `TreeController` actually needs — not the
  * full element, just what building a tree out of its rows requires.
- * `treeData`/`getDataPath` gate the hierarchical build path (see `build()`);
+ * `getDataPath` gates the hierarchical build path (see `build()`);
  * `treeDataExpandedGroupIds` is owned/mutated by this controller the same
  * way `DetailPanelController` owns `detailPanelExpandedRowIds`.
  * @typedef {EventTarget & {
  *   rows: Record<string, unknown>[],
  *   getRowId: (row: Record<string, unknown>) => PropertyKey,
- *   treeData?: boolean,
  *   getDataPath?: (row: Record<string, unknown>) => PropertyKey[] | undefined,
  *   treeDataExpandedGroupIds: Set<PropertyKey>,
  * }} TreeControllerHost
@@ -102,14 +101,13 @@ export function createEmptyIndexTree() {
  * shape `RowSelectionController`/`DetailPanelController` already use).
  *
  * Two build modes, dispatched by `build()`:
- * - **Flat** (`host.treeData` off, or `host.getDataPath` unset): every row
- *   is a direct child of the root, one level deep, keyed by `getRowId()` —
- *   today's original behavior, byte-for-byte, zero regression risk for
- *   non-tree grids.
- * - **Hierarchical** (`host.treeData` on with `host.getDataPath` set): each
- *   row's `getDataPath(row)` array is walked segment by segment, building a
- *   real tree. A path segment with no row of its own becomes a synthetic
- *   group node (see `syntheticGroupId()`) — the common case (folder/category
+ * - **Flat** (`host.getDataPath` unset): every row is a direct child of the
+ *   root, one level deep, keyed by `getRowId()` — today's original
+ *   behavior, byte-for-byte, zero regression risk for non-tree grids.
+ * - **Hierarchical** (`host.getDataPath` set): each row's
+ *   `getDataPath(row)` array is walked segment by segment, building a real
+ *   tree. A path segment with no row of its own becomes a synthetic group
+ *   node (see `syntheticGroupId()`) — the common case (folder/category
  *   grouping), not an edge case.
  *
  * Not yet wired into `md-data-grid`'s rendering pipeline
@@ -167,14 +165,14 @@ export class TreeController {
   /**
    * (Re)builds the tree from `rows`, replacing whatever tree existed
    * before. Dispatches to the flat or hierarchical build depending on
-   * `host.treeData`/`host.getDataPath` — the two paths share no code, so
-   * turning treeData on/off can't partially apply either one's behavior.
+   * `host.getDataPath` — the two paths share no code, so turning it on/off
+   * can't partially apply either one's behavior.
    * @param {Record<string, unknown>[]} [rows]
    * @returns {IndexTree<Record<string, unknown>>} the new root — also
    * available afterwards via `this.tree`
    */
   build(rows = this.host.rows) {
-    return this.host.treeData && this.host.getDataPath
+    return this.host.getDataPath
       ? this._buildHierarchical(rows)
       : this._buildFlat(rows);
   }

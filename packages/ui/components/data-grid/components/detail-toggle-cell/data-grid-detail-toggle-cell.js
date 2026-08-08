@@ -9,21 +9,21 @@ import keyboardArrowRight from "@material-design-icons/svg/outlined/keyboard_arr
 import "../../../icon-button/icon-button.js";
 import "../../../icon/icon.js";
 
-import { dataGridContext } from "../../data-grid-context.js";
+import { dataGridContext } from "../../base/data-grid-context.js";
 import styles from "./data-grid-detail-toggle-cell.css?inline";
 
 /**
- * @tag md-data-detail-toggle-cell
+ * @tag md-data-grid-detail-toggle-cell
  * @summary The per-row expand/collapse toggle rendered by
  * `GRID_DETAIL_PANEL_TOGGLE_COL_DEF` when `md-data-grid`'s
  * `getDetailPanelContent` is set. Reads/writes `detailPanelExpandedRowIds`
- * through `dataGridContext` — reused as-is by `md-data-cell`'s generic
+ * through `dataGridContext` — reused as-is by `md-data-grid-cell`'s generic
  * `renderCell` mechanism, same as `md-data-grid-checkbox-cell`. Renders
  * nothing at all for a row `ctx.hasDetailPanelContent()` says has no detail
  * content — there's nothing to toggle, so no affordance for it either,
  * matching MUI. Composed internally — not intended to be used standalone.
  */
-@customElement("md-data-detail-toggle-cell")
+@customElement("md-data-grid-detail-toggle-cell")
 export class MdDataDetailToggleCell extends LitElement {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {

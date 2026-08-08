@@ -1,12 +1,12 @@
 import { expect, fixture, html } from "@open-wc/testing";
 
 import "../index.js";
-/** @import { MdDataGrid } from "../data-grid.js" */
+/** @import { MdDataGrid } from "../base/data-grid.js" */
 
-// md-data-cell always renders inside an md-data-grid (it consumes
+// md-data-grid-cell always renders inside an md-data-grid (it consumes
 // dataGridContext), so we exercise it through a minimal real grid rather than
 // hand-rolling a synthetic context provider.
-describe("md-data-cell", () => {
+describe("md-data-grid-cell", () => {
   it("renders the raw field value when no renderCell/valueGetter is given", async () => {
     const el = /** @type {MdDataGrid} */ (
       await fixture(html`<md-data-grid></md-data-grid>`)
@@ -16,7 +16,7 @@ describe("md-data-cell", () => {
     await el.updateComplete;
 
     const cell = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-cell")
+      el.shadowRoot.querySelector("md-data-grid-cell")
     );
     await cell.updateComplete;
     expect(cell.shadowRoot.textContent).to.contain("Ada");
@@ -36,7 +36,7 @@ describe("md-data-cell", () => {
     await el.updateComplete;
 
     const cell = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-cell")
+      el.shadowRoot.querySelector("md-data-grid-cell")
     );
     await cell.updateComplete;
     expect(cell.shadowRoot.textContent).to.contain("12 €");
@@ -60,7 +60,7 @@ describe("md-data-cell", () => {
     await el.updateComplete;
 
     const cell = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-cell")
+      el.shadowRoot.querySelector("md-data-grid-cell")
     );
     await cell.updateComplete;
 
@@ -79,7 +79,7 @@ describe("md-data-cell", () => {
     await el.updateComplete;
 
     const cell = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-cell")
+      el.shadowRoot.querySelector("md-data-grid-cell")
     );
     await cell.updateComplete;
     expect(cell.classList.contains("data-grid-cell_align-right")).to.be.true;
@@ -94,7 +94,7 @@ describe("md-data-cell", () => {
     await el.updateComplete;
 
     const cell = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-cell")
+      el.shadowRoot.querySelector("md-data-grid-cell")
     );
     await cell.updateComplete;
     cell.focusCell();
@@ -112,7 +112,7 @@ describe("md-data-cell", () => {
       await el.updateComplete;
 
       const cell = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-cell")
+        el.shadowRoot.querySelector("md-data-grid-cell")
       );
       await cell.updateComplete;
       expect(cell.classList.contains("data-grid-cell_highlighted")).to.be.false;
@@ -135,7 +135,7 @@ describe("md-data-cell", () => {
       await el.updateComplete;
 
       const cell = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-cell")
+        el.shadowRoot.querySelector("md-data-grid-cell")
       );
       await cell.updateComplete;
       cell.focusCell();
@@ -159,7 +159,7 @@ describe("md-data-cell", () => {
       await el.updateComplete;
 
       const cells = /** @type {any[]} */ (
-        Array.from(el.shadowRoot.querySelectorAll("md-data-cell"))
+        Array.from(el.shadowRoot.querySelectorAll("md-data-grid-cell"))
       );
       await Promise.all(cells.map((c) => c.updateComplete));
 

@@ -10,18 +10,18 @@ import "../../../icon-button/icon-button.js";
 import "../../../icon/icon.js";
 import "../../../select/select.js";
 
-import { dataGridContext } from "../../data-grid-context.js";
+import { dataGridContext } from "../../base/data-grid-context.js";
 import styles from "./data-grid-footer.css?inline";
 
 /**
- * @tag md-data-footer
+ * @tag md-data-grid-footer
  * @summary Pagination footer for `md-data-grid` — row count and prev/next
  * controls, driven entirely by `dataGridContext`. The host itself is the
  * rendered footer bar (no wrapper div) — `part="footer"` is set once in the
  * constructor. Composed internally by the grid when `paginationModel` is
  * set and `hidePagination` is `false` — not intended to be used standalone.
  */
-@customElement("md-data-footer")
+@customElement("md-data-grid-footer")
 export class MdDataFooter extends LitElement {
   /** @returns {import("lit").CSSResultGroup} */
   static get styles() {
@@ -73,30 +73,32 @@ export class MdDataFooter extends LitElement {
         : [...pageSizeOptions, pageSize].sort((a, b) => a - b);
 
     return html`
-      ${pageSizeOptions.length > 0
-        ? html`
-            <span
-              class="data-grid-footer__rows-per-page-label"
-              part="rows-per-page-label"
-            >
-              Rows per page:
-            </span>
-            <md-select
-              class="data-grid-footer__page-size-select"
-              part="page-size-select"
-              variant="outlined"
-              .value=${String(pageSize)}
-              @change=${this._onPageSizeChange}
-            >
-              ${options.map(
+      ${
+        pageSizeOptions.length > 0
+          ? html`
+              <span
+                class="data-grid-footer__rows-per-page-label"
+                part="rows-per-page-label"
+              >
+                Rows per page:
+              </span>
+              <md-select
+                class="data-grid-footer__page-size-select"
+                part="page-size-select"
+                variant="outlined"
+                .value=${String(pageSize)}
+                @change=${this._onPageSizeChange}
+              >
+                ${options.map(
                 (option) =>
                   html`<md-option part="page-size-option" value=${option}
                     >${option}</md-option
                   >`,
               )}
-            </md-select>
-          `
-        : nothing}
+              </md-select>
+            `
+          : nothing
+      }
       <span class="data-grid-footer__count" part="footer-count">
         ${rowCount === 0 ? 0 : firstRowIndex + 1}–${lastRowIndex + 1} of
         ${rowCount}

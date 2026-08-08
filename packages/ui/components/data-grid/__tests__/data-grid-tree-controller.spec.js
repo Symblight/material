@@ -1,12 +1,10 @@
-import { expect, fixture, html } from "@open-wc/testing";
+import { expect } from "@open-wc/testing";
 
-import "../index.js";
 import {
   DATA_GRID_ROOT_GROUP_ID,
   createEmptyIndexTree,
   TreeController,
 } from "../controllers/data-grid-tree-controller.js";
-/** @import { MdDataGrid } from "../data-grid.js" */
 
 /** @param {number} count */
 function makeRows(count) {
@@ -29,7 +27,6 @@ function makeHost(rows, overrides = {}) {
   return Object.assign(new EventTarget(), {
     rows,
     getRowId: (row) => /** @type {{ id: PropertyKey }} */ (row).id,
-    treeData: false,
     getDataPath: undefined,
     treeDataExpandedGroupIds: new Set(),
     ...overrides,
@@ -78,7 +75,7 @@ describe("createEmptyIndexTree", () => {
   });
 });
 
-describe("TreeController — flat mode (treeData off, existing behavior)", () => {
+describe("TreeController — flat mode (getDataPath unset, existing behavior)", () => {
   it("builds a root keyed by DATA_GRID_ROOT_GROUP_ID", () => {
     const controller = new TreeController(makeHost([]));
     controller.build();
@@ -183,7 +180,6 @@ describe("TreeController — flat mode (treeData off, existing behavior)", () =>
     it("finds a node nested arbitrarily deep (via a hierarchical build)", () => {
       const rows = [{ id: "leaf", path: ["a", "b", "c"] }];
       const host = makeHost(rows, {
-        treeData: true,
         getDataPath: (row) => /** @type {{ path: string[] }} */ (row).path,
       });
       const controller = new TreeController(host);
@@ -198,23 +194,13 @@ describe("TreeController — flat mode (treeData off, existing behavior)", () =>
   });
 });
 
-describe("TreeController — hierarchical build (treeData on)", () => {
-  it("stays flat when treeData is true but getDataPath is unset (no-op opt-in)", () => {
-    const rows = makeRows(2);
-    const controller = new TreeController(makeHost(rows, { treeData: true }));
-    const root = controller.build();
-
-    expect(root.children.size).to.equal(2);
-    expect(controller.getNode(0)?.isDataRow).to.be.true;
-  });
-
+describe("TreeController — hierarchical build (getDataPath set)", () => {
   it("auto-generates a synthetic group for a path segment with no row of its own", () => {
     const rows = [
       { id: "apple", path: ["Fruit", "Apple"] },
       { id: "orange", path: ["Fruit", "Orange"] },
     ];
     const host = makeHost(rows, {
-      treeData: true,
       getDataPath: (row) => /** @type {{ path: string[] }} */ (row).path,
     });
     const controller = new TreeController(host);
@@ -243,13 +229,9 @@ describe("TreeController — hierarchical build (treeData on)", () => {
     ];
     const getDataPath = (row) => /** @type {{ path: string[] }} */ (row).path;
 
-    const a = new TreeController(
-      makeHost(childFirst, { treeData: true, getDataPath }),
-    );
+    const a = new TreeController(makeHost(childFirst, { getDataPath }));
     a.build();
-    const b = new TreeController(
-      makeHost(parentFirst, { treeData: true, getDataPath }),
-    );
+    const b = new TreeController(makeHost(parentFirst, { getDataPath }));
     b.build();
 
     for (const controller of [a, b]) {
@@ -269,7 +251,6 @@ describe("TreeController — hierarchical build (treeData on)", () => {
       { id: "fruit", path: ["Fruit"], label: "All fruit" },
     ];
     const host = makeHost(rows, {
-      treeData: true,
       getDataPath: (row) => /** @type {{ path: string[] }} */ (row).path,
     });
     const controller = new TreeController(host);
@@ -290,7 +271,6 @@ describe("TreeController — hierarchical build (treeData on)", () => {
       { id: "fe", path: ["Engineering", "Frontend"], name: "Frontend" },
     ];
     const host = makeHost(rows, {
-      treeData: true,
       getDataPath: (row) => /** @type {{ path: string[] }} */ (row).path,
     });
     const controller = new TreeController(host);
@@ -305,7 +285,6 @@ describe("TreeController — hierarchical build (treeData on)", () => {
   it("warns and excludes a row whose getDataPath() returns an empty path", () => {
     const rows = [{ id: 1, path: [] }];
     const host = makeHost(rows, {
-      treeData: true,
       getDataPath: (row) => /** @type {{ path: string[] }} */ (row).path,
     });
     const controller = new TreeController(host);
@@ -321,7 +300,6 @@ describe("TreeController — hierarchical build (treeData on)", () => {
       { id: "second", path: ["Fruit"] },
     ];
     const host = makeHost(rows, {
-      treeData: true,
       getDataPath: (row) => /** @type {{ path: string[] }} */ (row).path,
     });
     const controller = new TreeController(host);
@@ -338,7 +316,7 @@ describe("TreeController — hierarchical build (treeData on)", () => {
         { id: "apple", path: ["Fruit", "Apple"] },
         { id: "orange", path: ["Fruit", "Orange"] },
       ],
-      { treeData: true, getDataPath },
+      { getDataPath },
     );
     const controller = new TreeController(host);
     controller.build();
@@ -364,7 +342,6 @@ describe("TreeController.visibleRows / sortedVisibleRows", () => {
       { id: "broccoli", path: ["Vegetable", "Broccoli"], qty: 3 },
     ];
     const host = makeHost(rows, {
-      treeData: true,
       getDataPath: (row) => /** @type {{ path: string[] }} */ (row).path,
     });
     const controller = new TreeController(host);
@@ -437,7 +414,6 @@ describe("TreeController cascade selection", () => {
       { id: "orange", path: ["Fruit", "Orange"] },
     ];
     const host = makeHost(rows, {
-      treeData: true,
       getDataPath: (row) => /** @type {{ path: string[] }} */ (row).path,
     });
     const controller = new TreeController(host);
@@ -516,7 +492,6 @@ describe("TreeController cascade selection", () => {
         { id: "alan", path: ["Engineering", "Backend", "Alan"] },
       ];
       const host = makeHost(rows, {
-        treeData: true,
         getDataPath: (row) => /** @type {{ path: string[] }} */ (row).path,
       });
       const controller = new TreeController(host);
@@ -646,51 +621,5 @@ describe("TreeController expand state", () => {
     controller.setExpanded(new Set(["b", "c"]));
 
     expect(host.treeDataExpandedGroupIds).to.deep.equal(new Set(["b", "c"]));
-  });
-});
-
-describe("md-data-grid tree wiring", () => {
-  it("builds a tree automatically when rows are set", async () => {
-    const el = /** @type {MdDataGrid} */ (
-      await fixture(html`<md-data-grid></md-data-grid>`)
-    );
-    el.rows = makeRows(3);
-    await el.updateComplete;
-
-    expect(el._tree.tree.key).to.equal(DATA_GRID_ROOT_GROUP_ID);
-    expect(el._tree.rows.map((row) => row.id)).to.deep.equal([0, 1, 2]);
-  });
-
-  it("rebuilds the tree when getRowId changes", async () => {
-    const el = /** @type {MdDataGrid} */ (
-      await fixture(html`<md-data-grid></md-data-grid>`)
-    );
-    el.rows = [{ uid: "a" }, { uid: "b" }];
-    el.getRowId = (row) => /** @type {{ uid: string }} */ (row).uid;
-    await el.updateComplete;
-
-    expect(el._tree.rows.map((row) => row.key)).to.deep.equal(["a", "b"]);
-  });
-
-  it("builds a hierarchical tree once treeData + getDataPath are both set", async () => {
-    const el = /** @type {MdDataGrid} */ (
-      await fixture(html`<md-data-grid></md-data-grid>`)
-    );
-    el.getDataPath = (row) => /** @type {{ path: string[] }} */ (row).path;
-    el.rows = [
-      { id: 1, path: ["Fruit", "Apple"] },
-      { id: 2, path: ["Fruit", "Orange"] },
-    ];
-    await el.updateComplete;
-
-    // getDataPath alone, without treeData, stays flat — decision #3.
-    expect(el._tree.tree.children.size).to.equal(2);
-
-    el.treeData = true;
-    await el.updateComplete;
-
-    expect(el._tree.tree.children.size).to.equal(1);
-    const fruit = [...el._tree.tree.children.values()][0];
-    expect(fruit.children.size).to.equal(2);
   });
 });

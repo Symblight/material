@@ -1,8 +1,8 @@
 import { expect, fixture, html } from "@open-wc/testing";
 
 import "../index.js";
-import { buildDataGridContext } from "../data-grid-build-context.js";
-/** @import { MdDataGrid } from "../data-grid.js" */
+import { buildDataGridContext } from "../base/data-grid-build-context.js";
+/** @import { MdDataGrid } from "../base/data-grid.js" */
 
 /** @param {number} count */
 function makeRows(count) {
@@ -32,7 +32,7 @@ describe("md-data-grid", () => {
       expect(el.shadowRoot).to.exist;
     });
 
-    it("renders one md-data-header-cell per column, in order", async () => {
+    it("renders one md-data-grid-header-cell per column, in order", async () => {
       const el = /** @type {MdDataGrid} */ (
         await fixture(html`<md-data-grid></md-data-grid>`)
       );
@@ -40,7 +40,9 @@ describe("md-data-grid", () => {
       el.rows = makeRows(3);
       await el.updateComplete;
 
-      const headers = el.shadowRoot.querySelectorAll("md-data-header-cell");
+      const headers = el.shadowRoot.querySelectorAll(
+        "md-data-grid-header-cell",
+      );
       expect(headers.length).to.equal(2);
       expect(/** @type {any} */ (headers[0]).column.field).to.equal("id");
       expect(/** @type {any} */ (headers[1]).column.field).to.equal("name");
@@ -65,7 +67,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const cell = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-cell")[1]
+        el.shadowRoot.querySelectorAll("md-data-grid-cell")[1]
       );
       await cell.updateComplete;
       expect(cell.shadowRoot.textContent).to.contain("#0");
@@ -95,13 +97,13 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[1]
       );
       await header.updateComplete;
       expect(header.getBoundingClientRect().width).to.be.at.most(60);
 
       const cell = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-cell")[1]
+        el.shadowRoot.querySelectorAll("md-data-grid-cell")[1]
       );
       await cell.updateComplete;
       expect(cell.getBoundingClientRect().width).to.be.at.most(60);
@@ -118,7 +120,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const cell = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-cell")
+        el.shadowRoot.querySelector("md-data-grid-cell")
       );
       await cell.updateComplete;
       expect(getComputedStyle(cell).height).to.equal("64px");
@@ -198,7 +200,7 @@ describe("md-data-grid", () => {
 
       const visible = el.getVisibleRows();
       const renderedRowIndexes = Array.from(
-        el.shadowRoot.querySelectorAll("md-data-cell"),
+        el.shadowRoot.querySelectorAll("md-data-grid-cell"),
       )
         .filter((/** @type {any} */ cell) => cell.colIndex === 0)
         .map((/** @type {any} */ cell) => cell.rowIndex);
@@ -270,7 +272,9 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const rowsBefore = [...el.shadowRoot.querySelectorAll(".data-grid__row")];
-      const cellsBefore = [...el.shadowRoot.querySelectorAll("md-data-cell")];
+      const cellsBefore = [
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
+      ];
       expect(rowsBefore.length).to.be.greaterThan(0);
 
       const viewport = el.shadowRoot.querySelector(".data-grid__viewport");
@@ -280,7 +284,9 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const rowsAfter = [...el.shadowRoot.querySelectorAll(".data-grid__row")];
-      const cellsAfter = [...el.shadowRoot.querySelectorAll("md-data-cell")];
+      const cellsAfter = [
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
+      ];
 
       // Every row/cell element from before the jump is still the exact
       // same DOM node afterward — rebound to a different row rather than
@@ -309,7 +315,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const firstCell = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-cell")
+        el.shadowRoot.querySelector("md-data-grid-cell")
       );
       firstCell.focus();
       await el.updateComplete;
@@ -393,7 +399,7 @@ describe("md-data-grid", () => {
       expect(el._effectiveRows.map((r) => r.id)).to.deep.equal([4, 5, 6, 7]);
     });
 
-    it("renders md-data-footer with the correct count text and prev/next disabled state", async () => {
+    it("renders md-data-grid-footer with the correct count text and prev/next disabled state", async () => {
       const el = /** @type {MdDataGrid} */ (
         await fixture(html`<md-data-grid></md-data-grid>`)
       );
@@ -403,7 +409,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const footer = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-footer")
+        el.shadowRoot.querySelector("md-data-grid-footer")
       );
       expect(footer).to.exist;
       await footer.updateComplete;
@@ -424,7 +430,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const footer = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-footer")
+        el.shadowRoot.querySelector("md-data-grid-footer")
       );
       await footer.updateComplete;
 
@@ -516,7 +522,7 @@ describe("md-data-grid", () => {
   });
 
   describe("hidePagination", () => {
-    it("hides md-data-footer while keeping pagination logic active", async () => {
+    it("hides md-data-grid-footer while keeping pagination logic active", async () => {
       const el = /** @type {MdDataGrid} */ (
         await fixture(html`<md-data-grid></md-data-grid>`)
       );
@@ -526,7 +532,7 @@ describe("md-data-grid", () => {
       el.hidePagination = true;
       await el.updateComplete;
 
-      expect(el.shadowRoot.querySelector("md-data-footer")).to.be.null;
+      expect(el.shadowRoot.querySelector("md-data-grid-footer")).to.be.null;
       expect(el._effectiveRows.map((r) => r.id)).to.deep.equal([4, 5, 6, 7]);
     });
 
@@ -563,7 +569,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const cells = /** @type {any[]} */ (
-        Array.from(el.shadowRoot.querySelectorAll("md-data-cell"))
+        Array.from(el.shadowRoot.querySelectorAll("md-data-grid-cell"))
       );
       const secondRowFirstCell = cells.find(
         (c) => c.rowIndex === 1 && c.colIndex === 0,
@@ -611,7 +617,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const cell = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-cell")
+        el.shadowRoot.querySelector("md-data-grid-cell")
       );
       await cell.updateComplete;
       cell.dispatchEvent(new Event("focusin"));
@@ -637,7 +643,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const cells = /** @type {any[]} */ (
-        Array.from(el.shadowRoot.querySelectorAll("md-data-cell"))
+        Array.from(el.shadowRoot.querySelectorAll("md-data-grid-cell"))
       );
       const firstCell = cells.find((c) => c.rowIndex === 0 && c.colIndex === 0);
       const secondCell = cells.find(
@@ -925,7 +931,9 @@ describe("md-data-grid", () => {
       el.rows = [];
       await el.updateComplete;
 
-      const headers = el.shadowRoot.querySelectorAll("md-data-header-cell");
+      const headers = el.shadowRoot.querySelectorAll(
+        "md-data-grid-header-cell",
+      );
       expect(headers.length).to.equal(2);
       expect(/** @type {any} */ (headers[0]).colSpan).to.equal(1);
     });
@@ -939,7 +947,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const headers = /** @type {any[]} */ (
-        Array.from(el.shadowRoot.querySelectorAll("md-data-header-cell"))
+        Array.from(el.shadowRoot.querySelectorAll("md-data-grid-header-cell"))
       );
       // "b"'s header cell is covered by "a"'s span and never renders.
       expect(headers.map((h) => h.column.field)).to.deep.equal(["a", "c"]);
@@ -956,7 +964,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-header-cell")
+        el.shadowRoot.querySelector("md-data-grid-header-cell")
       );
       await header.updateComplete;
       expect(header.style.gridColumn).to.equal("1 / span 3");
@@ -971,7 +979,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const headers = /** @type {any[]} */ (
-        Array.from(el.shadowRoot.querySelectorAll("md-data-header-cell"))
+        Array.from(el.shadowRoot.querySelectorAll("md-data-grid-header-cell"))
       );
       expect(headers.map((h) => h.column.field)).to.deep.equal(["a", "b"]);
       expect(headers[1].colSpan).to.equal(1); // clamped from 5 down to the 1 remaining column
@@ -992,7 +1000,7 @@ describe("md-data-grid", () => {
 
       // 2 rows * 2 cells each (colSpan swallows "b"'s cell, "c" is unaffected).
       const cells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
       ]);
       expect(cells.length).to.equal(4);
       expect(cells.map((c) => c.column.field)).to.deep.equal([
@@ -1014,7 +1022,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const cell = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-cell")
+        el.shadowRoot.querySelector("md-data-grid-cell")
       );
       await cell.updateComplete;
       expect(cell.column.field).to.equal("a");
@@ -1111,7 +1119,7 @@ describe("md-data-grid", () => {
   });
 
   describe("footer slot", () => {
-    it("falls back to the internal md-data-footer when nothing is slotted and pagination is active", async () => {
+    it("falls back to the internal md-data-grid-footer when nothing is slotted and pagination is active", async () => {
       const el = /** @type {MdDataGrid} */ (
         await fixture(html`<md-data-grid></md-data-grid>`)
       );
@@ -1124,7 +1132,7 @@ describe("md-data-grid", () => {
         el.shadowRoot.querySelector('slot[name="footer"]')
       );
       expect(slot.assignedElements()).to.have.lengthOf(0);
-      expect(slot.querySelector("md-data-footer")).to.exist;
+      expect(slot.querySelector("md-data-grid-footer")).to.exist;
     });
 
     it("renders nothing in the fallback when there's no paginationModel", async () => {
@@ -1138,10 +1146,10 @@ describe("md-data-grid", () => {
       const slot = /** @type {HTMLSlotElement} */ (
         el.shadowRoot.querySelector('slot[name="footer"]')
       );
-      expect(slot.querySelector("md-data-footer")).to.be.null;
+      expect(slot.querySelector("md-data-grid-footer")).to.be.null;
     });
 
-    it("replaces the internal md-data-footer with slot=footer content, even with pagination active", async () => {
+    it("replaces the internal md-data-grid-footer with slot=footer content, even with pagination active", async () => {
       const el = /** @type {MdDataGrid} */ (
         await fixture(html`
           <md-data-grid>
@@ -1160,7 +1168,7 @@ describe("md-data-grid", () => {
       const assigned = slot.assignedElements();
       expect(assigned).to.have.lengthOf(1);
       expect(assigned[0].textContent.trim()).to.equal("Custom footer");
-      // Deliberately not also asserting md-data-footer is absent from
+      // Deliberately not also asserting md-data-grid-footer is absent from
       // el.shadowRoot here — with paginationModel set, native <slot>
       // fallback-content semantics mean it's still constructed as an inert
       // child of the slot (just visually superseded by the real assigned
@@ -1214,26 +1222,26 @@ describe("md-data-grid", () => {
       el.paginationModel = { page: 0, pageSize: 10 };
       await el.updateComplete;
 
-      // md-data-cell also has no wrapper div — part="cell" lives directly
+      // md-data-grid-cell also has no wrapper div — part="cell" lives directly
       // on its own tag, so it needs no exportparts entry either.
-      const cell = el.shadowRoot.querySelector("md-data-cell");
+      const cell = el.shadowRoot.querySelector("md-data-grid-cell");
       expect(cell.getAttribute("part")).to.equal("cell");
       expect(cell.getAttribute("exportparts")).to.be.null;
-      // md-data-header-cell has no wrapper div — part="header-cell" lives
+      // md-data-grid-header-cell has no wrapper div — part="header-cell" lives
       // on its own tag (a light-DOM child of md-data-grid's shadow root),
       // so it's already reachable directly and needs no exportparts entry.
       // "separator" still lives one shadow root deeper (on
-      // md-data-column-separator's own tag) and does need forwarding.
-      const header = el.shadowRoot.querySelector("md-data-header-cell");
+      // md-data-grid-column-separator's own tag) and does need forwarding.
+      const header = el.shadowRoot.querySelector("md-data-grid-header-cell");
       expect(header.getAttribute("part")).to.equal("header-cell");
       expect(header.getAttribute("exportparts")).to.equal(
         "separator, title, sort-icon",
       );
-      // md-data-footer also has no wrapper div — part="footer" lives
+      // md-data-grid-footer also has no wrapper div — part="footer" lives
       // directly on its own tag. The other footer parts (count,
       // prev/next buttons, page-size select) are genuine children inside
       // its shadow root and still need forwarding.
-      const footer = el.shadowRoot.querySelector("md-data-footer");
+      const footer = el.shadowRoot.querySelector("md-data-grid-footer");
       expect(footer.getAttribute("part")).to.equal("footer");
       const footerExportparts = footer.getAttribute("exportparts");
       expect(footerExportparts).to.not.contain("footer,");
@@ -1243,14 +1251,14 @@ describe("md-data-grid", () => {
 
   describe("column resize", () => {
     /**
-     * md-data-column-separator is itself the interactive hit-area (no
+     * md-data-grid-column-separator is itself the interactive hit-area (no
      * wrapper div — pointer listeners and part live directly on the host).
      * @param {any} header
      */
     const getHandle = async (header) => {
       await header.updateComplete;
       const separator = header.shadowRoot.querySelector(
-        "md-data-column-separator",
+        "md-data-grid-column-separator",
       );
       await separator.updateComplete;
       return separator;
@@ -1296,7 +1304,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       const handle = await getHandle(header);
       expect(handle).to.exist;
@@ -1327,7 +1335,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1367,7 +1375,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1402,7 +1410,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1424,7 +1432,7 @@ describe("md-data-grid", () => {
       ];
       await el.updateComplete;
       const header2 = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       const handle2 = await getHandle(header2);
       pointerDown(handle2, 100);
@@ -1450,7 +1458,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1477,7 +1485,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1513,11 +1521,11 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       await header.updateComplete;
       const separator = header.shadowRoot.querySelector(
-        "md-data-column-separator",
+        "md-data-grid-column-separator",
       );
       // The divider itself still renders (every column boundary keeps its
       // line) — only the drag interaction is disabled.
@@ -1539,7 +1547,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const headers = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-header-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-header-cell"),
       ]);
       for (const header of headers) {
         const handle = await getHandle(header);
@@ -1559,7 +1567,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const headers = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-header-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-header-cell"),
       ]);
       const handle = await getHandle(headers[1]);
       expect(handle).to.exist;
@@ -1583,9 +1591,9 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       // colSpan collapses columns[1]'s own header cell, so the spanning
-      // header (columns[0]) is the first rendered md-data-header-cell.
+      // header (columns[0]) is the first rendered md-data-grid-header-cell.
       const spanningHeader = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       await spanningHeader.updateComplete;
       expect(spanningHeader.resizeColIndex).to.equal(1);
@@ -1617,7 +1625,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       const handle = await getHandle(header);
 
@@ -1659,38 +1667,7 @@ describe("md-data-grid", () => {
 
         // Header cells: [0] checkbox, [1] "A", [2] "B".
         const header = /** @type {any} */ (
-          el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
-        );
-        const handle = await getHandle(header);
-        pointerDown(handle, 100);
-        pointerMove(handle, 140);
-        pointerUp(handle, 140);
-        await el.updateComplete;
-
-        expect(el.columns[0].width).to.equal(140);
-        expect(el.columns[1].width).to.equal(60);
-      });
-
-      it("resizes the correct column when treeData prepends a grouping column (offset 1)", async () => {
-        const el = /** @type {MdDataGrid} */ (
-          await fixture(
-            html`<md-data-grid
-              tree-data
-              style="display:block; width: 400px;"
-            ></md-data-grid>`,
-          )
-        );
-        el.getDataPath = (row) => /** @type {any} */ (row).path;
-        el.columns = [
-          { field: "a", headerName: "A", width: 100 },
-          { field: "b", headerName: "B", width: 100 },
-        ];
-        el.rows = [{ id: 1, path: ["Root"], a: 1, b: 2 }];
-        await el.updateComplete;
-
-        // Header cells: [0] tree-toggle, [1] "A", [2] "B".
-        const header = /** @type {any} */ (
-          el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
+          el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[1]
         );
         const handle = await getHandle(header);
         pointerDown(handle, 100);
@@ -1720,41 +1697,7 @@ describe("md-data-grid", () => {
 
         // Header cells: [0] detail-toggle, [1] "A", [2] "B".
         const header = /** @type {any} */ (
-          el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
-        );
-        const handle = await getHandle(header);
-        pointerDown(handle, 100);
-        pointerMove(handle, 140);
-        pointerUp(handle, 140);
-        await el.updateComplete;
-
-        expect(el.columns[0].width).to.equal(140);
-        expect(el.columns[1].width).to.equal(60);
-      });
-
-      it("resizes the correct column with checkbox + treeData + master-detail all prepended together (offset 3)", async () => {
-        const el = /** @type {MdDataGrid} */ (
-          await fixture(
-            html`<md-data-grid
-              tree-data
-              checkbox-selection
-              style="display:block; width: 400px;"
-            ></md-data-grid>`,
-          )
-        );
-        el.getDataPath = (row) => /** @type {any} */ (row).path;
-        el.getDetailPanelContent = () => html`detail`;
-        el.columns = [
-          { field: "a", headerName: "A", width: 100 },
-          { field: "b", headerName: "B", width: 100 },
-        ];
-        el.rows = [{ id: 1, path: ["Root"], a: 1, b: 2 }];
-        await el.updateComplete;
-
-        // Header cells: [0] checkbox, [1] tree-toggle, [2] detail-toggle,
-        // [3] "A", [4] "B".
-        const header = /** @type {any} */ (
-          el.shadowRoot.querySelectorAll("md-data-header-cell")[3]
+          el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[1]
         );
         const handle = await getHandle(header);
         pointerDown(handle, 100);
@@ -1804,7 +1747,7 @@ describe("md-data-grid", () => {
         await el.updateComplete;
 
         const header = /** @type {any} */ (
-          el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+          el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
         );
         const handle = await getHandle(header);
 
@@ -1819,36 +1762,6 @@ describe("md-data-grid", () => {
         expect(buildDataGridContext(el).resizingColumnField).to.equal(
           undefined,
         );
-      });
-
-      it("reflects a prepended synthetic column's field too (not just user columns)", async () => {
-        const el = /** @type {MdDataGrid} */ (
-          await fixture(
-            html`<md-data-grid
-              tree-data
-              style="display:block; width: 400px;"
-            ></md-data-grid>`,
-          )
-        );
-        el.getDataPath = (row) => /** @type {any} */ (row).path;
-        el.columns = [
-          { field: "a", headerName: "A", width: 100 },
-          { field: "b", headerName: "B", width: 100 },
-        ];
-        el.rows = [{ id: 1, path: ["Root"], a: 1, b: 2 }];
-        await el.updateComplete;
-
-        // Header cell [0] is the auto-prepended tree-toggle column.
-        const header = /** @type {any} */ (
-          el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
-        );
-        const handle = await getHandle(header);
-
-        pointerDown(handle, 160);
-        expect(buildDataGridContext(el).resizingColumnField).to.equal(
-          "__tree_data_group__",
-        );
-        pointerUp(handle, 160);
       });
     });
   });
@@ -1871,7 +1784,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[1]
       );
       await header.updateComplete;
 
@@ -1943,7 +1856,7 @@ describe("md-data-grid", () => {
       );
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[1]
       );
       await header.updateComplete;
       header.dispatchEvent(new Event("click", { bubbles: true }));
@@ -1964,7 +1877,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[1]
       );
       await header.updateComplete;
       expect(header.hasAttribute("sortable")).to.be.false;
@@ -1985,7 +1898,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[1]
       );
       await header.updateComplete;
       expect(header.hasAttribute("sortable")).to.be.false;
@@ -2004,7 +1917,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const [idHeader, ratingHeader] = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-header-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-header-cell"),
       ]);
 
       el.sortModel = [{ field: "rating", sort: "asc" }];
@@ -2035,7 +1948,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[1]
       );
       await header.updateComplete;
       const icon = header.shadowRoot.querySelector(
@@ -2072,11 +1985,11 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       await header.updateComplete;
       const separator = header.shadowRoot.querySelector(
-        "md-data-column-separator",
+        "md-data-grid-column-separator",
       );
       await separator.updateComplete;
 
@@ -2137,7 +2050,9 @@ describe("md-data-grid", () => {
       await settle();
       await el.updateComplete;
 
-      expect(el.shadowRoot.querySelectorAll("md-data-cell").length).to.equal(4);
+      expect(
+        el.shadowRoot.querySelectorAll("md-data-grid-cell").length,
+      ).to.equal(4);
     });
 
     it("merges consecutive rows with an equal value into one taller owner cell", async () => {
@@ -2155,7 +2070,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const cells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
       ]);
       const groupCells = cells.filter((c) => c.column.field === "group");
       const nameCells = cells.filter((c) => c.column.field === "name");
@@ -2195,7 +2110,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const cells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
       ]);
       const coveredRowNameCell = cells.find(
         (c) => c.column.field === "name" && c.rowIndex === 1,
@@ -2225,7 +2140,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const owner = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-cell")
+        el.shadowRoot.querySelector("md-data-grid-cell")
       );
       await owner.updateComplete;
       const rect = owner.getBoundingClientRect();
@@ -2255,7 +2170,9 @@ describe("md-data-grid", () => {
       await settle();
       await el.updateComplete;
 
-      expect(el.shadowRoot.querySelectorAll("md-data-cell").length).to.equal(4);
+      expect(
+        el.shadowRoot.querySelectorAll("md-data-grid-cell").length,
+      ).to.equal(4);
     });
 
     it("a colSpan column is never row-spannable, even with equal adjacent values", async () => {
@@ -2277,7 +2194,7 @@ describe("md-data-grid", () => {
 
       // colSpan already collapses "name"'s own cell in every row; if "group"
       // were also row-spanning it would collapse further to 2 total.
-      const cells = el.shadowRoot.querySelectorAll("md-data-cell");
+      const cells = el.shadowRoot.querySelectorAll("md-data-grid-cell");
       expect(cells.length).to.equal(4); // 2 rows * (1 spanning "group" + 1 "extra")
     });
 
@@ -2305,7 +2222,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const scoreCells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
       ]).filter((c) => c.column.field === "score");
       expect(scoreCells.map((c) => [c.rowIndex, c.rowSpan])).to.deep.equal([
         [0, 2],
@@ -2328,7 +2245,9 @@ describe("md-data-grid", () => {
       await settle();
       await el.updateComplete;
 
-      expect(el.shadowRoot.querySelectorAll("md-data-cell").length).to.equal(6); // no merging yet — no two A's are adjacent
+      expect(
+        el.shadowRoot.querySelectorAll("md-data-grid-cell").length,
+      ).to.equal(6); // no merging yet — no two A's are adjacent
 
       el.sortModel = [{ field: "group", sort: "asc" }];
       await el.updateComplete;
@@ -2336,7 +2255,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const groupCells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
       ]).filter((c) => c.column.field === "group");
       // Sorted: A, A, B — the two A's are now adjacent and merge.
       expect(groupCells.map((c) => c.rowSpan)).to.deep.equal([2, 1]);
@@ -2359,7 +2278,7 @@ describe("md-data-grid", () => {
 
       // Page 1 has exactly one row — nothing for it to merge with.
       const groupCells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
       ]).filter((c) => c.column.field === "group");
       expect(groupCells.length).to.equal(1);
       expect(groupCells[0].rowSpan).to.equal(1);
@@ -2865,7 +2784,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const cells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
       ]);
       const idCells = cells.filter((c) => c.column.field === "id");
       const nameCells = cells.filter((c) => c.column.field === "name");
@@ -2899,7 +2818,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const cells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
       ]);
       const byRow = new Map(cells.map((c) => [c.rowIndex, c]));
 
@@ -2921,7 +2840,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const cell = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-cell")
+        el.shadowRoot.querySelector("md-data-grid-cell")
       );
       expect(cell.classList.contains("first-class")).to.be.true;
 
@@ -2948,7 +2867,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const headers = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-header-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-header-cell"),
       ]);
       expect(headers[0].classList.contains("id-header")).to.be.true;
       expect(headers[1].classList.contains("id-header")).to.be.false;
@@ -2969,7 +2888,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-header-cell")
+        el.shadowRoot.querySelector("md-data-grid-header-cell")
       );
       expect(header.classList.contains("header-for-id")).to.be.true;
     });
@@ -2985,7 +2904,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-header-cell")
+        el.shadowRoot.querySelector("md-data-grid-header-cell")
       );
       expect(header.classList.contains("first-class")).to.be.true;
 
@@ -3006,7 +2925,7 @@ describe("md-data-grid", () => {
      */
     async function getRowCheckbox(el, rowIndex) {
       const cells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
       ]);
       const cell = cells.find(
         (c) => c.rowIndex === rowIndex && c.colIndex === 0,
@@ -3022,7 +2941,7 @@ describe("md-data-grid", () => {
     /** @param {MdDataGrid} el */
     async function getHeaderCheckbox(el) {
       const headerCell = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       await headerCell.updateComplete;
       const checkboxHeader = headerCell.shadowRoot.querySelector(
@@ -3082,7 +3001,7 @@ describe("md-data-grid", () => {
       await el.updateComplete;
 
       const checkboxHeaderCell = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[0]
       );
       expect(checkboxHeaderCell.resizable).to.be.false;
       expect(checkboxHeaderCell.sortable).to.be.false;
@@ -3324,11 +3243,11 @@ describe("md-data-grid", () => {
       // Column "a" is merged index 1 (checkbox is 0) — its resize handle
       // lives on the header at that position.
       const header = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[1]
+        el.shadowRoot.querySelectorAll("md-data-grid-header-cell")[1]
       );
       await header.updateComplete;
       const handle = header.shadowRoot.querySelector(
-        "md-data-column-separator",
+        "md-data-grid-column-separator",
       );
       await handle.updateComplete;
 
@@ -3367,7 +3286,7 @@ describe("md-data-grid", () => {
 
   describe("master detail", () => {
     /**
-     * `md-data-detail-toggle-cell` itself always exists once the column is
+     * `md-data-grid-detail-toggle-cell` itself always exists once the column is
      * present — only its inner icon-button is conditionally omitted for a
      * row with no detail content. Returns that button, or `null`. Never
      * assert `.to.not.exist` against the cell/component itself instead of
@@ -3380,14 +3299,14 @@ describe("md-data-grid", () => {
      */
     async function getToggleButton(el, rowIndex) {
       const cells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
+        ...el.shadowRoot.querySelectorAll("md-data-grid-cell"),
       ]);
       const cell = cells.find(
         (c) => c.rowIndex === rowIndex && c.colIndex === 0,
       );
       await cell.updateComplete;
       const toggleCell = cell.shadowRoot.querySelector(
-        "md-data-detail-toggle-cell",
+        "md-data-grid-detail-toggle-cell",
       );
       await toggleCell.updateComplete;
       return toggleCell.shadowRoot.querySelector("md-icon-button");
@@ -3669,7 +3588,7 @@ describe("md-data-grid", () => {
 
       // Still exactly 5 data rows on the page — the 3 detail rows are extra,
       // not substitutes.
-      const cells = el.shadowRoot.querySelectorAll("md-data-cell");
+      const cells = el.shadowRoot.querySelectorAll("md-data-grid-cell");
       const dataRowIndices = new Set(
         [...cells].map((c) => /** @type {any} */ (c).rowIndex),
       );
@@ -3680,7 +3599,12 @@ describe("md-data-grid", () => {
     });
   });
 
-  describe("treeData", () => {
+  // The rest of treeData's behavior (hierarchical rows, cascading
+  // selection, column order, etc.) lives in data-grid-tree.spec.js against
+  // <md-data-grid-tree> — these two are base-class regression guards,
+  // asserting plain <md-data-grid> (no tree behavior at all after the
+  // split) stays completely unaffected.
+  describe("treeData (base class has none — see data-grid-tree.spec.js)", () => {
     const TREE_COLUMNS = [{ field: "name", headerName: "Name" }];
 
     /** Every path segment has a real backing row — no synthetic groups. */
@@ -3691,60 +3615,7 @@ describe("md-data-grid", () => {
       { id: "sales", path: ["Sales"], name: "Sales" },
     ];
 
-    /** "Fruit"/"Vegetable" have no row of their own — auto-generated. */
-    const SYNTHETIC_GROUP_ROWS = [
-      { id: "apple", path: ["Fruit", "Apple"], name: "Apple", qty: 2 },
-      { id: "orange", path: ["Fruit", "Orange"], name: "Orange", qty: 1 },
-      { id: "broccoli", path: ["Vegetable", "Broccoli"], name: "Broccoli" },
-    ];
-
-    /**
-     * @param {MdDataGrid} el
-     * @param {number} rowIndex
-     * @param {number} [colIndex]
-     */
-    async function getToggleCell(el, rowIndex, colIndex = 0) {
-      const cells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
-      ]);
-      const cell = cells.find(
-        (c) => c.rowIndex === rowIndex && c.colIndex === colIndex,
-      );
-      await cell.updateComplete;
-      const toggleCell = cell.shadowRoot.querySelector(
-        "md-data-tree-toggle-cell",
-      );
-      await toggleCell.updateComplete;
-      return toggleCell;
-    }
-
-    /**
-     * @param {MdDataGrid} el
-     * @param {number} rowIndex
-     */
-    async function getRowCheckbox(el, rowIndex) {
-      const cells = /** @type {any[]} */ ([
-        ...el.shadowRoot.querySelectorAll("md-data-cell"),
-      ]);
-      const cell = cells.find(
-        (c) => c.rowIndex === rowIndex && c.colIndex === 0,
-      );
-      await cell.updateComplete;
-      const checkboxCell = cell.shadowRoot.querySelector(
-        "md-data-grid-checkbox-cell",
-      );
-      await checkboxCell.updateComplete;
-      return checkboxCell.shadowRoot.querySelector("md-checkbox");
-    }
-
-    /**
-     * @param {HTMLElement} el
-     */
-    function click(el) {
-      el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    }
-
-    it("is off by default — no grouping column rendered", async () => {
+    it("no grouping column rendered — there's no tree column def on the base class at all", async () => {
       const el = /** @type {MdDataGrid} */ (
         await fixture(html`<md-data-grid></md-data-grid>`)
       );
@@ -3755,7 +3626,7 @@ describe("md-data-grid", () => {
       expect(el._columns).to.deep.equal(TREE_COLUMNS);
     });
 
-    it("getDataPath alone, without treeData, stays flat — every row renders at the top level", async () => {
+    it("getDataPath alone, without the tree subclass, has no effect — every row renders at the top level", async () => {
       const el = /** @type {MdDataGrid} */ (
         await fixture(html`<md-data-grid></md-data-grid>`)
       );
@@ -3768,335 +3639,6 @@ describe("md-data-grid", () => {
       expect(
         el.shadowRoot.querySelectorAll(".data-grid__row"),
       ).to.have.lengthOf(REAL_ROWS.length);
-    });
-
-    it("prepends GRID_TREE_DATA_GROUPING_COL_DEF without mutating the public columns array", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(html`<md-data-grid tree-data></md-data-grid>`)
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = REAL_ROWS;
-      await el.updateComplete;
-
-      expect(el._columns.length).to.equal(TREE_COLUMNS.length + 1);
-      expect(el._columns[0].field).to.equal("__tree_data_group__");
-      expect(el._columns.slice(1)).to.deep.equal(TREE_COLUMNS);
-      expect(el.columns).to.deep.equal(TREE_COLUMNS);
-    });
-
-    it("column order is checkbox, tree-toggle, detail-toggle, then user columns", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(
-          html`<md-data-grid tree-data checkbox-selection></md-data-grid>`,
-        )
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.getDetailPanelContent = () => html`detail`;
-      el.columns = TREE_COLUMNS;
-      el.rows = REAL_ROWS;
-      await el.updateComplete;
-
-      expect(el._columns.map((c) => c.field)).to.deep.equal([
-        "__check__",
-        "__tree_data_group__",
-        "__detail_panel_toggle__",
-        "name",
-      ]);
-    });
-
-    it("autoGroupColumnDef overrides headerName without redefining the column", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(html`<md-data-grid tree-data></md-data-grid>`)
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.autoGroupColumnDef = { headerName: "Org unit" };
-      el.columns = TREE_COLUMNS;
-      el.rows = REAL_ROWS;
-      await el.updateComplete;
-
-      const headerCell = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
-      );
-      expect(headerCell.column.headerName).to.equal("Org unit");
-    });
-
-    it("is collapsed by default — only top-level rows render", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(html`<md-data-grid tree-data></md-data-grid>`)
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = REAL_ROWS;
-      await el.updateComplete;
-
-      // "Engineering" and "Sales" — "Frontend"/"Backend" stay hidden until
-      // "Engineering" is expanded.
-      expect(
-        el.shadowRoot.querySelectorAll(".data-grid__row"),
-      ).to.have.lengthOf(2);
-    });
-
-    it("expanding a group reveals its children, indented one level further", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(html`<md-data-grid tree-data></md-data-grid>`)
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = REAL_ROWS;
-      await el.updateComplete;
-
-      const rootToggle = await getToggleCell(el, 0);
-      const button = rootToggle.shadowRoot.querySelector("md-icon-button");
-      click(button);
-      await el.updateComplete;
-
-      expect(
-        el.shadowRoot.querySelectorAll(".data-grid__row"),
-      ).to.have.lengthOf(4);
-      const childToggle = await getToggleCell(el, 1);
-      expect(childToggle.style.paddingInlineStart).to.contain("* 1");
-      expect(rootToggle.style.paddingInlineStart).to.contain("* 0");
-    });
-
-    it("auto-generates a synthetic group row for a path segment with no row of its own", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(html`<md-data-grid tree-data></md-data-grid>`)
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = SYNTHETIC_GROUP_ROWS;
-      await el.updateComplete;
-
-      // "Fruit" and "Vegetable" — neither is a real row, both auto-generated.
-      expect(
-        el.shadowRoot.querySelectorAll(".data-grid__row"),
-      ).to.have.lengthOf(2);
-      const fruitToggle = await getToggleCell(el, 0);
-      expect(fruitToggle.shadowRoot.textContent).to.contain("Fruit");
-      expect(fruitToggle.shadowRoot.querySelector("md-icon-button")).to.exist;
-    });
-
-    it("sortModel sorts within each group, never disturbing the hierarchy", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(html`<md-data-grid tree-data></md-data-grid>`)
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = [{ field: "qty", headerName: "Qty" }];
-      el.rows = SYNTHETIC_GROUP_ROWS;
-      el.sortModel = [{ field: "qty", sort: "asc" }];
-      await el.updateComplete;
-
-      const fruitId = el._tree.getNode("apple")?.parent?.key;
-      el.treeDataExpandedGroupIds = new Set([fruitId]);
-      await el.updateComplete;
-
-      // Orange (qty 1) sorts before Apple (qty 2) within Fruit; Fruit
-      // itself still comes before Vegetable (both compare equal — neither
-      // has a qty — so insertion order wins at that level).
-      const cells = [...el.shadowRoot.querySelectorAll("md-data-cell")].filter(
-        (c) => /** @type {any} */ (c).colIndex === 0,
-      );
-      const order = cells.map(
-        (c) => /** @type {any} */ (c).row.groupingKey ?? c.row.name,
-      );
-      expect(order).to.deep.equal(["Fruit", "Orange", "Apple", "Vegetable"]);
-    });
-
-    it("checking a group's checkbox cascades to select every descendant", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(
-          html`<md-data-grid tree-data checkbox-selection></md-data-grid>`,
-        )
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = REAL_ROWS;
-      await el.updateComplete;
-
-      const checkbox = await getRowCheckbox(el, 0); // "Engineering"
-      click(checkbox);
-      await el.updateComplete;
-
-      expect([...el.rowSelectionModel].sort()).to.deep.equal([
-        "be",
-        "eng",
-        "fe",
-      ]);
-    });
-
-    it("a group's checkbox shows indeterminate when only some descendants are selected", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(
-          html`<md-data-grid tree-data checkbox-selection></md-data-grid>`,
-        )
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = REAL_ROWS;
-      el.rowSelectionModel = new Set(["fe"]);
-      await el.updateComplete;
-
-      const checkbox = await getRowCheckbox(el, 0); // "Engineering"
-      expect(checkbox.indeterminate).to.be.true;
-      expect(checkbox.checked).to.be.false;
-    });
-
-    it("checking every child individually (never the parent's own checkbox) still selects the parent, not just indeterminate", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(
-          html`<md-data-grid tree-data checkbox-selection></md-data-grid>`,
-        )
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = REAL_ROWS; // "Engineering" -> "Frontend"/"Backend" (leaves)
-      await el.updateComplete;
-
-      // Expand "Engineering" so its children are actually rendered — the
-      // tree-toggle column is colIndex 1 here (checkbox column is 0).
-      const rootToggle = await getToggleCell(el, 0, 1);
-      click(rootToggle.shadowRoot.querySelector("md-icon-button"));
-      await el.updateComplete;
-
-      // Check "Frontend" and "Backend" individually — never Engineering's
-      // own checkbox.
-      click(await getRowCheckbox(el, 1)); // "Frontend"
-      await el.updateComplete;
-      click(await getRowCheckbox(el, 2)); // "Backend"
-      await el.updateComplete;
-
-      expect([...el.rowSelectionModel].sort()).to.deep.equal([
-        "be",
-        "eng",
-        "fe",
-      ]);
-
-      const engCheckbox = await getRowCheckbox(el, 0);
-      expect(engCheckbox.checked).to.be.true;
-      expect(engCheckbox.indeterminate).to.be.false;
-    });
-
-    it("unchecking one child after full selection drops the parent back out", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(
-          html`<md-data-grid tree-data checkbox-selection></md-data-grid>`,
-        )
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = REAL_ROWS;
-      await el.updateComplete;
-
-      const rootToggle = await getToggleCell(el, 0, 1);
-      click(rootToggle.shadowRoot.querySelector("md-icon-button"));
-      await el.updateComplete;
-
-      click(await getRowCheckbox(el, 1)); // "Frontend"
-      await el.updateComplete;
-      click(await getRowCheckbox(el, 2)); // "Backend"
-      await el.updateComplete;
-      expect(el.rowSelectionModel.has("eng")).to.be.true;
-
-      click(await getRowCheckbox(el, 1)); // uncheck "Frontend"
-      await el.updateComplete;
-
-      expect(el.rowSelectionModel.has("fe")).to.be.false;
-      expect(el.rowSelectionModel.has("eng")).to.be.false;
-      const engCheckbox = await getRowCheckbox(el, 0);
-      expect(engCheckbox.indeterminate).to.be.true;
-      expect(engCheckbox.checked).to.be.false;
-    });
-
-    it("checking a synthetic group's checkbox cascades to its descendants too", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(
-          html`<md-data-grid tree-data checkbox-selection></md-data-grid>`,
-        )
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = SYNTHETIC_GROUP_ROWS;
-      await el.updateComplete;
-
-      const checkbox = await getRowCheckbox(el, 0); // "Fruit" (synthetic)
-      click(checkbox);
-      await el.updateComplete;
-
-      const fruitId = el._tree.getNode("apple")?.parent?.key;
-      expect([...el.rowSelectionModel].sort()).to.deep.equal(
-        [fruitId, "apple", "orange"].sort(),
-      );
-    });
-
-    it("a plain click on a synthetic group's row selects it (identity via the tree node's own key, not getRowId)", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(html`<md-data-grid tree-data></md-data-grid>`)
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = SYNTHETIC_GROUP_ROWS;
-      await el.updateComplete;
-
-      const rows = el.shadowRoot.querySelectorAll(".data-grid__row");
-      click(/** @type {HTMLElement} */ (rows[0])); // "Fruit"
-      await el.updateComplete;
-
-      const fruitId = el._tree.getNode("apple")?.parent?.key;
-      expect([...el.rowSelectionModel]).to.deep.equal([fruitId]);
-    });
-
-    it("select-all spans the whole tree — real rows and synthetic groups alike, regardless of collapse state", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(
-          html`<md-data-grid tree-data checkbox-selection></md-data-grid>`,
-        )
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = SYNTHETIC_GROUP_ROWS;
-      await el.updateComplete;
-
-      const headerCell = /** @type {any} */ (
-        el.shadowRoot.querySelectorAll("md-data-header-cell")[0]
-      );
-      await headerCell.updateComplete;
-      const checkboxHeader = headerCell.shadowRoot.querySelector(
-        "md-data-grid-checkbox-header",
-      );
-      await checkboxHeader.updateComplete;
-      const selectAll = checkboxHeader.shadowRoot.querySelector("md-checkbox");
-      click(selectAll);
-      await el.updateComplete;
-
-      const fruitId = el._tree.getNode("apple")?.parent?.key;
-      const vegId = el._tree.getNode("broccoli")?.parent?.key;
-      expect([...el.rowSelectionModel].sort()).to.deep.equal(
-        [fruitId, vegId, "apple", "orange", "broccoli"].sort(),
-      );
-    });
-
-    it("pagination counts only currently-visible (collapse-aware) rows", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(html`<md-data-grid tree-data></md-data-grid>`)
-      );
-      el.getDataPath = (row) => /** @type {any} */ (row).path;
-      el.columns = TREE_COLUMNS;
-      el.rows = REAL_ROWS; // 2 top-level rows while collapsed
-      el.paginationModel = { page: 0, pageSize: 10 };
-      await el.updateComplete;
-
-      expect(
-        el.shadowRoot.querySelectorAll(".data-grid__row"),
-      ).to.have.lengthOf(2);
-
-      const rootToggle = await getToggleCell(el, 0);
-      click(rootToggle.shadowRoot.querySelector("md-icon-button"));
-      await el.updateComplete;
-
-      expect(
-        el.shadowRoot.querySelectorAll(".data-grid__row"),
-      ).to.have.lengthOf(4);
     });
   });
 });

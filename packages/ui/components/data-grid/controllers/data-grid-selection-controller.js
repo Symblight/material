@@ -11,7 +11,16 @@
  * interactive cell content.
  */
 export class RowSelectionController {
-  /** @param {import("../data-grid.js").MdDataGrid} host */
+  /**
+   * `getDataPath` isn't part of `MdDataGrid` itself (it's
+   * `MdDataGridTree`-only, see `data-grid-tree.js`) — declared here as an
+   * optional intersection rather than widening the import, since this
+   * controller is shared by both and only ever reads it defensively
+   * (see `_rowId()` below).
+   * @param {import("../base/data-grid.js").MdDataGrid & {
+   *   getDataPath?: (row: Record<string, unknown>) => PropertyKey[] | undefined,
+   * }} host
+   */
   constructor(host) {
     this.host = host;
 
@@ -38,20 +47,21 @@ export class RowSelectionController {
 
   /**
    * Row identity for selection purposes — `host.getRowId(row)` normally,
-   * but under `treeData` the rendered `row` is a tree node (real fields
-   * merged on for a real row, or nothing at all for a synthetic
-   * auto-generated group), so identity comes from the node's own `.key`
-   * instead: `TreeController` already resolved that to `getRowId(row)` for
-   * a real row and a deterministic synthetic id otherwise, so this is
-   * simply correct for a real row too, not just a synthetic one — never
-   * calls the consumer's `getRowId` on an object it was never meant to see.
+   * but under `MdDataGridTree` with `getDataPath` set the rendered `row` is
+   * a tree node (real fields merged on for a real row, or nothing at all
+   * for a synthetic auto-generated group), so identity comes from the
+   * node's own `.key` instead: `TreeController` already resolved that to
+   * `getRowId(row)` for a real row and a deterministic synthetic id
+   * otherwise, so this is simply correct for a real row too, not just a
+   * synthetic one — never calls the consumer's `getRowId` on an object it
+   * was never meant to see.
    * @private
    * @param {Record<string, unknown>} row
    * @returns {PropertyKey}
    */
   _rowId(row) {
     const host = this.host;
-    return host.treeData && host.getDataPath
+    return host.getDataPath
       ? /** @type {PropertyKey} */ (
           /** @type {{ key: PropertyKey }} */ (row).key
         )

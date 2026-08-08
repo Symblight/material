@@ -3,8 +3,8 @@ import { customElement } from "lit/decorators.js";
 
 import styles from "./data-grid-column.css?inline";
 
-/** @typedef {import("../../data-grid.js").DataGridColumn} DataGridColumn */
-/** @typedef {import("../../data-grid.js").DataGridCellParams} DataGridCellParams */
+/** @typedef {import("../../base/data-grid.js").DataGridColumn} DataGridColumn */
+/** @typedef {import("../../base/data-grid.js").DataGridCellParams} DataGridCellParams */
 
 /**
  * Converter for `resizable`/`sortable`/`rowSpannable` — these need THREE

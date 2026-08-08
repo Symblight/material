@@ -7,13 +7,13 @@
  * array, so a future multi-sort mode wouldn't be a breaking API change).
  */
 export class SortController {
-  /** @param {import("../data-grid.js").MdDataGrid} host */
+  /** @param {import("../base/data-grid.js").MdDataGrid} host */
   constructor(host) {
     this.host = host;
   }
 
   /**
-   * @param {import("../data-grid.js").DataGridColumn} column
+   * @param {import("../base/data-grid.js").DataGridColumn} column
    * @returns {boolean}
    */
   isSortable(column) {
@@ -105,7 +105,7 @@ export class SortController {
   /**
    * @private
    * @param {Record<string, unknown>} row
-   * @param {import("../data-grid.js").DataGridColumn | undefined} column
+   * @param {import("../base/data-grid.js").DataGridColumn | undefined} column
    * @param {string} field
    * @returns {unknown}
    */

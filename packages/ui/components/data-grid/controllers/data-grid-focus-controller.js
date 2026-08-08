@@ -2,7 +2,7 @@
  * Owns focus/roving-tabindex state for `md-data-grid` — the `cell` region
  * and the `columnHeader` region, mutually exclusive: `focusedRegion` says
  * which one currently holds the grid's single Tab stop, so exactly one
- * `md-data-cell`/`md-data-header-cell` has `tabindex="0"` at a time no
+ * `md-data-grid-cell`/`md-data-grid-header-cell` has `tabindex="0"` at a time no
  * matter which region it's in, per the WAI-ARIA APG composite-widget rule.
  * Deliberately split out from `KeyboardNavController`, which only
  * *interprets* key events and calls into this controller to actually move
@@ -11,7 +11,7 @@
  */
 export class FocusController {
   /**
-   * @param {import("../data-grid.js").MdDataGrid} host
+   * @param {import("../base/data-grid.js").MdDataGrid} host
    * @param {{ onFocusChange?: () => void }} [options] `onFocusChange` fires
    *   synchronously from `setCellFocus()`/`clearCellFocus()`, before
    *   `host.requestUpdate()`. Focus state isn't a Lit reactive property (it
@@ -96,7 +96,7 @@ export class FocusController {
     if (!this.canTakeFocus()) return;
     const cells =
       /** @type {NodeListOf<import("../components/cell/data-grid-cell.js").MdDataCell>} */ (
-        this.host.renderRoot.querySelectorAll("md-data-cell")
+        this.host.renderRoot.querySelectorAll("md-data-grid-cell")
       );
     for (const cell of cells) {
       if (cell.rowIndex === rowIndex && cell.colIndex === colIndex) {
@@ -129,7 +129,7 @@ export class FocusController {
     if (!this.canTakeFocus()) return;
     const headers =
       /** @type {NodeListOf<import("../components/header-cell/data-grid-header-cell.js").MdDataHeaderCell>} */ (
-        this.host.renderRoot.querySelectorAll("md-data-header-cell")
+        this.host.renderRoot.querySelectorAll("md-data-grid-header-cell")
       );
     for (const header of headers) {
       if (header.colIndex === colIndex) {

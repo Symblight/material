@@ -1,7 +1,7 @@
 import { expect, fixture, html } from "@open-wc/testing";
 
 import "../index.js";
-/** @import { MdDataGrid } from "../data-grid.js" */
+/** @import { MdDataGrid } from "../base/data-grid.js" */
 
 /** @param {number} count */
 function makeRows(count) {
@@ -12,10 +12,10 @@ const COLUMNS = [{ field: "id" }];
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-// md-data-footer always renders inside an md-data-grid (it consumes
+// md-data-grid-footer always renders inside an md-data-grid (it consumes
 // dataGridContext), so we exercise it through a minimal real grid rather than
 // hand-rolling a synthetic context provider.
-describe("md-data-footer", () => {
+describe("md-data-grid-footer", () => {
   it("renders the '{first}–{last} of {total}' count text", async () => {
     const el = /** @type {MdDataGrid} */ (
       await fixture(html`<md-data-grid></md-data-grid>`)
@@ -26,7 +26,7 @@ describe("md-data-footer", () => {
     await el.updateComplete;
 
     const footer = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-footer")
+      el.shadowRoot.querySelector("md-data-grid-footer")
     );
     await footer.updateComplete;
 
@@ -44,7 +44,7 @@ describe("md-data-footer", () => {
     await el.updateComplete;
 
     const footer = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-footer")
+      el.shadowRoot.querySelector("md-data-grid-footer")
     );
     await footer.updateComplete;
     const prev = footer.shadowRoot.querySelector('[part="footer-prev"]');
@@ -63,7 +63,7 @@ describe("md-data-footer", () => {
     await el.updateComplete;
 
     const footer = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-footer")
+      el.shadowRoot.querySelector("md-data-grid-footer")
     );
     await footer.updateComplete;
     const next = footer.shadowRoot.querySelector('[part="footer-next"]');
@@ -82,7 +82,7 @@ describe("md-data-footer", () => {
     await el.updateComplete;
 
     const footer = /** @type {any} */ (
-      el.shadowRoot.querySelector("md-data-footer")
+      el.shadowRoot.querySelector("md-data-grid-footer")
     );
     await footer.updateComplete;
     const prev = footer.shadowRoot.querySelector('[part="footer-prev"]');
@@ -101,7 +101,7 @@ describe("md-data-footer", () => {
       await el.updateComplete;
 
       const footer = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-footer")
+        el.shadowRoot.querySelector("md-data-grid-footer")
       );
       await footer.updateComplete;
 
@@ -135,7 +135,7 @@ describe("md-data-footer", () => {
       await el.updateComplete;
 
       const footer = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-footer")
+        el.shadowRoot.querySelector("md-data-grid-footer")
       );
       await footer.updateComplete;
       const select = /** @type {any} */ (
@@ -158,7 +158,7 @@ describe("md-data-footer", () => {
       await el.updateComplete;
 
       const footer = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-footer")
+        el.shadowRoot.querySelector("md-data-grid-footer")
       );
       await footer.updateComplete;
       const select = /** @type {any} */ (
@@ -184,7 +184,7 @@ describe("md-data-footer", () => {
       await el.updateComplete;
 
       const footer = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-footer")
+        el.shadowRoot.querySelector("md-data-grid-footer")
       );
       await footer.updateComplete;
       const select = /** @type {any} */ (
@@ -214,7 +214,7 @@ describe("md-data-footer", () => {
       await el.updateComplete;
 
       const footer = /** @type {any} */ (
-        el.shadowRoot.querySelector("md-data-footer")
+        el.shadowRoot.querySelector("md-data-grid-footer")
       );
       await footer.updateComplete;
       expect(footer.shadowRoot.querySelector('[part="page-size-select"]')).to.be

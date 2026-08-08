@@ -61,7 +61,7 @@ export class DetailPanelController {
 
   /**
    * Whether `row` should get a toggle icon at all — read by
-   * `md-data-detail-toggle-cell` for every rendered row, expanded or not.
+   * `md-data-grid-detail-toggle-cell` for every rendered row, expanded or not.
    * @param {Record<string, unknown>} row
    * @param {number} rowIndex
    * @returns {boolean}

@@ -14,7 +14,7 @@ md-icon-button::part(button) {
   block-size: 32px;
 }
 
-.tree-toggle-cell__button {
+.data-grid-tree-toggle-cell__button {
   flex: none;
 }
 
@@ -22,31 +22,31 @@ md-icon-button::part(button) {
    children, nothing to expand) so a leaf's label still lines up with an
    expandable sibling's label one level up, rather than starting flush
    left. */
-.tree-toggle-cell__spacer {
+.data-grid-tree-toggle-cell__spacer {
   display: inline-block;
   inline-size: 32px;
   block-size: 32px;
   flex: none;
 }
 
-.tree-toggle-cell__icon {
+.data-grid-tree-toggle-cell__icon {
   transition: transform 150ms ease;
 }
 
 /* Applied for one render when this cell's DOM node gets recycled to a
    different row by the virtualizer's slot-keyed `repeat()` (see
-   md-data-tree-toggle-cell's `willUpdate()`) — without it, the rotate
+   md-data-grid-tree-toggle-cell's `willUpdate()`) — without it, the rotate
    transition above plays for the *new* row's expand state as if the user
    had just clicked its toggle. */
-.tree-toggle-cell__icon_no-transition {
+.data-grid-tree-toggle-cell__icon_no-transition {
   transition: none;
 }
 
-.tree-toggle-cell__icon_expanded {
+.data-grid-tree-toggle-cell__icon_expanded {
   transform: rotate(90deg);
 }
 
-.tree-toggle-cell__label {
+.data-grid-tree-toggle-cell__label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

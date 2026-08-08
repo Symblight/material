@@ -1,29 +1,28 @@
 import { expect, fixture, html } from "@open-wc/testing";
 
-import "../index.js";
-import { buildDataGridContext } from "../data-grid-build-context.js";
-/** @import { MdDataGrid } from "../data-grid.js" */
+import "../tree/data-grid-tree.js";
+import { buildDataGridContext } from "../base/data-grid-build-context.js";
+/** @import { MdDataGridTree } from "../tree/data-grid-tree.js" */
 
-// md-data-tree-toggle-cell always renders inside an md-data-grid (it
-// consumes dataGridContext) — exercised through a minimal real grid, same
-// convention as md-data-cell.spec.js. `_columns` auto-prepends
+// md-data-grid-tree-toggle-cell always renders inside an md-data-grid-tree
+// (it consumes dataGridContext) — exercised through a minimal real grid,
+// same convention as md-data-grid-cell.spec.js. `_columns` auto-prepends
 // GRID_TREE_DATA_GROUPING_COL_DEF once `treeData`+`getDataPath` are both
 // set — `columns` itself is left as the user's own (empty here); label
 // overrides go through `autoGroupColumnDef`, the same escape hatch a real
 // consumer would use. Every row used here has a real backing row at every
 // path level, since a synthetic (auto-generated) group has no row to
 // actually render this way.
-describe("md-data-tree-toggle-cell", () => {
+describe("md-data-grid-tree-toggle-cell", () => {
   /**
    * @param {Record<string, unknown>[]} rows
-   * @param {Partial<import("../data-grid.js").DataGridColumn>} [autoGroupColumnDef]
+   * @param {Partial<import("../base/data-grid.js").DataGridColumn>} [autoGroupColumnDef]
    */
   async function makeTreeGrid(rows, autoGroupColumnDef) {
-    const el = /** @type {MdDataGrid} */ (
-      await fixture(html`<md-data-grid></md-data-grid>`)
+    const el = /** @type {MdDataGridTree} */ (
+      await fixture(html`<md-data-grid-tree></md-data-grid-tree>`)
     );
     el.getDataPath = (row) => /** @type {{ path: string[] }} */ (row).path;
-    el.treeData = true;
     if (autoGroupColumnDef) el.autoGroupColumnDef = autoGroupColumnDef;
     el.rows = rows;
     await el.updateComplete;
@@ -31,15 +30,15 @@ describe("md-data-tree-toggle-cell", () => {
   }
 
   /**
-   * @param {MdDataGrid} el
+   * @param {MdDataGridTree} el
    * @param {number} rowIndex
    */
   async function getToggleCell(el, rowIndex) {
     const cell = /** @type {any} */ (
-      el.shadowRoot.querySelectorAll("md-data-cell")[rowIndex]
+      el.shadowRoot.querySelectorAll("md-data-grid-cell")[rowIndex]
     );
     const toggleCell = cell.shadowRoot.querySelector(
-      "md-data-tree-toggle-cell",
+      "md-data-grid-tree-toggle-cell",
     );
     await toggleCell.updateComplete;
     return toggleCell;
@@ -79,8 +78,9 @@ describe("md-data-tree-toggle-cell", () => {
 
     const rootCell = await getToggleCell(el, 0);
     expect(rootCell.shadowRoot.querySelector("md-icon-button")).to.exist;
-    expect(rootCell.shadowRoot.querySelector(".tree-toggle-cell__spacer")).to
-      .not.exist;
+    expect(
+      rootCell.shadowRoot.querySelector(".data-grid-tree-toggle-cell__spacer"),
+    ).to.not.exist;
 
     // Collapsed by default — expand to reach the leaf row.
     el.treeDataExpandedGroupIds = new Set(["eng"]);
@@ -88,8 +88,9 @@ describe("md-data-tree-toggle-cell", () => {
 
     const leafCell = await getToggleCell(el, 1);
     expect(leafCell.shadowRoot.querySelector("md-icon-button")).to.not.exist;
-    expect(leafCell.shadowRoot.querySelector(".tree-toggle-cell__spacer")).to
-      .exist;
+    expect(
+      leafCell.shadowRoot.querySelector(".data-grid-tree-toggle-cell__spacer"),
+    ).to.exist;
   });
 
   it("indents deeper rows further via padding-inline-start", async () => {
@@ -161,11 +162,10 @@ describe("md-data-tree-toggle-cell", () => {
   // testable directly against a synthetic id, though.
   describe("context getters against a synthetic group (not yet renderable)", () => {
     it("getGroupingKey/hasChildren/getRowDepth resolve correctly for an auto-generated group", async () => {
-      const el = /** @type {MdDataGrid} */ (
-        await fixture(html`<md-data-grid></md-data-grid>`)
+      const el = /** @type {MdDataGridTree} */ (
+        await fixture(html`<md-data-grid-tree></md-data-grid-tree>`)
       );
       el.getDataPath = (row) => /** @type {{ path: string[] }} */ (row).path;
-      el.treeData = true;
       el.rows = [
         { id: "apple", path: ["Fruit", "Apple"] },
         { id: "orange", path: ["Fruit", "Orange"] },

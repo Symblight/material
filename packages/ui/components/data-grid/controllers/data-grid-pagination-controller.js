@@ -5,7 +5,7 @@
  * on page change is wired up by the host, not here.
  */
 export class PaginationController {
-  /** @param {import("../data-grid.js").MdDataGrid} host */
+  /** @param {import("../base/data-grid.js").MdDataGrid} host */
   constructor(host) {
     this.host = host;
   }

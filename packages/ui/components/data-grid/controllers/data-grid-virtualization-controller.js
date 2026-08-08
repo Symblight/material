@@ -14,7 +14,7 @@ const AUTO_ESTIMATED_ROW_HEIGHT = 52;
  * branch of its own master-detail-aware `estimateSize` — keeps the one
  * definition of "how tall is an ordinary row" in one place rather than
  * duplicating the `rowHeight` ternary a second time at the call site.
- * @param {import("../data-grid.js").MdDataGrid} host
+ * @param {import("../base/data-grid.js").MdDataGrid} host
  * @returns {number}
  */
 export function estimateRowHeight(host) {
@@ -42,7 +42,7 @@ export function estimateRowHeight(host) {
  * has no `@scroll` handler of its own to wire up at all.
  */
 export class VirtualizationController {
-  /** @param {import("../data-grid.js").MdDataGrid} host */
+  /** @param {import("../base/data-grid.js").MdDataGrid} host */
   constructor(host) {
     this.host = host;
 
@@ -304,7 +304,7 @@ export class VirtualizationController {
    * stops growing at the cap rather than growing then clamping. Any sibling
    * column left as a bare `1fr` still absorbs whatever space this one isn't
    * using.
-   * @param {import("../data-grid.js").DataGridColumn[]} columns
+   * @param {import("../base/data-grid.js").DataGridColumn[]} columns
    */
   gridTemplateColumns(columns) {
     return columns

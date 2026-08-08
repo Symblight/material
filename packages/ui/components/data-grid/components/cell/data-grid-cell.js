@@ -2,25 +2,25 @@ import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 import { ContextConsumer } from "@lit/context";
 
-import { dataGridContext } from "../../data-grid-context.js";
+import { dataGridContext } from "../../base/data-grid-context.js";
 import styles from "./data-grid-cell.css?inline";
 
-/** @typedef {import("../../data-grid.js").DataGridColumn} DataGridColumn */
+/** @typedef {import("../../base/data-grid.js").DataGridColumn} DataGridColumn */
 
 /**
- * @tag md-data-cell
+ * @tag md-data-grid-cell
  * @summary One body cell of an `md-data-grid`. The host itself is the
  * rendered/focusable cell (no wrapper div) — `part`/`role` are set once in
  * the constructor, an explicit `grid-column` (from `colIndex`/`colSpan`,
  * not left to auto-placement) is kept in sync in `willUpdate()` (mirrors
- * `md-data-header-cell`), and `tabindex`/the align/highlighted/row-span
+ * `md-data-grid-header-cell`), and `tabindex`/the align/highlighted/row-span
  * modifiers are kept in sync in `updated()`
  * (focus state and `rowHeight` both come from a context subscription rather
  * than a declared reactive property, so they can't be targeted by
  * `willUpdate()`'s `changed` map). Composed internally by the grid — not
  * intended to be used standalone.
  */
-@customElement("md-data-cell")
+@customElement("md-data-grid-cell")
 export class MdDataCell extends LitElement {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {

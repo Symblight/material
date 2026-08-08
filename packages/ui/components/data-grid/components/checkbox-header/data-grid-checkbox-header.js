@@ -4,7 +4,7 @@ import { ContextConsumer } from "@lit/context";
 
 import "../../../checkbox/checkbox.js";
 
-import { dataGridContext } from "../../data-grid-context.js";
+import { dataGridContext } from "../../base/data-grid-context.js";
 import styles from "./data-grid-checkbox-header.css?inline";
 
 /**
