@@ -25,6 +25,8 @@ import Select from "./select/select.js";
 import IconButton from "./icon-button/icon-button.js";
 import Icon from "./icon/icon.js";
 import { MdSkeleton } from "./skeleton/skeleton.js";
+import { MdSegmentedButton } from "./segmented-button/segmented-button.js";
+import { MdSegmentedButtonGroup } from "./segmented-button/segmented-button-group.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -55,5 +57,7 @@ declare global {
     "md-icon-button": IconButton;
     "md-icon": Icon;
     "md-skeleton": MdSkeleton;
+    "md-segmented-button": MdSegmentedButton;
+    "md-segmented-button-group": MdSegmentedButtonGroup;
   }
 }

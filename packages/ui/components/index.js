@@ -17,3 +17,4 @@ import "./fab/fab.js";
 import "./switch/switch.js";
 import "./tabs/index.js";
 import "./select/index.js";
+import "./segmented-button/index.js";

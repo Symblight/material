@@ -19,7 +19,7 @@ export class BaseButton extends LitElement {
     /** The href link for the button. */
     href: { type: String, attribute: true },
     /** Indicates whether the button is disabled. */
-    disabled: { type: Boolean, attribute: true },
+    disabled: { type: Boolean, attribute: true, reflect: true },
     /** Tracks whether the button slot has content. */
     slotHasContent: { state: true },
     /** Whether an icon is slotted into the button. */
