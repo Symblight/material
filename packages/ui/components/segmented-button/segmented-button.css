@@ -1,0 +1,174 @@
+:host {
+  /* ── Token overrides exposed to consumers ── */
+  --md-segmented-button-label-color: var(--md-sys-color-on-surface);
+  --md-segmented-button-icon-color: var(--md-sys-color-on-surface-variant);
+  --md-segmented-button-selected-container-color: var(
+    --md-sys-color-secondary-container
+  );
+  --md-segmented-button-selected-label-color: var(
+    --md-sys-color-on-secondary-container
+  );
+  --md-segmented-button-selected-icon-color: var(
+    --md-sys-color-on-secondary-container
+  );
+  --md-segmented-button-divider-color: var(--md-sys-color-outline);
+  --md-segmented-button-focus-color: var(--md-sys-color-secondary);
+  --md-segmented-button-inline-space: 1rem;
+  --md-segmented-button-block-space: 0.625rem;
+  --md-segmented-button-label-text-font: var(
+    --md-sys-typescale-label-large-font,
+    inherit
+  );
+  --md-segmented-button-label-text-size: var(
+    --md-sys-typescale-label-large-size,
+    0.875rem
+  );
+  --md-segmented-button-label-text-weight: var(
+    --md-sys-typescale-label-large-weight,
+    500
+  );
+  --md-segmented-button-label-text-line-height: var(
+    --md-sys-typescale-label-large-line-height,
+    1.25rem
+  );
+  --md-segmented-button-motion-easing: var(
+    --md-sys-motion-easing-standard,
+    ease
+  );
+
+  /* ── base-button.css contract vars ── */
+  --_container-space-left: var(--md-segmented-button-inline-space);
+  --_container-space-right: var(--md-segmented-button-inline-space);
+  --_container-space-top: var(--md-segmented-button-block-space);
+  --_container-space-bottom: var(--md-segmented-button-block-space);
+  --_container-border-size: 0;
+  --_container-border-color: transparent;
+  --_container-pressed-state-color: color-mix(
+    in oklch,
+    var(--md-segmented-button-icon-color),
+    transparent 88%
+  );
+
+  display: inline-flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+}
+
+:host([selected]) {
+  --md-segmented-button-container-color: var(
+    --md-segmented-button-selected-container-color
+  );
+  --md-segmented-button-label-color: var(
+    --md-segmented-button-selected-label-color
+  );
+  --md-segmented-button-icon-color: var(
+    --md-segmented-button-selected-icon-color
+  );
+}
+
+:host([disabled]) {
+  --md-segmented-button-label-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 62%
+  );
+  --md-segmented-button-icon-color: color-mix(
+    in oklch,
+    var(--md-sys-color-on-surface),
+    transparent 62%
+  );
+  --md-segmented-button-divider-color: color-mix(
+    in oklch,
+    var(--md-sys-color-outline),
+    transparent 62%
+  );
+}
+
+.segmented-button {
+  flex: 1 1 auto;
+  gap: 0.5rem;
+  background-color: var(--md-segmented-button-container-color, transparent);
+  color: var(--md-segmented-button-label-color);
+  transition: background-color 200ms var(--md-segmented-button-motion-easing);
+}
+
+/* The first segment skips its own divider — the group's outer border already closes that edge. */
+:host(:not(:first-child)) .segmented-button {
+  border-inline-start: 0.063rem solid var(--md-segmented-button-divider-color);
+}
+
+.segmented-button:focus-visible {
+  outline: 3px solid var(--md-segmented-button-focus-color);
+  outline-offset: -3px;
+  z-index: 1;
+}
+
+.segmented-button_disabled {
+  cursor: default;
+}
+
+.segmented-button_icon {
+  --_container-space-left: 1rem;
+}
+
+.segmented-button__ripple {
+  --md-ripple-hover-color: var(--md-segmented-button-icon-color);
+  --md-ripple-pressed-color: var(--md-segmented-button-icon-color);
+}
+
+/* ── Icon / checkmark ── */
+.segmented-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--md-segmented-button-icon-size);
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.segmented-button__icon_empty {
+  display: none;
+}
+
+.segmented-button__check {
+  display: none;
+}
+
+.segmented-button__icon-slot {
+  display: inline-flex;
+}
+
+:host([selected]) .segmented-button__check {
+  display: block;
+}
+
+:host([selected]) .segmented-button__icon-slot {
+  display: none;
+}
+
+::slotted([slot="icon"]) {
+  display: block;
+  font-size: var(--md-segmented-button-icon-size);
+}
+
+/* ── Label ── */
+.segmented-button__label {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--md-segmented-button-label-text-font);
+  font-size: var(--md-segmented-button-label-text-size);
+  font-weight: var(--md-segmented-button-label-text-weight);
+  line-height: var(--md-segmented-button-label-text-line-height);
+  white-space: nowrap;
+}
+
+.segmented-button__label_hidden {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segmented-button {
+    transition: none;
+  }
+}

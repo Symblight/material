@@ -51,7 +51,9 @@ import "@symblight/wc-material/text-field";
 | Progress (circular) | `@symblight/wc-material/progress-circular` | `<md-progress-circular>`                                                          | [README](./components/progress-circular/README.md) |
 | Progress (linear)   | `@symblight/wc-material/progress-linear`   | `<md-progress-linear>`                                                            | [README](./components/progress-linear/README.md)   |
 | Radio Button        | `@symblight/wc-material/radio-button`      | `<md-radio-button>`                                                               | [README](./components/radio-button/README.md)      |
+| Segmented Button    | `@symblight/wc-material`                   | `<md-segmented-button-group>`, `<md-segmented-button>`                            | [README](./components/segmented-button/README.md)  |
 | Select              | `@symblight/wc-material/select`            | `<md-select>`                                                                     | [README](./components/select/README.md)            |
+| Skeleton            | `@symblight/wc-material/skeleton`          | `<md-skeleton>`                                                                   | [README](./components/skeleton/README.md)          |
 | Switch              | `@symblight/wc-material/switch`            | `<md-switch>`                                                                     | [README](./components/switch/README.md)            |
 | Text Field          | `@symblight/wc-material/text-field`        | `<md-text-field>`                                                                 | [README](./components/text-field/README.md)        |
 

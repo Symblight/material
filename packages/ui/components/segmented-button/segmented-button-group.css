@@ -1,0 +1,31 @@
+:host {
+  --md-segmented-button-group-outline-color: var(--md-sys-color-outline);
+  --md-segmented-button-group-shape: var(--md-sys-shape-corner-full, 6.25rem);
+  --md-segmented-button-group-height: 2.5rem;
+
+  display: inline-flex;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+:host([disabled]) {
+  --md-segmented-button-group-outline-color: color-mix(
+    in oklch,
+    var(--md-sys-color-outline),
+    transparent 62%
+  );
+}
+
+.segmented-button-group {
+  display: inline-flex;
+  width: 100%;
+  min-height: var(--md-segmented-button-group-height);
+  box-sizing: border-box;
+  border-radius: var(--md-segmented-button-group-shape);
+  border: 0.063rem solid var(--md-segmented-button-group-outline-color);
+  overflow: hidden;
+}
+
+::slotted(md-segmented-button) {
+  border-radius: 0;
+}

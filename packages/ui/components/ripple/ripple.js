@@ -114,6 +114,10 @@ export default class MdRipple extends LitElement {
 
   /** @param {Event} event */
   async handleEvent(event) {
+    /** @type {HTMLElement & { disabled?: boolean }} */
+    const control = /** @type {any} */ (event.currentTarget);
+    if (control?.disabled) return;
+
     if (event.type === "pointerdown") {
       this.createRipple(/** @type {MouseEvent} */ (event));
     }
