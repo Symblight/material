@@ -16,3 +16,4 @@ import "./avatar/avatar.js";
 import "./fab/fab.js";
 import "./switch/switch.js";
 import "./tabs/index.js";
+import "./select/index.js";
