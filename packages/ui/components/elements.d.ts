@@ -24,6 +24,7 @@ import MdSwitch from "./switch/switch.js";
 import Select from "./select/select.js";
 import IconButton from "./icon-button/icon-button.js";
 import Icon from "./icon/icon.js";
+import { MdSkeleton } from "./skeleton/skeleton.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -53,5 +54,6 @@ declare global {
     "md-select": Select;
     "md-icon-button": IconButton;
     "md-icon": Icon;
+    "md-skeleton": MdSkeleton;
   }
 }

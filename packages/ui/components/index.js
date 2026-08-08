@@ -11,6 +11,7 @@ import "./text-field/text-field.js";
 import "./dialog/dialog.js";
 import "./checkbox/checkbox.js";
 import "./radio-button/radio-button.js";
+import "./skeleton/skeleton.js";
 import "./avatar/avatar.js";
 import "./fab/fab.js";
 import "./switch/switch.js";

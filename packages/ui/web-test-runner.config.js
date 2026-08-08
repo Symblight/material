@@ -81,6 +81,25 @@ function cssInlinePlugin() {
   };
 }
 
+// @tanstack/virtual-core reads `process.env.NODE_ENV` (only for gating
+// optional debug-profiling keys) — fine under a bundler that replaces it at
+// build time (Vite, webpack), but there's no Node `process` global in the
+// browser here, so it throws as soon as the module runs. Stub it out to a
+// literal wherever it's served from, same shape as the other custom plugins
+// below.
+function processEnvShimPlugin() {
+  return {
+    name: "process-env-shim",
+    async transform(context) {
+      if (!context.path.includes("@tanstack/virtual-core")) return;
+      if (!context.body.includes("process.env.NODE_ENV")) return;
+      return {
+        body: context.body.replaceAll("process.env.NODE_ENV", '"production"'),
+      };
+    },
+  };
+}
+
 export default {
   nodeResolve: true,
   coverage: true,
@@ -104,6 +123,11 @@ export default {
     },
   },
   files: ["components/**/*.spec.js", "!node_modules/", "!.wireit/"],
-  plugins: [svgRawPlugin(), cssInlinePlugin(), babelDecoratorsPlugin()],
+  plugins: [
+    svgRawPlugin(),
+    cssInlinePlugin(),
+    babelDecoratorsPlugin(),
+    processEnvShimPlugin(),
+  ],
   browsers: [playwrightLauncher({ product: "chromium" })],
 };
