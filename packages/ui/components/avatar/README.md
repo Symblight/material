@@ -21,6 +21,13 @@ A Material Design 3 avatar web component built with Lit.
 | `src`    | `src`     | `string` | URL of the avatar image      |
 | `size`   | `size`    | `number` | Size hint (see CSS variable) |
 
+## Parts
+
+| Part       | Element    | Description                                          |
+| ---------- | ---------- | ---------------------------------------------------- |
+| `image`    | `<image>`  | The slotted photo (SVG `<image>`)                    |
+| `fallback` | `<circle>` | The gray fallback circle shown when `src` is omitted |
+
 ## CSS Custom Properties
 
 | Variable                   | Default                                                                         | Description                                                                                     |

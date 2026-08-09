@@ -25,6 +25,13 @@ A Material Design 3 radio button web component built with Lit.
 | `name`          | `name`          | `string`  | `""`    | Groups radio buttons together         |
 | `id`            | `id`            | `string`  | `""`    | Element id                            |
 
+## Parts
+
+| Part    | Element   | Description                              |
+| ------- | --------- | ---------------------------------------- |
+| `input` | `<input>` | The native (visually hidden) radio input |
+| `box`   | `<span>`  | The visible radio circle                 |
+
 ## CSS Custom Properties
 
 | Variable                      | Default                                  | Description                        |
@@ -33,6 +40,27 @@ A Material Design 3 radio button web component built with Lit.
 | `--md-radio-border-color`     | `var(--md-sys-color-on-surface-variant)` | Border / ring color of the control |
 
 > `--md-radio-border-color` falls back to the MD3 system token `--md-sys-color-on-surface-variant`. Include the theme CSS or define the token manually.
+
+## Grouping
+
+Two or more `md-radio` elements are mutually exclusive (selecting one unchecks the others) when they share the same `name`. Grouping is resolved as follows, in order:
+
+1. The nearest common `<fieldset>` ancestor.
+2. If there's no `<fieldset>`, the nearest common `<form>` ancestor.
+3. If there's neither, the radios' shared root (the `Document`, or the enclosing `ShadowRoot` if they live inside one) — so two `md-radio` elements with the same `name` still exclude each other correctly without needing any wrapper element, matching native `<input type="radio">` semantics.
+
+`required` validation, arrow-key navigation, and roving tabindex (see below) are all scoped to this same group.
+
+## Keyboard navigation
+
+Radios sharing a `name` within a group behave as a single tab stop, matching native `<input type="radio">` groups:
+
+- Only one radio in the group is in the tab order at a time (`tabindex="0"`) — the checked radio, or the first enabled radio if none is checked. The rest are `tabindex="-1"`.
+- Arrow Up/Left and Arrow Down/Right move focus **and** selection to the previous/next enabled radio in the group, wrapping at the ends and skipping `disabled` radios.
+
+## Validation
+
+A `required` group reports invalid (`validity.valid === false`) as soon as it renders if nothing is checked — it does not wait for user interaction. Selecting any radio in the group (even a non-`required` one) clears the `required` error for every radio sharing that `name`.
 
 ## Examples
 

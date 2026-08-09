@@ -12,15 +12,25 @@
   border-width: 0;
   z-index: 0;
   color: inherit;
-  border-radius: inherit;
-  border: var(--_container-border-size) solid var(--_container-border-color);
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
+  border: var(--_btn-container-border-size) solid
+    var(--_btn-container-border-color);
   text-decoration: none;
-  padding-inline: var(--_container-space-left) var(--_container-space-right);
-  padding-block: var(--_container-space-top) var(--_container-space-bottom);
+  padding-inline: var(--_btn-container-space-left)
+    var(--_btn-container-space-right);
+  padding-block: var(--_btn-container-space-top)
+    var(--_btn-container-space-bottom);
   margin: 0;
   appearance: none;
   font: inherit;
+  font-family: var(--_btn-container-font-family, inherit);
+  font-size: var(--_btn-container-font-size, 0.875rem);
+  font-weight: var(--_btn-container-font-weight, 500);
   line-height: inherit;
+  letter-spacing: var(--_btn-container-letter-spacing, 0.00625rem);
   background: none;
   overflow: hidden;
 }
@@ -31,7 +41,7 @@
   z-index: -1;
   inset: 0;
   content: "";
-  border: 0.063rem solid var(--_container-border-color);
+  border: 0.063rem solid var(--_btn-container-border-color);
 }
 
 .button_disabled {
@@ -56,6 +66,6 @@
 }
 
 .button__ripple {
-  --md-ripple-pressed-color: var(--_container-pressed-state-color);
+  --md-ripple-pressed-color: var(--_btn-container-pressed-state-color);
   --md-ripple-pressed-opacity: 1;
 }

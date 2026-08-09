@@ -13,7 +13,7 @@
 
 .select__block {
   height: 1.5rem;
-  line-height: 1.5rem;
+  line-height: var(--md-text-field-line-height, 1.5rem);
   width: 100%;
 }
 

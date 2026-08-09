@@ -5,9 +5,17 @@
 
   --md-icon-button-rounded-border-radius: 2rem;
 
+  --md-icon-button-border-radius: 100%;
+  --md-icon-button-border-start-start-radius: var(
+    --md-icon-button-border-radius
+  );
+  --md-icon-button-border-start-end-radius: var(--md-icon-button-border-radius);
+  --md-icon-button-border-end-start-radius: var(--md-icon-button-border-radius);
+  --md-icon-button-border-end-end-radius: var(--md-icon-button-border-radius);
+
   --md-icon-button-border-color: transparent;
 
-  --md-icon-button-font-size: 0.875rem;
+  --md-icon-button-font-size: 1.5rem;
   --md-icon-button-border-size: 0.063rem;
 
   --md-icon-button-pressed-state-color: transparent;
@@ -18,7 +26,10 @@
   position: relative;
   inline-size: fit-content;
   cursor: pointer;
-  border-radius: 100%;
+  border-start-start-radius: var(--md-icon-button-border-start-start-radius);
+  border-start-end-radius: var(--md-icon-button-border-start-end-radius);
+  border-end-start-radius: var(--md-icon-button-border-end-start-radius);
+  border-end-end-radius: var(--md-icon-button-border-end-end-radius);
 
   background-color: var(--md-icon-button-background-color);
 }
@@ -41,7 +52,10 @@
   z-index: 0;
   color: inherit;
 
-  border-radius: inherit;
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
   border: var(--md-icon-button-border-size) solid
     var(--md-icon-button-border-color);
   text-decoration: none;
@@ -51,7 +65,7 @@
   color: var(--md-icon-button-foreground-color);
   line-height: 1.125rem;
   padding: calc(0.5rem - 0.063rem);
-  font-size: 1.5rem;
+  font-size: var(--md-icon-button-font-size);
   background: none;
 }
 

@@ -122,7 +122,7 @@ export class MdTabs extends LitElement {
         @tab-activate=${this._handleTabActivate}
       >
         <slot @slotchange=${this._handleSlotChange}></slot>
-        <div class="tabs__divider"></div>
+        <div part="divider" class="tabs__divider"></div>
       </div>
     `;
   }

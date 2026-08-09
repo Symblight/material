@@ -81,6 +81,14 @@ Groups related content and actions on a single surface. Supports three visual va
 | `disabled`    | `disabled`    | `boolean`                              | `false`      | Disables the card (only has effect when `interactive` is set)            |
 | `href`        | `href`        | `string`                               | —            | Renders the surface as an `<a>` element (only when `interactive` is set) |
 
+## Parts
+
+| Part      | Element          | Description                                                         |
+| --------- | ---------------- | ------------------------------------------------------------------- |
+| `surface` | `<div>` or `<a>` | The interactive surface (only meaningful when `interactive` is set) |
+| `content` | `<div>`          | Wrapper around all slotted content                                  |
+| `media`   | `<div>`          | Container for the `media` slot                                      |
+
 ## CSS Custom Properties
 
 | Variable                                | Default                                     | Description                        |

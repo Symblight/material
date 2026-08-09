@@ -251,6 +251,7 @@ export class MdSegmentedButtonGroup extends LitElement {
   render() {
     return html`
       <div
+        part="group"
         class="segmented-button-group"
         role=${this.multiselect ? "group" : "radiogroup"}
         aria-label=${this.label ? this.label : nothing}

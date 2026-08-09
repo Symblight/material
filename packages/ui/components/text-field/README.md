@@ -29,6 +29,18 @@ A Material Design 3 text field web component built with Lit.
 | `prefixText`  | `prefix-text` | `string`                 | `""`       | Static text shown before the input value |
 | `suffixText`  | `suffix-text` | `string`                 | `""`       | Static text shown after the input value  |
 
+## Parts
+
+| Part        | Element                   | Description                                     |
+| ----------- | ------------------------- | ----------------------------------------------- |
+| `box`       | outer `<div>`             | The overall field container                     |
+| `wrapper`   | inner `<div>`             | Wraps the label + input row                     |
+| `input`     | `<input>` or `<textarea>` | The native form control                         |
+| `label`     | `<label>`                 | The floating label (filled or outlined variant) |
+| `prefix`    | `<div>`                   | Leading icon/slot container                     |
+| `suffix`    | `<div>`                   | Trailing icon/slot container                    |
+| `help-text` | `<div>`                   | Supporting/error text container below the field |
+
 ## CSS Custom Properties
 
 ### Colors

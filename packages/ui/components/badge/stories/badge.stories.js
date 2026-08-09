@@ -21,7 +21,7 @@ function BadgeStory({ value = "", max = 999 }) {
 
 /** @type {import("@storybook/web-components").Meta<MdBadge>} */
 const meta = {
-  title: "Badge",
+  title: "Components/Badge",
   component: "md-badge",
   tags: ["autodocs"],
   render: BadgeStory,

@@ -6,5 +6,5 @@
 :host {
   --md-chip-label-color: var(--md-sys-color-on-surface);
   --md-chip-icon-color: var(--md-sys-color-primary);
-  --_ripple-color: var(--md-sys-color-on-surface);
+  --_chip-ripple-color: var(--md-sys-color-on-surface);
 }

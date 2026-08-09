@@ -25,24 +25,36 @@ A Material Design 3 button web component built with Lit.
 | `type`     | `type`     | `"button" \| "submit" \| "reset"`                           | `"button"` | Native button type                 |
 | `form`     | `form`     | `string`                                                    | —          | Associates button with a form `id` |
 
+## Parts
+
+| Part     | Element              | Description                  |
+| -------- | -------------------- | ---------------------------- |
+| `button` | `<button>` or `<a>`  | The interactive root element |
+| `label`  | `<span>`             | The label content wrapper    |
+| `icon`   | `<slot name="icon">` | The icon slot                |
+
 ## CSS Custom Properties
 
-| Variable                            | Default         | Description                        |
-| ----------------------------------- | --------------- | ---------------------------------- |
-| `--md-button-foreground-color`      | `inherit`       | Text / icon color                  |
-| `--md-button-background-color`      | `transparent`   | Background fill                    |
-| `--md-button-border-color`          | `transparent`   | Border color                       |
-| `--md-button-border-size`           | `0`             | Border width                       |
-| `--md-button-border-radius`         | `6.25rem`       | Corner radius                      |
-| `--md-button-font-size`             | `1rem`          | Label font size                    |
-| `--md-button-inline-start-space`    | `1.5rem`        | Leading (left) padding             |
-| `--md-button-inline-end-space`      | `1.5rem`        | Trailing (right) padding           |
-| `--md-button-block-start-space`     | `0.625rem`      | Top padding                        |
-| `--md-button-block-end-space`       | `0.625rem`      | Bottom padding                     |
-| `--md-button-pressed-state-color`   | `transparent`   | Ripple/state-layer color on press  |
-| `--md-button-pressed-state-opacity` | `12%`           | Opacity of the pressed state layer |
-| `--md-button-hovered-state-opacity` | `8%`            | Opacity of the hover state layer   |
-| `--md-elevation-level`              | _(per variant)_ | Material elevation level (0–5)     |
+| Variable                                | Default                          | Description                                                            |
+| --------------------------------------- | -------------------------------- | ---------------------------------------------------------------------- |
+| `--md-button-foreground-color`          | `inherit`                        | Text / icon color                                                      |
+| `--md-button-background-color`          | `transparent`                    | Background fill                                                        |
+| `--md-button-border-color`              | `transparent`                    | Border color                                                           |
+| `--md-button-border-size`               | `0`                              | Border width                                                           |
+| `--md-button-border-radius`             | `6.25rem`                        | Corner radius (all four corners, unless overridden individually below) |
+| `--md-button-border-start-start-radius` | `var(--md-button-border-radius)` | Logical start/start corner radius (top-left in LTR)                    |
+| `--md-button-border-start-end-radius`   | `var(--md-button-border-radius)` | Logical start/end corner radius (top-right in LTR)                     |
+| `--md-button-border-end-start-radius`   | `var(--md-button-border-radius)` | Logical end/start corner radius (bottom-left in LTR)                   |
+| `--md-button-border-end-end-radius`     | `var(--md-button-border-radius)` | Logical end/end corner radius (bottom-right in LTR)                    |
+| `--md-button-font-size`                 | `1rem`                           | Label font size                                                        |
+| `--md-button-inline-start-space`        | `1.5rem`                         | Leading (left) padding                                                 |
+| `--md-button-inline-end-space`          | `1.5rem`                         | Trailing (right) padding                                               |
+| `--md-button-block-start-space`         | `0.625rem`                       | Top padding                                                            |
+| `--md-button-block-end-space`           | `0.625rem`                       | Bottom padding                                                         |
+| `--md-button-pressed-state-color`       | `transparent`                    | Ripple/state-layer color on press                                      |
+| `--md-button-pressed-state-opacity`     | `12%`                            | Opacity of the pressed state layer                                     |
+| `--md-button-hovered-state-opacity`     | `8%`                             | Opacity of the hover state layer                                       |
+| `--md-elevation-level`                  | _(per variant)_                  | Material elevation level (0–5)                                         |
 
 ## Examples
 
@@ -90,6 +102,24 @@ A Material Design 3 button web component built with Lit.
 ```html
 <md-button class="compact-btn">Compact</md-button>
 ```
+
+### Per-corner radius (logical properties)
+
+Each corner can be overridden independently using the logical (writing-mode-aware) corner variables — useful for joining a button to an adjacent element, e.g. squaring off the corners on one side:
+
+```css
+.joined-start {
+  /* squares off the corners on the leading (start) side */
+  --md-button-border-start-start-radius: 0;
+  --md-button-border-end-start-radius: 0;
+}
+```
+
+```html
+<md-button class="joined-start">Joined</md-button>
+```
+
+`--md-button-border-radius` still sets all four corners at once; the per-corner variables default to it and only need to be set when a corner must diverge from the rest.
 
 ### Submit button inside a form
 

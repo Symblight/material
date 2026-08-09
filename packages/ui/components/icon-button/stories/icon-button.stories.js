@@ -32,7 +32,7 @@ function IconButton({
 
 /** @type {import("@storybook/web-components").Meta<IconButtonProps>} */
 const meta = {
-  title: "Icon Button",
+  title: "Components/Icon Button",
   component: "md-icon-button",
   tags: ["autodocs"],
   render: IconButton,

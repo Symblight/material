@@ -7,7 +7,7 @@ import "../../button/button.js";
 
 /** @type {import("@storybook/web-components").Meta<MdCard>} */
 const meta = {
-  title: "Card",
+  title: "Components/Card",
   component: "md-card",
   tags: ["autodocs"],
   argTypes: {

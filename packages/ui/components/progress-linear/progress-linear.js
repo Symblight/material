@@ -43,11 +43,15 @@ export default class MdProgressLinear extends LitElement {
     if (this._indeterminate) {
       return html`
         <div class="progress-linear">
-          <div class="progress-linear__track"></div>
+          <div part="track" class="progress-linear__track"></div>
           <div
+            part="bar"
             class="progress-linear__bar progress-linear__bar_secondary"
           ></div>
-          <div class="progress-linear__bar progress-linear__bar_primary"></div>
+          <div
+            part="bar"
+            class="progress-linear__bar progress-linear__bar_primary"
+          ></div>
         </div>
       `;
     }
@@ -55,10 +59,19 @@ export default class MdProgressLinear extends LitElement {
     const clampedValue = Math.min(1, Math.max(0, this.value ?? 0));
 
     return html`
-      <div class="progress-linear" style="--_progress:${clampedValue}">
-        <div class="progress-linear__track"></div>
-        <div class="progress-linear__stop-indicator"></div>
-        <div class="progress-linear__active-indicator"></div>
+      <div
+        class="progress-linear"
+        style="--_progress-linear-value:${clampedValue}"
+      >
+        <div part="track" class="progress-linear__track"></div>
+        <div
+          part="stop-indicator"
+          class="progress-linear__stop-indicator"
+        ></div>
+        <div
+          part="active-indicator"
+          class="progress-linear__active-indicator"
+        ></div>
       </div>
     `;
   }

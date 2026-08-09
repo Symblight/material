@@ -173,6 +173,16 @@ Presents AI-generated or dynamic suggestions. Not toggleable.
 
 ---
 
+## CSS Parts
+
+Shared across all four chip variants (they all render from the same base template).
+
+| Part           | Element    | Description                  |
+| -------------- | ---------- | ---------------------------- |
+| `chip`         | `<button>` | The interactive root element |
+| `label`        | `<span>`   | The label content wrapper    |
+| `leading-icon` | `<slot>`   | The leading icon slot        |
+
 ## CSS Custom Properties
 
 | Variable                      | Default                                 | Description        |

@@ -61,6 +61,12 @@ Coordinates single-select (radio-like, mutually exclusive) or multi-select (inde
 | ----------- | ------------------------------ |
 | _(default)_ | `md-segmented-button` elements |
 
+### Parts
+
+| Part    | Element | Description                        |
+| ------- | ------- | ---------------------------------- |
+| `group` | `<div>` | The group's root container element |
+
 ### Events
 
 | Event    | Description                                                                                                              |
@@ -103,6 +109,14 @@ A single segment inside an `md-segmented-button-group`. Exposes `role="radio"` +
 | ----------- | ----------------------------------------------------------------------------------------------------- |
 | _(default)_ | Label text                                                                                            |
 | `icon`      | Leading icon (wrap it in `<md-icon>`). Automatically replaced by a checkmark while `selected` is true |
+
+### Parts
+
+| Part     | Element                         | Description                               |
+| -------- | ------------------------------- | ----------------------------------------- |
+| `button` | `<button>`                      | The interactive root element              |
+| `label`  | `<span>`                        | The label content wrapper                 |
+| `icon`   | `<span>` wrapping the icon slot | Leading icon area (icon slot + checkmark) |
 
 ---
 

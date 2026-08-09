@@ -4,5 +4,5 @@
   --md-chip-label-color: var(--md-sys-color-on-secondary-container);
   --md-chip-icon-color: var(--md-sys-color-on-secondary-container);
   --md-chip-border-color: transparent;
-  --_ripple-color: var(--md-sys-color-on-secondary-container);
+  --_chip-ripple-color: var(--md-sys-color-on-secondary-container);
 }

@@ -54,7 +54,7 @@ function Template({
 
 /** @type {import("@storybook/web-components").Meta<MdTextFieldProps>} */
 const meta = {
-  title: "TextField",
+  title: "Components/Text Field",
   component: "md-text-field",
   tags: ["autodocs"],
   render: Template,

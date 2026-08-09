@@ -22,9 +22,9 @@
     var(--md-sys-color-on-surface) 38%
   );
 
-  --_container-color: var(--md-sys-color-primary);
-  --_box-container-color: var(--md-checkbox-background-color);
-  --_box-border-color: var(--md-checkbox-border-color);
+  --_checkbox-container-color: var(--md-sys-color-primary);
+  --_checkbox-box-container-color: var(--md-checkbox-background-color);
+  --_checkbox-box-border-color: var(--md-checkbox-border-color);
 }
 
 :host {
@@ -32,27 +32,27 @@
   border-radius: 9999rem;
   display: inline-flex;
   cursor: pointer;
-  background-color: var(--_box-container-color);
+  background-color: var(--_checkbox-box-container-color);
   width: 1.125rem;
   height: 1.125rem;
   padding: calc(0.688rem);
 }
 
 :where(:focus-visible) .checkbox__input {
-  --_box-container-color: color-mix(
+  --_checkbox-box-container-color: color-mix(
     in oklch,
     transparent,
-    var(--_container-color) 12%
+    var(--_checkbox-container-color) 12%
   );
 }
 
 :host([error]:not([disabled])) {
-  --_container-color: var(--md-sys-color-error);
+  --_checkbox-container-color: var(--md-sys-color-error);
 }
 
 .checkbox__input {
   border-radius: 9999rem;
-  background-color: var(--_box-container-color);
+  background-color: var(--_checkbox-box-container-color);
   width: 100%;
   height: 100%;
   position: absolute;
@@ -66,23 +66,23 @@
 }
 
 .checkbox__input:hover:not([disabled]) {
-  --_box-container-color: color-mix(
+  --_checkbox-box-container-color: color-mix(
     in oklch,
     transparent,
-    var(--_container-color) 8%
+    var(--_checkbox-container-color) 8%
   );
 }
 
 .checkbox__input_focused {
-  --_box-container-color: color-mix(
+  --_checkbox-box-container-color: color-mix(
     in oklch,
     transparent,
-    var(--_container-color) 12%
+    var(--_checkbox-container-color) 12%
   );
 }
 
 .checkbox__input:active:not([disabled]) {
-  --_box-container-color: var(--md-checkbox-active-state-color);
+  --_checkbox-box-container-color: var(--md-checkbox-active-state-color);
 }
 
 .checkbox__box {
@@ -93,26 +93,26 @@
   position: relative;
   inset: 0px;
 
-  border-radius: 2px;
+  border-radius: 0.125rem;
   overflow: hidden;
-  background-color: var(--_box-container-color);
+  background-color: var(--_checkbox-box-container-color);
 }
 
 .checkbox__box::after {
   content: "";
   position: absolute;
   inset: 0;
-  border: 2px solid var(--_box-border-color);
+  border: 0.125rem solid var(--_checkbox-box-border-color);
 }
 
 .checkbox__box_checked,
 .checkbox__box_indeterminate {
-  --_box-border-color: transparent;
-  --_box-container-color: var(--_container-color);
+  --_checkbox-box-border-color: transparent;
+  --_checkbox-box-container-color: var(--_checkbox-container-color);
 }
 
 .checkbox__box_focused {
-  --_box-border-color: var(--_container-color);
+  --_checkbox-box-border-color: var(--_checkbox-container-color);
 }
 
 .checkbox__box svg {
@@ -120,21 +120,21 @@
 }
 
 .checkbox__box_error:not(.checkbox__box_disabled) {
-  --_box-border-color: var(--_container-color);
+  --_checkbox-box-border-color: var(--_checkbox-container-color);
 }
 
 .checkbox__input:active:not([disabled]):where(.checkbox__input_error) {
-  --_box-container-color: var(--md-checkbox-active-error-state-color);
+  --_checkbox-box-container-color: var(--md-checkbox-active-error-state-color);
 }
 
 .checkbox__box_disabled {
-  --_box-container-color: transparent;
-  --_box-border-color: var(--md-checkbox-disabled-border-color);
+  --_checkbox-box-container-color: transparent;
+  --_checkbox-box-border-color: var(--md-checkbox-disabled-border-color);
   cursor: not-allowed;
 }
 
 .checkbox__ripple {
-  --md-ripple-pressed-color: var(--_container-color);
+  --md-ripple-pressed-color: var(--_checkbox-container-color);
 }
 
 :host([disabled]) .checkbox__ripple {
@@ -145,6 +145,6 @@
   .checkbox__box_checked,
   .checkbox__box_indeterminate
 ) {
-  --_box-container-color: var(--md-checkbox-disabled-checked-color);
-  --_box-border-color: transparent;
+  --_checkbox-box-container-color: var(--md-checkbox-disabled-checked-color);
+  --_checkbox-box-border-color: transparent;
 }

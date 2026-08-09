@@ -11,10 +11,10 @@ npm install @symblight/wc-material
 ## Import
 
 ```js
-import '@symblight/wc-material'; // registers all components
+import "@symblight/wc-material"; // registers all components
 // or individually:
-import '@symblight/wc-material/components/list/list.js';
-import '@symblight/wc-material/components/list/list-item.js';
+import "@symblight/wc-material/components/list/list.js";
+import "@symblight/wc-material/components/list/list-item.js";
 ```
 
 ## Basic Usage
@@ -194,16 +194,22 @@ Place a selection control in the `leading` slot to position it before the text z
 
 ### Slots — md-list
 
-| Slot | Description |
-| ---- | ----------- |
-| *(default)* | `md-list-item` children |
+| Slot        | Description             |
+| ----------- | ----------------------- |
+| _(default)_ | `md-list-item` children |
+
+### CSS Parts — md-list
+
+| Part   | Element | Description                  |
+| ------ | ------- | ---------------------------- |
+| `list` | `<ul>`  | The native list root element |
 
 ### CSS Custom Properties — md-list
 
-| Property | Default | Description |
-| -------- | ------- | ----------- |
-| `--md-list-container-color` | `var(--md-sys-color-surface)` | List background color |
-| `--md-list-divider-color` | `var(--md-sys-color-outline-variant)` | Color token available for custom dividers; not applied by the component itself |
+| Property                    | Default                               | Description                                                                    |
+| --------------------------- | ------------------------------------- | ------------------------------------------------------------------------------ |
+| `--md-list-container-color` | `var(--md-sys-color-surface)`         | List background color                                                          |
+| `--md-list-divider-color`   | `var(--md-sys-color-outline-variant)` | Color token available for custom dividers; not applied by the component itself |
 
 ---
 
@@ -211,78 +217,83 @@ Place a selection control in the `leading` slot to position it before the text z
 
 ### Properties — md-list-item
 
-| Property | Attribute | Type | Default | Description |
-| -------- | --------- | ---- | ------- | ----------- |
-| `button` | `button` | `boolean` | `false` | Renders an inner `<button>` with ripple and focus ring. Reflects as an attribute. |
-| `href` | `href` | `string \| undefined` | `undefined` | Renders an inner `<a href="...">` with ripple and focus ring. Takes precedence over `button` when both are set. Reflects as an attribute. |
+| Property | Attribute | Type                  | Default     | Description                                                                                                                               |
+| -------- | --------- | --------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `button` | `button`  | `boolean`             | `false`     | Renders an inner `<button>` with ripple and focus ring. Reflects as an attribute.                                                         |
+| `href`   | `href`    | `string \| undefined` | `undefined` | Renders an inner `<a href="...">` with ripple and focus ring. Takes precedence over `button` when both are set. Reflects as an attribute. |
 
 ### Slots — md-list-item
 
-| Slot | Position | Description |
-| ---- | -------- | ----------- |
-| *(default)* | Text zone | Headline / label text |
-| `overline` | Text zone, above label | Small metadata text; styled with label-small typescale, uppercase |
-| `supporting-text` | Text zone, below label | Secondary description; styled with body-medium typescale |
-| `leading` | Leading zone | Any leading content: icon, avatar, image, checkbox, radio, switch |
-| `trailing` | Trailing zone | Any trailing content: icon, text, checkbox, radio, switch |
+| Slot              | Position               | Description                                                       |
+| ----------------- | ---------------------- | ----------------------------------------------------------------- |
+| _(default)_       | Text zone              | Headline / label text                                             |
+| `overline`        | Text zone, above label | Small metadata text; styled with label-small typescale, uppercase |
+| `supporting-text` | Text zone, below label | Secondary description; styled with body-medium typescale          |
+| `leading`         | Leading zone           | Any leading content: icon, avatar, image, checkbox, radio, switch |
+| `trailing`        | Trailing zone          | Any trailing content: icon, text, checkbox, radio, switch         |
 
 All slots are optional. A slot's wrapper element is hidden (`display: none`) when the slot is empty, so unused slots do not reserve space or affect layout.
 
 ### Events — md-list-item
 
-| Event | Detail | Description |
-| ----- | ------ | ----------- |
-| `click` | — | Native click event fired by the inner `<button>` or `<a>` when the item is interactive. No synthetic events are dispatched. |
+| Event   | Detail | Description                                                                                                                 |
+| ------- | ------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `click` | —      | Native click event fired by the inner `<button>` or `<a>` when the item is interactive. No synthetic events are dispatched. |
 
 ### CSS Parts — md-list-item
 
-| Part | Element | Description |
-| ---- | ------- | ----------- |
-| `interactive` | `<button>` or `<a>` | The interactive inner element; exposed for external focus-ring or layout overrides |
+| Part              | Element             | Description                                                                        |
+| ----------------- | ------------------- | ---------------------------------------------------------------------------------- |
+| `interactive`     | `<button>` or `<a>` | The interactive inner element; exposed for external focus-ring or layout overrides |
+| `leading`         | `<div>`             | Leading-zone wrapper (icon, avatar, media, selection control)                      |
+| `label`           | `<span>`            | The headline/label text wrapper                                                    |
+| `overline`        | `<span>`            | The overline text wrapper, above the label                                         |
+| `supporting-text` | `<span>`            | The supporting text wrapper, below the label                                       |
+| `trailing`        | `<div>`             | Trailing-zone wrapper (icon, text, selection control)                              |
 
 ### CSS Custom Properties — md-list-item
 
 #### Colors
 
-| Property | Default | Description |
-| -------- | ------- | ----------- |
-| `--md-list-item-container-color` | `var(--md-sys-color-surface)` | Item background |
-| `--md-list-item-label-text-color` | `var(--md-sys-color-on-surface)` | Headline text color |
-| `--md-list-item-overline-color` | `var(--md-sys-color-on-surface-variant)` | Overline text color |
+| Property                               | Default                                  | Description           |
+| -------------------------------------- | ---------------------------------------- | --------------------- |
+| `--md-list-item-container-color`       | `var(--md-sys-color-surface)`            | Item background       |
+| `--md-list-item-label-text-color`      | `var(--md-sys-color-on-surface)`         | Headline text color   |
+| `--md-list-item-overline-color`        | `var(--md-sys-color-on-surface-variant)` | Overline text color   |
 | `--md-list-item-supporting-text-color` | `var(--md-sys-color-on-surface-variant)` | Supporting text color |
-| `--md-list-item-trailing-text-color` | `var(--md-sys-color-on-surface-variant)` | Trailing text color |
-| `--md-list-item-leading-icon-color` | `var(--md-sys-color-on-surface-variant)` | Leading icon color |
-| `--md-list-item-trailing-icon-color` | `var(--md-sys-color-on-surface-variant)` | Trailing icon color |
+| `--md-list-item-trailing-text-color`   | `var(--md-sys-color-on-surface-variant)` | Trailing text color   |
+| `--md-list-item-leading-icon-color`    | `var(--md-sys-color-on-surface-variant)` | Leading icon color    |
+| `--md-list-item-trailing-icon-color`   | `var(--md-sys-color-on-surface-variant)` | Trailing icon color   |
 
 #### Typography
 
-| Property | Default | Description |
-| -------- | ------- | ----------- |
-| `--md-list-item-label-text-size` | `var(--md-sys-typescale-body-large-size, 1rem)` | Headline font size |
-| `--md-list-item-label-text-line-height` | `var(--md-sys-typescale-body-large-line-height, 1.5rem)` | Headline line height |
-| `--md-list-item-label-text-weight` | `var(--md-sys-typescale-body-large-weight, 400)` | Headline font weight |
-| `--md-list-item-overline-text-size` | `var(--md-sys-typescale-label-small-size, 0.6875rem)` | Overline font size |
-| `--md-list-item-supporting-text-size` | `var(--md-sys-typescale-body-medium-size, 0.875rem)` | Supporting text font size |
-| `--md-list-item-trailing-text-size` | `var(--md-sys-typescale-label-small-size, 0.6875rem)` | Trailing text font size |
+| Property                                | Default                                                  | Description               |
+| --------------------------------------- | -------------------------------------------------------- | ------------------------- |
+| `--md-list-item-label-text-size`        | `var(--md-sys-typescale-body-large-size, 1rem)`          | Headline font size        |
+| `--md-list-item-label-text-line-height` | `var(--md-sys-typescale-body-large-line-height, 1.5rem)` | Headline line height      |
+| `--md-list-item-label-text-weight`      | `var(--md-sys-typescale-body-large-weight, 400)`         | Headline font weight      |
+| `--md-list-item-overline-text-size`     | `var(--md-sys-typescale-label-small-size, 0.6875rem)`    | Overline font size        |
+| `--md-list-item-supporting-text-size`   | `var(--md-sys-typescale-body-medium-size, 0.875rem)`     | Supporting text font size |
+| `--md-list-item-trailing-text-size`     | `var(--md-sys-typescale-label-small-size, 0.6875rem)`    | Trailing text font size   |
 
 #### State layers and focus
 
-| Property | Default | Description |
-| -------- | ------- | ----------- |
-| `--md-list-item-hover-state-layer-color` | `var(--md-sys-color-on-surface)` | Hover state layer color |
-| `--md-list-item-hover-state-layer-opacity` | `var(--md-sys-state-hover-state-layer-opacity, 0.08)` | Hover state layer opacity |
-| `--md-list-item-pressed-state-layer-color` | `var(--md-sys-color-on-surface)` | Pressed state layer color |
+| Property                                     | Default                                                 | Description                 |
+| -------------------------------------------- | ------------------------------------------------------- | --------------------------- |
+| `--md-list-item-hover-state-layer-color`     | `var(--md-sys-color-on-surface)`                        | Hover state layer color     |
+| `--md-list-item-hover-state-layer-opacity`   | `var(--md-sys-state-hover-state-layer-opacity, 0.08)`   | Hover state layer opacity   |
+| `--md-list-item-pressed-state-layer-color`   | `var(--md-sys-color-on-surface)`                        | Pressed state layer color   |
 | `--md-list-item-pressed-state-layer-opacity` | `var(--md-sys-state-pressed-state-layer-opacity, 0.12)` | Pressed state layer opacity |
-| `--md-list-item-focus-ring-color` | `var(--md-sys-color-primary)` | Focus ring color |
+| `--md-list-item-focus-ring-color`            | `var(--md-sys-color-primary)`                           | Focus ring color            |
 
 #### Sizing
 
-| Property | Default | Description |
-| -------- | ------- | ----------- |
-| `--md-list-item-leading-avatar-size` | `2.5rem` (40dp) | Width and height of the leading avatar container |
-| `--md-list-item-leading-icon-size` | `1.5rem` (24dp) | Width and height of the leading icon container |
-| `--md-list-item-leading-media-width` | `4.5rem` (72dp) | Width of the leading media container |
-| `--md-list-item-leading-media-height` | `3.5rem` (56dp) | Height of the leading media container |
+| Property                              | Default         | Description                                      |
+| ------------------------------------- | --------------- | ------------------------------------------------ |
+| `--md-list-item-leading-avatar-size`  | `2.5rem` (40dp) | Width and height of the leading avatar container |
+| `--md-list-item-leading-icon-size`    | `1.5rem` (24dp) | Width and height of the leading icon container   |
+| `--md-list-item-leading-media-width`  | `4.5rem` (72dp) | Width of the leading media container             |
+| `--md-list-item-leading-media-height` | `3.5rem` (56dp) | Height of the leading media container            |
 
 ---
 
@@ -290,21 +301,21 @@ All slots are optional. A slot's wrapper element is hidden (`display: none`) whe
 
 ### md-list
 
-| Aspect | Detail |
-| ------ | ------ |
-| Shadow DOM element | `<ul role="list">` |
-| Host role | None (no `role` attribute on the host) |
-| Keyboard navigation | Arrow Down / Arrow Up move focus between interactive items; wraps at each end. Home jumps to the first interactive item. End jumps to the last. All four keys call `preventDefault()` to block native scroll. |
-| Non-interactive items | Static items are excluded from the roving-tabindex set and are not reachable by arrow keys. |
-| Tab key | Not intercepted. Tab moves focus in the normal document order. |
+| Aspect                | Detail                                                                                                                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shadow DOM element    | `<ul role="list">`                                                                                                                                                                                            |
+| Host role             | None (no `role` attribute on the host)                                                                                                                                                                        |
+| Keyboard navigation   | Arrow Down / Arrow Up move focus between interactive items; wraps at each end. Home jumps to the first interactive item. End jumps to the last. All four keys call `preventDefault()` to block native scroll. |
+| Non-interactive items | Static items are excluded from the roving-tabindex set and are not reachable by arrow keys.                                                                                                                   |
+| Tab key               | Not intercepted. Tab moves focus in the normal document order.                                                                                                                                                |
 
 ### md-list-item
 
-| Mode | Shadow DOM element | Keyboard | Tab stop |
-| ---- | ------------------ | -------- | -------- |
-| Static (default) | `<li>` only | — | No |
-| `button` | `<li>` + inner `<button type="button">` | Enter, Space | Yes (managed by `md-list` roving tabindex) |
-| `href` | `<li>` + inner `<a href="...">` | Enter | Yes (managed by `md-list` roving tabindex) |
+| Mode             | Shadow DOM element                      | Keyboard     | Tab stop                                   |
+| ---------------- | --------------------------------------- | ------------ | ------------------------------------------ |
+| Static (default) | `<li>` only                             | —            | No                                         |
+| `button`         | `<li>` + inner `<button type="button">` | Enter, Space | Yes (managed by `md-list` roving tabindex) |
+| `href`           | `<li>` + inner `<a href="...">`         | Enter        | Yes (managed by `md-list` roving tabindex) |
 
 Additional notes:
 

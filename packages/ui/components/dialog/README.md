@@ -46,6 +46,15 @@ A Material Design 3 dialog web component built with Lit.
 | `content`  | Main body content                                   |
 | `actions`  | Action buttons (placed at the bottom of the dialog) |
 
+## Parts
+
+| Part     | Element    | Description                      |
+| -------- | ---------- | -------------------------------- |
+| `dialog` | `<dialog>` | The native dialog root element   |
+| `header` | `<header>` | Wraps the `headline` slot        |
+| `body`   | `<div>`    | Wraps the default (content) slot |
+| `footer` | `<footer>` | Wraps the `actions` slot         |
+
 ## CSS Custom Properties
 
 | Variable                                   | Default                                      | Description                           |

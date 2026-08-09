@@ -27,7 +27,7 @@ function Select({ variant, disabled }) {
 
 /** @type {import("@storybook/web-components").Meta<SelectProps>} */
 const meta = {
-  title: "Select",
+  title: "Components/Select",
   component: "md-select",
   tags: ["autodocs"],
   render: Select,

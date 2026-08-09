@@ -16,7 +16,7 @@ function SkeletonStory({ variant = "text" }) {
 
 /** @type {import("@storybook/web-components").Meta<MdSkeleton>} */
 const meta = {
-  title: "Skeleton",
+  title: "Components/Skeleton",
   component: "md-skeleton",
   tags: ["autodocs"],
   render: SkeletonStory,

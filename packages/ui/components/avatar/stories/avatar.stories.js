@@ -11,7 +11,7 @@ function Avatar({ src }) {
 
 /** @type {import("@storybook/web-components").Meta<AvatarProps>} */
 const meta = {
-  title: "Avatars",
+  title: "Components/Avatar",
   component: "md-avatar",
   tags: ["autodocs"],
   render: Avatar,

@@ -5,7 +5,17 @@
 
   --md-button-rounded-border-radius: 2rem;
 
-  --md-button-font-size: 1rem;
+  --md-button-font-family: var(--md-sys-typescale-label-large-font, inherit);
+  --md-button-font-size: var(--md-sys-typescale-label-large-size, 0.875rem);
+  --md-button-font-weight: var(--md-sys-typescale-label-large-weight, 500);
+  --md-button-line-height: var(
+    --md-sys-typescale-label-large-line-height,
+    1.25rem
+  );
+  --md-button-letter-spacing: var(
+    --md-sys-typescale-label-large-tracking,
+    0.00625rem
+  );
 
   --md-button-inline-start-space: 1.5rem;
   --md-button-inline-end-space: 1.5rem;
@@ -21,18 +31,27 @@
   --md-button-border-color: transparent;
 
   --md-button-border-radius: 6.25rem;
+  --md-button-border-start-start-radius: var(--md-button-border-radius);
+  --md-button-border-start-end-radius: var(--md-button-border-radius);
+  --md-button-border-end-start-radius: var(--md-button-border-radius);
+  --md-button-border-end-end-radius: var(--md-button-border-radius);
 
-  --_container-height: 20px;
-  --_container-space-left: var(--md-button-inline-start-space);
-  --_container-space-right: var(--md-button-inline-end-space);
-  --_container-space-top: var(--md-button-block-start-space);
-  --_container-space-bottom: var(--md-button-block-end-space);
-  --_container-bg-color: var(--md-button-background-color);
-  --_container-fg-color: var(--md-button-foreground-color);
-  --_container-border-size: var(--md-button-border-size);
-  --_container-border-color: var(--md-button-border-color);
+  --_btn-container-height: 1.25rem;
+  --_btn-container-space-left: var(--md-button-inline-start-space);
+  --_btn-container-space-right: var(--md-button-inline-end-space);
+  --_btn-container-space-top: var(--md-button-block-start-space);
+  --_btn-container-space-bottom: var(--md-button-block-end-space);
+  --_btn-container-bg-color: var(--md-button-background-color);
+  --_btn-container-fg-color: var(--md-button-foreground-color);
+  --_btn-container-border-size: var(--md-button-border-size);
+  --_btn-container-border-color: var(--md-button-border-color);
 
-  --_container-pressed-state-color: var(--md-button-pressed-state-color);
+  --_btn-container-pressed-state-color: var(--md-button-pressed-state-color);
+
+  --_btn-container-font-family: var(--md-button-font-family);
+  --_btn-container-font-size: var(--md-button-font-size);
+  --_btn-container-font-weight: var(--md-button-font-weight);
+  --_btn-container-letter-spacing: var(--md-button-letter-spacing);
 }
 
 ::slotted([slot="icon"]) {
@@ -47,15 +66,15 @@
   display: flex;
 }
 
-.button:has(.button__icon-wrapper) {
+.button:where(:has(.button__icon-wrapper)) {
   display: flex;
   align-items: center;
 
-  --_container-space-left: 1rem;
+  --_btn-container-space-left: 1rem;
 }
 
 .button_icon {
-  --_container-space-left: 1rem;
+  --_btn-container-space-left: 1rem;
 }
 
 :host {
@@ -66,13 +85,16 @@
   text-wrap: nowrap;
   user-select: none;
   cursor: pointer;
-  border-radius: var(--md-button-border-radius);
+  border-start-start-radius: var(--md-button-border-start-start-radius);
+  border-start-end-radius: var(--md-button-border-start-end-radius);
+  border-end-start-radius: var(--md-button-border-end-start-radius);
+  border-end-end-radius: var(--md-button-border-end-end-radius);
 
-  background-color: var(--_container-bg-color);
-  color: var(--_container-fg-color);
-  min-height: var(--_container-height);
+  background-color: var(--_btn-container-bg-color);
+  color: var(--_btn-container-fg-color);
+  min-height: var(--_btn-container-height);
 
-  line-height: 1.25rem;
+  line-height: var(--md-button-line-height);
 }
 
 :host([disabled]) {

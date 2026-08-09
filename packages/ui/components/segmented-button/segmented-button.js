@@ -114,6 +114,7 @@ export class MdSegmentedButton extends BaseButton {
   renderIcon() {
     return html`
       <span
+        part="icon"
         class="segmented-button__icon ${classMap({
           "segmented-button__icon_empty": !this.hasIcon && !this.selected,
         })}"
@@ -147,6 +148,7 @@ export class MdSegmentedButton extends BaseButton {
         ${this.renderIcon()}
         <span
           id="label"
+          part="label"
           class="segmented-button__label ${classMap({
             "segmented-button__label_hidden": !this.childrenContent,
           })}"

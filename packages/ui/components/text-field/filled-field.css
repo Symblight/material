@@ -15,16 +15,16 @@
 }
 
 .text-field__input-wrapper_variant_filled {
-  --_bottom-space: var(--md-text-field-top-space);
-  --_top-space: var(--md-text-field-top-space);
+  --_field-bottom-space: var(--md-text-field-top-space);
+  --_field-top-space: var(--md-text-field-top-space);
 }
 
 .text-field__input-wrapper_label:where(
   .text-field__input-wrapper_variant_filled
 ) {
   --padding-top: calc(var(--md-text-field-top-space) + 0.5rem);
-  --_top-space: var(--padding-top);
-  --_bottom-space: calc(var(--md-text-field-bottom-space) - 0.5rem);
+  --_field-top-space: var(--padding-top);
+  --_field-bottom-space: calc(var(--md-text-field-bottom-space) - 0.5rem);
 }
 
 .text-field__input-wrapper_multiline:where(
@@ -57,7 +57,7 @@
 .text-field__filled-label {
   position: absolute;
   transform: translate(0rem, -0.5rem);
-  max-width: calc(100% - 32px);
+  max-width: calc(100% - 2rem);
   white-space: nowrap;
   text-overflow: ellipsis;
   user-select: none;

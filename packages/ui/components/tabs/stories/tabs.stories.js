@@ -5,6 +5,7 @@ import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import "../tabs.js";
 import "../tab.js";
 import "../tab-panel.js";
+import "../../icon/icon.js";
 
 import musicIcon from "@material-design-icons/svg/outlined/music_note.svg?raw";
 import movieIcon from "@material-design-icons/svg/outlined/movie.svg?raw";
@@ -101,15 +102,15 @@ export const IconAndLabel = {
     <div data-tabs-demo>
       <md-tabs value="music" @change=${wireTabsWithPanels}>
         <md-tab value="music">
-          <span slot="icon">${unsafeSVG(musicIcon)}</span>
+          <md-icon slot="icon">${unsafeSVG(musicIcon)}</md-icon>
           Music
         </md-tab>
         <md-tab value="movies">
-          <span slot="icon">${unsafeSVG(movieIcon)}</span>
+          <md-icon slot="icon">${unsafeSVG(movieIcon)}</md-icon>
           Movies
         </md-tab>
         <md-tab value="books">
-          <span slot="icon">${unsafeSVG(bookIcon)}</span>
+          <md-icon slot="icon">${unsafeSVG(bookIcon)}</md-icon>
           Books
         </md-tab>
       </md-tabs>
@@ -134,13 +135,13 @@ export const IconOnly = {
     <div data-tabs-demo>
       <md-tabs value="music" @change=${wireTabsWithPanels}>
         <md-tab value="music">
-          <span slot="icon">${unsafeSVG(musicIcon)}</span>
+          <md-icon slot="icon">${unsafeSVG(musicIcon)}</md-icon>
         </md-tab>
         <md-tab value="movies">
-          <span slot="icon">${unsafeSVG(movieIcon)}</span>
+          <md-icon slot="icon">${unsafeSVG(movieIcon)}</md-icon>
         </md-tab>
         <md-tab value="books">
-          <span slot="icon">${unsafeSVG(bookIcon)}</span>
+          <md-icon slot="icon">${unsafeSVG(bookIcon)}</md-icon>
         </md-tab>
       </md-tabs>
       <md-tab-panel value="music" active style=${panelStyle}
@@ -180,27 +181,27 @@ export const Scrollable = {
       <div data-tabs-demo>
         <md-tabs value="tab1" @change=${wireTabsWithPanels}>
           <md-tab value="tab1">
-            <span slot="icon">${unsafeSVG(musicIcon)}</span>
+            <md-icon slot="icon">${unsafeSVG(musicIcon)}</md-icon>
             Music
           </md-tab>
           <md-tab value="tab2">
-            <span slot="icon">${unsafeSVG(movieIcon)}</span>
+            <md-icon slot="icon">${unsafeSVG(movieIcon)}</md-icon>
             Movies
           </md-tab>
           <md-tab value="tab3">
-            <span slot="icon">${unsafeSVG(bookIcon)}</span>
+            <md-icon slot="icon">${unsafeSVG(bookIcon)}</md-icon>
             Books
           </md-tab>
           <md-tab value="tab4">
-            <span slot="icon">${unsafeSVG(flightIcon)}</span>
+            <md-icon slot="icon">${unsafeSVG(flightIcon)}</md-icon>
             Flights
           </md-tab>
           <md-tab value="tab5">
-            <span slot="icon">${unsafeSVG(hotelIcon)}</span>
+            <md-icon slot="icon">${unsafeSVG(hotelIcon)}</md-icon>
             Hotels
           </md-tab>
           <md-tab value="tab6">
-            <span slot="icon">${unsafeSVG(restaurantIcon)}</span>
+            <md-icon slot="icon">${unsafeSVG(restaurantIcon)}</md-icon>
             Food
           </md-tab>
         </md-tabs>
@@ -251,15 +252,15 @@ export const AllVariants = {
         </p>
         <md-tabs value="a">
           <md-tab value="a">
-            <span slot="icon">${unsafeSVG(musicIcon)}</span>
+            <md-icon slot="icon">${unsafeSVG(musicIcon)}</md-icon>
             Music
           </md-tab>
           <md-tab value="b">
-            <span slot="icon">${unsafeSVG(movieIcon)}</span>
+            <md-icon slot="icon">${unsafeSVG(movieIcon)}</md-icon>
             Movies
           </md-tab>
           <md-tab value="c">
-            <span slot="icon">${unsafeSVG(bookIcon)}</span>
+            <md-icon slot="icon">${unsafeSVG(bookIcon)}</md-icon>
             Books
           </md-tab>
         </md-tabs>

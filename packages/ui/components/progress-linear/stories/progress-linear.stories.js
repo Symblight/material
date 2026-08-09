@@ -6,7 +6,7 @@ import "../progress-linear";
 
 /** @type {import("@storybook/web-components").Meta<MdProgressLinear>} */
 const meta = {
-  title: "Progress linear",
+  title: "Components/Progress Linear",
   component: "md-progress-linear",
   tags: ["autodocs"],
   argTypes: {

@@ -4,8 +4,8 @@
   --md-button-border-color: transparent;
   --md-button-foreground-color: var(--md-sys-color-primary);
 
-  --_container-space-left: 0.75rem;
-  --_container-space-right: 0.75rem;
+  --_btn-container-space-left: 0.75rem;
+  --_btn-container-space-right: 0.75rem;
 
   --md-button-pressed-state-color: color-mix(
     in oklch,
@@ -16,8 +16,8 @@
 }
 
 :host([variant="text"]:where([loading])) {
-  --_container-space-left: 1rem;
-  --_container-space-right: 0.75rem;
+  --_btn-container-space-left: 1rem;
+  --_btn-container-space-right: 0.75rem;
 }
 
 :host([variant="text"]:focus-visible:not([disabled])) {

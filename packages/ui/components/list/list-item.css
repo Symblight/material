@@ -20,13 +20,41 @@
     --md-sys-typescale-label-small-size,
     0.6875rem
   );
+  --md-list-item-overline-text-weight: var(
+    --md-sys-typescale-label-small-weight,
+    500
+  );
+  --md-list-item-overline-text-line-height: var(
+    --md-sys-typescale-label-small-line-height,
+    1rem
+  );
+  --md-list-item-overline-text-tracking: var(
+    --md-sys-typescale-label-small-tracking,
+    0.03125rem
+  );
   --md-list-item-supporting-text-size: var(
     --md-sys-typescale-body-medium-size,
     0.875rem
   );
+  --md-list-item-supporting-text-weight: var(
+    --md-sys-typescale-body-medium-weight,
+    400
+  );
+  --md-list-item-supporting-text-line-height: var(
+    --md-sys-typescale-body-medium-line-height,
+    1.25rem
+  );
   --md-list-item-trailing-text-size: var(
     --md-sys-typescale-label-small-size,
     0.6875rem
+  );
+  --md-list-item-trailing-text-weight: var(
+    --md-sys-typescale-label-small-weight,
+    500
+  );
+  --md-list-item-trailing-text-line-height: var(
+    --md-sys-typescale-label-small-line-height,
+    1rem
   );
 
   --md-list-item-hover-state-layer-color: var(--md-sys-color-on-surface);
@@ -103,8 +131,8 @@ li.md-list-item {
 }
 
 .md-list-item__interactive:focus-visible {
-  outline: 3px solid var(--md-list-item-focus-ring-color);
-  outline-offset: -3px;
+  outline: 0.1875rem solid var(--md-list-item-focus-ring-color);
+  outline-offset: -0.1875rem;
 }
 
 /* ── Ripple inside interactive ──────────────────────────────────────────── */
@@ -145,13 +173,17 @@ md-ripple {
 
 .md-list-item__overline {
   font-size: var(--md-list-item-overline-text-size);
+  font-weight: var(--md-list-item-overline-text-weight);
+  line-height: var(--md-list-item-overline-text-line-height);
+  letter-spacing: var(--md-list-item-overline-text-tracking);
   color: var(--md-list-item-overline-color);
-  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .md-list-item__supporting-text {
   font-size: var(--md-list-item-supporting-text-size);
+  font-weight: var(--md-list-item-supporting-text-weight);
+  line-height: var(--md-list-item-supporting-text-line-height);
   color: var(--md-list-item-supporting-text-color);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -189,6 +221,10 @@ md-ripple {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: var(--md-list-item-trailing-text-color);
+  font-size: var(--md-list-item-trailing-text-size);
+  font-weight: var(--md-list-item-trailing-text-weight);
+  line-height: var(--md-list-item-trailing-text-line-height);
 }
 
 /* ── Slotted images fill their containers ───────────────────────────────── */

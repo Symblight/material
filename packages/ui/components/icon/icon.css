@@ -9,7 +9,7 @@
   text-rendering: optimizeLegibility;
   font-size: inherit;
 
-  --stroke-width: 2px;
+  --stroke-width: 0.125rem;
 }
 
 svg > path {

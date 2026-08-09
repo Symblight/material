@@ -49,6 +49,7 @@ export default class Avatar extends LitElement {
           y="0"
           height="100%"
           width="100%"
+          part="image"
           class="avatar__image"
           href="${this.src}"
           preserveAspectRatio="xMidYMid slice"
@@ -57,6 +58,7 @@ export default class Avatar extends LitElement {
           cx=${sizeSVG}
           cy=${sizeSVG}
           r=${sizeSVG}
+          part="fallback"
           class="avatar__circle"
           fill="${!this.src ? String("gray") : "none"}"
         ></circle>

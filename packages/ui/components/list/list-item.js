@@ -108,6 +108,7 @@ export class MdListItem extends LitElement {
   _renderLeadingZone() {
     return html`
       <div
+        part="leading"
         class="md-list-item__leading-wrapper ${classMap({
           "has-content": this._hasLeading,
         })}"
@@ -129,7 +130,7 @@ export class MdListItem extends LitElement {
             "has-content": this._hasOverline,
           })}"
         >
-          <span class="md-list-item__overline">
+          <span part="overline" class="md-list-item__overline">
             <slot
               name="overline"
               @slotchange=${(/** @type {Event} */ e) =>
@@ -137,7 +138,7 @@ export class MdListItem extends LitElement {
             ></slot>
           </span>
         </span>
-        <span class="md-list-item__label">
+        <span part="label" class="md-list-item__label">
           <slot></slot>
         </span>
         <span
@@ -145,7 +146,7 @@ export class MdListItem extends LitElement {
             "has-content": this._hasSupportingText,
           })}"
         >
-          <span class="md-list-item__supporting-text">
+          <span part="supporting-text" class="md-list-item__supporting-text">
             <slot
               name="supporting-text"
               @slotchange=${(/** @type {Event} */ e) =>
@@ -160,6 +161,7 @@ export class MdListItem extends LitElement {
   _renderTrailingZone() {
     return html`
       <div
+        part="trailing"
         class="md-list-item__trailing-wrapper ${classMap({
           "has-content": this._hasTrailing,
         })}"

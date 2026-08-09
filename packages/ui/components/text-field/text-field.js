@@ -157,9 +157,7 @@ export class TextField extends FormControlMixin(LitElement) {
   /** @param {InputEvent} event */
   handleChange(event) {
     if (this.disabled) return;
-    this.value = /** @type {HTMLInputElement} */ (
-      (event.target) || null
-    )?.value;
+    this.value = /** @type {HTMLInputElement} */ (event.target || null)?.value;
     this.setValue(this.value);
     this.dispatchEvent(new Event("change"));
     this.dirty = true;
@@ -313,6 +311,7 @@ export class TextField extends FormControlMixin(LitElement) {
       () => html`
         <label
           for=${this.inputId}
+          part="label"
           class="text-field__label text-field__filled-label ${classMap({
             "text-field__label_active": this.focused,
             "text-field__label_error": this.hasValidation,
@@ -377,6 +376,7 @@ export class TextField extends FormControlMixin(LitElement) {
       () => html`
         <label
           for=${this.inputId}
+          part="label"
           class="text-field__label text-field__outlined-label ${classMap({
             "text-field__label_active": this.focused,
             "text-field__label_error": this.hasValidation,
@@ -394,6 +394,7 @@ export class TextField extends FormControlMixin(LitElement) {
   get renderHelpText() {
     const ariaId = this.hasValidation && this.ariaId;
     return html` <div
+      part="help-text"
       class="text-field__help-text ${classMap({
         "text-field__help-text_visible": this.hasValidation,
         "text-field__help-text_error": this.hasValidation,

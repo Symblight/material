@@ -117,7 +117,8 @@ export default class FAB extends BaseButton {
   };
 
   renderIcon() {
-    return html`<slot ?icon-only=${this.slotHasContent} name="icon"> </slot> `;
+    return html`<slot part="icon" ?icon-only=${this.slotHasContent} name="icon">
+    </slot> `;
   }
 
   renderChildrenContent() {

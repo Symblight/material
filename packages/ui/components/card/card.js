@@ -161,8 +161,8 @@ export class MdCard extends LitElement {
 
   renderSlots() {
     return html`
-      <div class="md-card__content">
-        <div class="md-card__media">
+      <div part="content" class="md-card__content">
+        <div part="media" class="md-card__media">
           <slot name="media" @slotchange=${this._onSlotChange}></slot>
         </div>
         <slot name="header" @slotchange=${this._onSlotChange}></slot>

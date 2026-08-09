@@ -22,11 +22,11 @@
   --md-chip-focus-ring-color: var(--md-sys-color-secondary);
 
   /* ── Internal ── */
-  --_container-color: var(--md-chip-container-color);
-  --_label-color: var(--md-chip-label-color);
-  --_border-color: var(--md-chip-border-color);
-  --_border-width: var(--md-chip-border-width);
-  --_ripple-color: var(--md-sys-color-on-surface-variant);
+  --_chip-container-color: var(--md-chip-container-color);
+  --_chip-label-color: var(--md-chip-label-color);
+  --_chip-border-color: var(--md-chip-border-color);
+  --_chip-border-width: var(--md-chip-border-width);
+  --_chip-ripple-color: var(--md-sys-color-on-surface-variant);
 
   display: inline-flex;
   position: relative;
@@ -52,9 +52,9 @@
   overflow: hidden;
   cursor: inherit;
   border-radius: var(--md-chip-border-radius);
-  background-color: var(--_container-color);
-  border: var(--_border-width) solid var(--_border-color);
-  color: var(--_label-color);
+  background-color: var(--_chip-container-color);
+  border: var(--_chip-border-width) solid var(--_chip-border-color);
+  color: var(--_chip-label-color);
   height: var(--md-chip-height);
   padding-inline: 1rem;
   box-sizing: border-box;
@@ -78,14 +78,14 @@
 }
 
 .chip md-ripple {
-  --md-ripple-hover-color: var(--_ripple-color);
-  --md-ripple-pressed-color: var(--_ripple-color);
+  --md-ripple-hover-color: var(--_chip-ripple-color);
+  --md-ripple-pressed-color: var(--_chip-ripple-color);
 }
 
 /* ── Focus ring ── */
 .chip:focus-visible {
-  outline: 3px solid var(--md-chip-focus-ring-color);
-  outline-offset: 2px;
+  outline: 0.1875rem solid var(--md-chip-focus-ring-color);
+  outline-offset: 0.125rem;
 }
 
 /* ── Disabled ── */

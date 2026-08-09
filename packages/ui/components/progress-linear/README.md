@@ -26,6 +26,15 @@ import "@symblight/wc-material/progress-linear";
 | -------- | -------- | ----------- | ------------------------------------------------------------------------------------------ |
 | `value`  | `number` | `undefined` | Determinate progress from `0` to `1`. Omit (or set to `undefined`) for indeterminate mode. |
 
+## Parts
+
+| Part               | Element | Mode          | Description                                             |
+| ------------------ | ------- | ------------- | ------------------------------------------------------- |
+| `track`            | `<div>` | both          | The background track                                    |
+| `bar`              | `<div>` | indeterminate | The two animated bars (shared part name — matches both) |
+| `stop-indicator`   | `<div>` | determinate   | The dot marking the trail end                           |
+| `active-indicator` | `<div>` | determinate   | The filled progress bar                                 |
+
 ## CSS Custom Properties
 
 | Property                                      | Default                                   | Description                                       |

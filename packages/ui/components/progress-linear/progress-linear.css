@@ -37,7 +37,7 @@
   position: absolute;
   inset-block: 0;
   left: 0;
-  width: calc(100% * var(--_progress, 0));
+  width: calc(100% * var(--_progress-linear-value, 0));
   background: var(--md-progress-linear-active-indicator-color);
   border-radius: 9999px;
   transition: width 500ms cubic-bezier(0.4, 0, 0.2, 1);

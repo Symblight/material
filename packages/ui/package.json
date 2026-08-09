@@ -1,7 +1,7 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.0.23",
+  "version": "0.0.3",
   "description": "Material Design 3 web components library built with Lit",
   "author": "Aleksei Tkachenko <leshtkachenko@gmail.com>",
   "license": "MIT",
@@ -191,7 +191,9 @@
       "command": "vite build",
       "files": [
         "components/**/*.js",
-        "components/**/*.css"
+        "components/**/*.css",
+        "vite.config.mjs",
+        "tsconfig.json"
       ],
       "output": [
         "dist/**/*.js",

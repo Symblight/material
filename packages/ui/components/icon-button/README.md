@@ -33,14 +33,19 @@ A Material Design 3 icon button web component built with Lit.
 
 ## CSS Custom Properties
 
-| Variable                               | Default       | Description                |
-| -------------------------------------- | ------------- | -------------------------- |
-| `--md-icon-button-foreground-color`    | `inherit`     | Icon color                 |
-| `--md-icon-button-background-color`    | `transparent` | Background fill            |
-| `--md-icon-button-border-color`        | `transparent` | Border color               |
-| `--md-icon-button-border-size`         | `0.063rem`    | Border width               |
-| `--md-icon-button-font-size`           | `0.875rem`    | Icon font size             |
-| `--md-icon-button-pressed-state-color` | `transparent` | State-layer color on press |
+| Variable                                     | Default                               | Description                                                            |
+| -------------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------- |
+| `--md-icon-button-foreground-color`          | `inherit`                             | Icon color                                                             |
+| `--md-icon-button-background-color`          | `transparent`                         | Background fill                                                        |
+| `--md-icon-button-border-color`              | `transparent`                         | Border color                                                           |
+| `--md-icon-button-border-size`               | `0.063rem`                            | Border width                                                           |
+| `--md-icon-button-font-size`                 | `1.5rem`                              | Icon size                                                              |
+| `--md-icon-button-pressed-state-color`       | `transparent`                         | State-layer color on press                                             |
+| `--md-icon-button-border-radius`             | `100%`                                | Corner radius (all four corners, unless overridden individually below) |
+| `--md-icon-button-border-start-start-radius` | `var(--md-icon-button-border-radius)` | Logical start/start corner radius (top-left in LTR)                    |
+| `--md-icon-button-border-start-end-radius`   | `var(--md-icon-button-border-radius)` | Logical start/end corner radius (top-right in LTR)                     |
+| `--md-icon-button-border-end-start-radius`   | `var(--md-icon-button-border-radius)` | Logical end/start corner radius (bottom-left in LTR)                   |
+| `--md-icon-button-border-end-end-radius`     | `var(--md-icon-button-border-radius)` | Logical end/end corner radius (bottom-right in LTR)                    |
 
 ## Examples
 
@@ -103,3 +108,21 @@ A Material Design 3 icon button web component built with Lit.
   <md-icon>edit</md-icon>
 </md-icon-button>
 ```
+
+### Per-corner radius (logical properties)
+
+Each corner can be overridden independently using the logical (writing-mode-aware) corner variables — useful for joining an icon button to an adjacent element, e.g. squaring off the corners on one side:
+
+```css
+.joined-end {
+  /* squares off the corners on the trailing (end) side */
+  --md-icon-button-border-start-end-radius: 0;
+  --md-icon-button-border-end-end-radius: 0;
+}
+```
+
+```html
+<md-icon-button class="joined-end"><md-icon>more_vert</md-icon></md-icon-button>
+```
+
+`--md-icon-button-border-radius` still sets all four corners at once; the per-corner variables default to it and only need to be set when a corner must diverge from the rest.

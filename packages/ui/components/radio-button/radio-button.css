@@ -7,9 +7,9 @@
     var(--md-sys-color-on-surface) 12%
   );
 
-  --_container-color: var(--md-sys-color-primary);
-  --_box-container-color: var(--md-radio-background-color);
-  --_box-border-color: var(--md-radio-border-color);
+  --_radio-container-color: var(--md-sys-color-primary);
+  --_radio-box-container-color: var(--md-radio-background-color);
+  --_radio-box-border-color: var(--md-radio-border-color);
 }
 
 :host {
@@ -22,23 +22,23 @@
   width: 1.125rem;
   height: 1.125rem;
   padding: calc(0.688rem);
-  background-color: var(--_box-container-color);
+  background-color: var(--_radio-box-container-color);
 }
 
 :host([checked]) {
-  --_box-border-color: var(--md-sys-color-primary);
-  --_container-color: var(--md-sys-color-primary);
+  --_radio-box-border-color: var(--md-sys-color-primary);
+  --_radio-container-color: var(--md-sys-color-primary);
 }
 
 :host([disabled]) {
-  --_box-border-color: color-mix(
+  --_radio-box-border-color: color-mix(
     in oklch,
     transparent,
     var(--md-sys-color-on-surface) 38%
   );
 
-  --_box-container-color: transparent;
-  --_container-color: color-mix(
+  --_radio-box-container-color: transparent;
+  --_radio-container-color: color-mix(
     in oklch,
     transparent,
     var(--md-sys-color-on-surface) 38%
@@ -46,15 +46,15 @@
 }
 
 .radio__input:hover:not([disabled]) {
-  --_box-container-color: color-mix(
+  --_radio-box-container-color: color-mix(
     in oklch,
     transparent,
-    var(--_container-color) 8%
+    var(--_radio-container-color) 8%
   );
 }
 
 .radio__input:active:not([disabled]) {
-  --_box-container-color: var(--md-radio-active-state-color);
+  --_radio-box-container-color: var(--md-radio-active-state-color);
 }
 
 .radio__box {
@@ -66,21 +66,21 @@
   inset: 0px;
 
   overflow: hidden;
-  background-color: var(--_box-container-color);
+  background-color: var(--_radio-box-container-color);
 }
 
 .radio__box::before {
   content: "";
   position: absolute;
   inset: 0;
-  border: 2px solid var(--_box-border-color);
+  border: 0.125rem solid var(--_radio-box-border-color);
 
   border-radius: 9999rem;
 }
 
 .radio__box::after {
   position: absolute;
-  background-color: var(--_box-container-color);
+  background-color: var(--_radio-box-container-color);
   border-radius: 9999rem;
   transform: scale(0);
   opacity: 0;
@@ -89,7 +89,7 @@
 }
 
 .radio__box_checked {
-  border-color: var(--_container-color);
+  border-color: var(--_radio-container-color);
 }
 
 .radio__box_checked::after {
@@ -101,7 +101,7 @@
   inset: 0px;
   width: 100%;
   height: 100%;
-  background-color: var(--_container-color);
+  background-color: var(--_radio-container-color);
 }
 
 .radio__box_disabled {
@@ -109,7 +109,7 @@
 }
 
 .radio__ripple {
-  --md-ripple-pressed-color: var(--_container-color);
+  --md-ripple-pressed-color: var(--_radio-container-color);
 }
 
 :host([disabled]) .radio__ripple {
@@ -118,7 +118,7 @@
 
 .radio__input {
   border-radius: 9999rem;
-  background-color: var(--_box-container-color);
+  background-color: var(--_radio-box-container-color);
   width: 100%;
   height: 100%;
   position: absolute;
@@ -132,6 +132,6 @@
 }
 
 .radio__input:focus-visible {
-  outline: 3px solid var(--_container-color);
-  outline-offset: 2px;
+  outline: 0.1875rem solid var(--_radio-container-color);
+  outline-offset: 0.125rem;
 }

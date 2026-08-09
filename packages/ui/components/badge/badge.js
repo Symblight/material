@@ -63,6 +63,7 @@ export class MdBadge extends LitElement {
     return html`
       <div
         role="status"
+        part="badge"
         aria-label=${label || "notification"}
         class=${classMap({
           badge: true,

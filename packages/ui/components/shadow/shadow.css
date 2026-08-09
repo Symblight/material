@@ -18,7 +18,7 @@
 .shadow::before,
 .shadow::after {
   content: "";
-  --_level: var(--md-elevation-level);
+  --_shadow-level: var(--md-elevation-level);
   --_shadow-color: var(--md-shadow-color);
 }
 
@@ -27,15 +27,17 @@
     calc(
       1px *
         (
-          clamp(0, var(--_level), 1) + clamp(0, var(--_level) - 3, 1) + 2 *
-            clamp(0, var(--_level) - 4, 1)
+          clamp(0, var(--_shadow-level), 1) +
+            clamp(0, var(--_shadow-level) - 3, 1) + 2 *
+            clamp(0, var(--_shadow-level) - 4, 1)
         )
     )
     calc(
       1px *
         (
-          2 * clamp(0, var(--_level), 1) + clamp(0, var(--_level) - 2, 1) +
-            clamp(0, var(--_level) - 4, 1)
+          2 * clamp(0, var(--_shadow-level), 1) +
+            clamp(0, var(--_shadow-level) - 2, 1) +
+            clamp(0, var(--_shadow-level) - 4, 1)
         )
     )
     0px var(--_shadow-color);
@@ -47,16 +49,24 @@
     calc(
       1px *
         (
-          clamp(0, var(--_level), 1) + clamp(0, var(--_level) - 1, 1) + 2 *
-            clamp(0, var(--_level) - 2, 3)
+          clamp(0, var(--_shadow-level), 1) +
+            clamp(0, var(--_shadow-level) - 1, 1) + 2 *
+            clamp(0, var(--_shadow-level) - 2, 3)
         )
     )
     calc(
       1px *
-        (3 * clamp(0, var(--_level), 2) + 2 * clamp(0, var(--_level) - 2, 3))
+        (
+          3 * clamp(0, var(--_shadow-level), 2) + 2 *
+            clamp(0, var(--_shadow-level) - 2, 3)
+        )
     )
     calc(
-      1px * (clamp(0, var(--_level), 4) + 2 * clamp(0, var(--_level) - 4, 1))
+      1px *
+        (
+          clamp(0, var(--_shadow-level), 4) + 2 *
+            clamp(0, var(--_shadow-level) - 4, 1)
+        )
     )
     var(--_shadow-color);
   opacity: 0.15;

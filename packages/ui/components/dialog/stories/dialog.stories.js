@@ -61,7 +61,7 @@ function Template({ open }) {
 
 /** @type {import("@storybook/web-components").Meta<PvDialogProps>} */
 const meta = {
-  title: "Dialog",
+  title: "Components/Dialog",
   component: "md-dialog",
   tags: ["autodocs"],
   render: Template,
@@ -74,6 +74,9 @@ const meta = {
 export default meta;
 
 /** @typedef {import("@storybook/web-components").StoryObj<PvDialogProps>} Story */
+
+// ─── Regular — basic open/close via a trigger button ────────────────────────
+
 /** @type {Story} */
 export const Regular = {
   args: {},
@@ -143,7 +146,113 @@ function FormResetTemplate() {
   `;
 }
 
+// ─── Form with reset ─────────────────────────────────────────────────────────
+
 /** @type {Story} */
 export const FormWithReset = {
   render: FormResetTemplate,
+};
+
+// ─── Event lifecycle — `open` (cancelable, fires before the dialog is
+// visible), `opened`, and `closed` all fire in that order. Escape closing
+// the native <dialog> itself still reaches `closed` — it's not only fired
+// by the component's own `.close()` method ──────────────────────────────────
+
+function EventLifecycleTemplate() {
+  /** @type {import("lit/directives/ref.js").Ref<import("../dialog.js").default>} */
+  const dialogRef = createRef();
+  /** @type {import("lit/directives/ref.js").Ref<HTMLElement>} */
+  const logRef = createRef();
+
+  /** @param {string} message */
+  function log(message) {
+    if (logRef.value) logRef.value.textContent = message;
+  }
+
+  return html`
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+      <md-button @click=${() => dialogRef.value?.show()}>Open</md-button>
+      <md-dialog
+        ${ref(dialogRef)}
+        @open=${() => log("open — cancelable, not yet visible")}
+        @opened=${() => log("opened — visible now")}
+        @closed=${() => log("closed")}
+      >
+        <div slot="headline"><h3 style="margin: 0;">Lifecycle demo</h3></div>
+        <p>
+          Watch the readout below as you open and close this dialog — Escape
+          also fires <code>closed</code>, same as clicking Close.
+        </p>
+        <div slot="footer" style="display: flex; justify-content: flex-end;">
+          <md-button variant="tonal" @click=${() => dialogRef.value?.close()}>
+            Close
+          </md-button>
+        </div>
+      </md-dialog>
+      <span
+        ${ref(logRef)}
+        style="font-family: monospace; font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant);"
+      >
+        Click Open, then Close (or press Escape) to see the event order.
+      </span>
+    </div>
+  `;
+}
+
+/** @type {Story} */
+export const EventLifecycle = {
+  render: EventLifecycleTemplate,
+};
+
+// ─── Destructive confirm — Cancel/Delete footer actions. The chosen action
+// is logged so Cancel vs Delete is distinguishable, not just "the dialog
+// closed" ─────────────────────────────────────────────────────────────────
+
+function ConfirmDeleteTemplate() {
+  /** @type {import("lit/directives/ref.js").Ref<import("../dialog.js").default>} */
+  const dialogRef = createRef();
+  /** @type {import("lit/directives/ref.js").Ref<HTMLElement>} */
+  const logRef = createRef();
+
+  /** @param {string} action */
+  function resolve(action) {
+    if (logRef.value) logRef.value.textContent = `Last action: ${action}`;
+    dialogRef.value?.close();
+  }
+
+  return html`
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+      <md-button variant="outlined" @click=${() => dialogRef.value?.show()}>
+        Delete item…
+      </md-button>
+      <md-dialog ${ref(dialogRef)}>
+        <div slot="headline">
+          <h3 style="margin: 0;">Delete this item?</h3>
+        </div>
+        <p>This action can't be undone.</p>
+        <div
+          slot="footer"
+          style="display: flex; justify-content: flex-end; gap: 0.5rem;"
+        >
+          <md-button variant="text" @click=${() => resolve("cancelled")}>
+            Cancel
+          </md-button>
+          <md-button variant="tonal" @click=${() => resolve("deleted")}>
+            Delete
+          </md-button>
+        </div>
+      </md-dialog>
+      <span
+        ${ref(logRef)}
+        style="font-family: monospace; font-size: 0.75rem; color: var(--md-sys-color-on-surface-variant);"
+      >
+        No action taken yet.
+      </span>
+    </div>
+  `;
+}
+
+/** @type {Story} */
+export const ConfirmDelete = {
+  render: ConfirmDeleteTemplate,
 };

@@ -1,7 +1,17 @@
 :host {
   --md-fab-background-color: transparent;
 
-  --md-fab-font-size: 1rem;
+  --md-fab-font-family: var(--md-sys-typescale-label-large-font, inherit);
+  --md-fab-font-size: var(--md-sys-typescale-label-large-size, 0.875rem);
+  --md-fab-font-weight: var(--md-sys-typescale-label-large-weight, 500);
+  --md-fab-line-height: var(
+    --md-sys-typescale-label-large-line-height,
+    1.25rem
+  );
+  --md-fab-letter-spacing: var(
+    --md-sys-typescale-label-large-tracking,
+    0.00625rem
+  );
 
   /* --md-fab-inline-start-space: 1.5rem; */
   /* --md-fab-inline-end-space: 1.5rem; */
@@ -20,17 +30,22 @@
   --md-fab-border-radius: 1rem;
   --md-fab-icon-size: 1.5rem;
 
-  --_container-height: 20px;
-  --_container-space-left: var(--md-fab-inline-start-space);
-  --_container-space-right: var(--md-fab-inline-end-space);
-  --_container-space-top: var(--md-fab-block-start-space);
-  --_container-space-bottom: var(--md-fab-block-end-space);
-  --_container-bg-color: var(--md-fab-background-color);
-  --_container-fg-color: var(--md-fab-foreground-color);
-  --_container-border-size: var(--md-fab-border-size);
-  --_container-border-color: var(--md-fab-border-color);
+  --_btn-container-height: 1.25rem;
+  --_btn-container-space-left: var(--md-fab-inline-start-space);
+  --_btn-container-space-right: var(--md-fab-inline-end-space);
+  --_btn-container-space-top: var(--md-fab-block-start-space);
+  --_btn-container-space-bottom: var(--md-fab-block-end-space);
+  --_btn-container-bg-color: var(--md-fab-background-color);
+  --_btn-container-fg-color: var(--md-fab-foreground-color);
+  --_btn-container-border-size: var(--md-fab-border-size);
+  --_btn-container-border-color: var(--md-fab-border-color);
 
-  --_container-pressed-state-color: var(--md-fab-pressed-state-color);
+  --_btn-container-pressed-state-color: var(--md-fab-pressed-state-color);
+
+  --_btn-container-font-family: var(--md-fab-font-family);
+  --_btn-container-font-size: var(--md-fab-font-size);
+  --_btn-container-font-weight: var(--md-fab-font-weight);
+  --_btn-container-letter-spacing: var(--md-fab-letter-spacing);
 }
 
 ::slotted([slot="icon"]) {
@@ -47,11 +62,11 @@
   cursor: pointer;
   border-radius: var(--md-fab-border-radius);
 
-  background-color: var(--_container-bg-color);
-  color: var(--_container-fg-color);
-  min-height: var(--_container-height);
+  background-color: var(--_btn-container-bg-color);
+  color: var(--_btn-container-fg-color);
+  min-height: var(--_btn-container-height);
 
-  line-height: 1.25rem;
+  line-height: var(--md-fab-line-height);
 }
 
 :host([size="s"]) {

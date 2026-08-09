@@ -25,6 +25,15 @@ A Material Design 3 select (dropdown) web component built with Lit.
 | `name`     | `name`     | `string`                 | `""`       | Form field name                       |
 | `id`       | `id`       | `string`                 | `""`       | Element id                            |
 
+## Parts
+
+| Part         | Element                  | Description                         |
+| ------------ | ------------------------ | ----------------------------------- |
+| `text-field` | nested `<md-text-field>` | The host of the internal text field |
+| `select`     | `<select>`               | The native select control           |
+
+`md-select` also forwards `md-text-field`'s own parts, so you can reach into the internal field directly — `md-select::part(input)`, `::part(box)`, `::part(label)`, `::part(help-text)`, `::part(prefix)`, `::part(suffix)`, and `::part(wrapper)` all work without going through `::part(text-field)`.
+
 ## CSS Custom Properties
 
 `md-select` shares its visual styling with `md-text-field`. You can use all text-field CSS variables to customise it. See [`../text-field/README.md`](../text-field/README.md) for the full list.

@@ -24,12 +24,11 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 1px;
+  height: 0.0625rem;
   background: var(--md-tabs-divider-color);
   pointer-events: none;
 }
 
 :host([variant="secondary"]) ::slotted(md-tab) {
   --md-tab-active-label-color: var(--md-tabs-secondary-active-color);
-  --md-tab-active-icon-color: var(--md-tabs-secondary-active-color);
 }

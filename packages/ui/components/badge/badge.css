@@ -3,17 +3,17 @@
   --md-badge-on-color: var(--md-sys-color-on-error);
   --md-badge-border-radius: var(--md-sys-shape-corner-full, 9999px);
   --md-badge-font-family: var(--md-sys-typescale-label-small-font, sans-serif);
-  --md-badge-font-size: var(--md-sys-typescale-label-small-size, 11px);
+  --md-badge-font-size: var(--md-sys-typescale-label-small-size, 0.6875rem);
   --md-badge-font-weight: var(--md-sys-typescale-label-small-weight, 500);
-  --md-badge-line-height: var(--md-sys-typescale-label-small-line-height, 16px);
+  --md-badge-line-height: var(--md-sys-typescale-label-small-line-height, 1rem);
   --md-badge-letter-spacing: var(
     --md-sys-typescale-label-small-tracking,
-    0.5px
+    0.03125rem
   );
-  --md-badge-small-size: 6px;
-  --md-badge-large-height: 16px;
-  --md-badge-large-min-width: 16px;
-  --md-badge-large-padding-inline: 4px;
+  --md-badge-small-size: 0.375rem;
+  --md-badge-large-height: 1rem;
+  --md-badge-large-min-width: 1rem;
+  --md-badge-large-padding-inline: 0.25rem;
 
   display: inline-flex;
   position: relative;

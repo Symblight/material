@@ -129,6 +129,7 @@ export class MdTab extends LitElement {
     return html`
       <button
         id="tab"
+        part="tab"
         role="tab"
         aria-selected="${this.active ? "true" : "false"}"
         tabindex="${this.active ? "0" : "-1"}"
@@ -143,16 +144,17 @@ export class MdTab extends LitElement {
         @click=${this._handleClick}
       >
         <md-ripple for="tab"></md-ripple>
-        <div class="tab__state-layer"></div>
+        <div part="state-layer" class="tab__state-layer"></div>
         <slot
           name="icon"
+          part="icon"
           class="tab__icon"
           @slotchange=${this._onIconSlotChange}
         ></slot>
-        <span class="tab__label">
+        <span part="label" class="tab__label">
           <slot @slotchange=${this._onLabelSlotChange}></slot>
         </span>
-        <div class="tab__indicator"></div>
+        <div part="indicator" class="tab__indicator"></div>
       </button>
     `;
   }

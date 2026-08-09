@@ -11,6 +11,13 @@ A Material Design 3 circular progress indicator web component built with Lit.
 <md-progress-circular></md-progress-circular>
 ```
 
+## Parts
+
+| Part     | Element    | Description                             |
+| -------- | ---------- | --------------------------------------- |
+| `track`  | `<circle>` | The background track circle             |
+| `circle` | `<circle>` | The progress arc (animated/determinate) |
+
 ## CSS Custom Properties
 
 `md-progress-circular` inherits its color from the standard CSS `color` property, which defaults to the MD3 system token `--md-sys-color-primary`.

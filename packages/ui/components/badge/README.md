@@ -26,6 +26,12 @@ Renders a small dot (no value) or a pill with text (value provided).
 | `value`  | `value`   | `string` | `""`    | Text or number to display. Leave empty for the dot variant. |
 | `max`    | `max`     | `number` | `999`   | Maximum numeric value before truncating with `+`.           |
 
+## Parts
+
+| Part    | Element | Description              |
+| ------- | ------- | ------------------------ |
+| `badge` | `<div>` | The badge's root element |
+
 ## CSS Custom Properties
 
 | Variable                          | Default                                                | Description                             |

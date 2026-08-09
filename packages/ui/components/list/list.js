@@ -113,7 +113,7 @@ export class MdList extends LitElement {
 
   render() {
     return html`
-      <ul class="md-list" role="list">
+      <ul part="list" class="md-list" role="list">
         <slot @slotchange=${this._onSlotChange}></slot>
       </ul>
     `;

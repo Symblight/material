@@ -37,13 +37,13 @@
   );
 
   /* ── base-button.css contract vars ── */
-  --_container-space-left: var(--md-segmented-button-inline-space);
-  --_container-space-right: var(--md-segmented-button-inline-space);
-  --_container-space-top: var(--md-segmented-button-block-space);
-  --_container-space-bottom: var(--md-segmented-button-block-space);
-  --_container-border-size: 0;
-  --_container-border-color: transparent;
-  --_container-pressed-state-color: color-mix(
+  --_btn-container-space-left: var(--md-segmented-button-inline-space);
+  --_btn-container-space-right: var(--md-segmented-button-inline-space);
+  --_btn-container-space-top: var(--md-segmented-button-block-space);
+  --_btn-container-space-bottom: var(--md-segmented-button-block-space);
+  --_btn-container-border-size: 0;
+  --_btn-container-border-color: transparent;
+  --_btn-container-pressed-state-color: color-mix(
     in oklch,
     var(--md-segmented-button-icon-color),
     transparent 88%
@@ -99,8 +99,8 @@
 }
 
 .segmented-button:focus-visible {
-  outline: 3px solid var(--md-segmented-button-focus-color);
-  outline-offset: -3px;
+  outline: 0.1875rem solid var(--md-segmented-button-focus-color);
+  outline-offset: -0.1875rem;
   z-index: 1;
 }
 
@@ -109,7 +109,7 @@
 }
 
 .segmented-button_icon {
-  --_container-space-left: 1rem;
+  --_btn-container-space-left: 1rem;
 }
 
 .segmented-button__ripple {

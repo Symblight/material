@@ -23,6 +23,16 @@ A Material Design 3 Switch web component built with Lit.
 | `name`     | `name`     | `string`  | `""`    | Form field name                             |
 | `required` | `required` | `boolean` | `false` | Marks the field as required in a form       |
 
+## Parts
+
+| Part          | Element   | Description                                          |
+| ------------- | --------- | ---------------------------------------------------- |
+| `input`       | `<input>` | The native (visually hidden) checkbox input          |
+| `track`       | `<div>`   | The switch track                                     |
+| `handle`      | `<div>`   | The movable handle/thumb                             |
+| `state-layer` | `<div>`   | Hover/pressed state layer around the handle          |
+| `icon`        | `<div>`   | Icon container inside the handle (only when `icons`) |
+
 ## CSS Custom Properties
 
 | Variable                                     | Default                                         | Description                |

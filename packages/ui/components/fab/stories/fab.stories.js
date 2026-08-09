@@ -32,7 +32,7 @@ function Button({
 
 /** @type {import("@storybook/web-components").Meta<ButtonProps>} */
 const meta = {
-  title: "FABs",
+  title: "Components/FAB",
   component: "md-fab",
   tags: ["autodocs"],
   render: Button,

@@ -35,6 +35,28 @@
   --md-text-field-label-size: 1rem;
   --md-text-field-label-size-populated: 0.75rem;
   --md-text-field-font-size: 1rem;
+  --md-text-field-font-family: var(--md-sys-typescale-body-large-font, inherit);
+  --md-text-field-font-weight: var(--md-sys-typescale-body-large-weight, 400);
+  --md-text-field-line-height: var(
+    --md-sys-typescale-body-large-line-height,
+    1.5rem
+  );
+  --md-text-field-letter-spacing: var(
+    --md-sys-typescale-body-large-tracking,
+    0.03125rem
+  );
+  --md-text-field-help-text-font-size: var(
+    --md-sys-typescale-body-small-size,
+    0.75rem
+  );
+  --md-text-field-help-text-line-height: var(
+    --md-sys-typescale-body-small-line-height,
+    1rem
+  );
+  --md-text-field-help-text-letter-spacing: var(
+    --md-sys-typescale-body-small-tracking,
+    0.025rem
+  );
 
   --md-text-field-icon-size: 1.5rem;
   --md-text-field-trailing-space: 0.75rem;
@@ -43,10 +65,10 @@
 
 :host {
   /* || INTERNAL */
-  --_bottom-space: var(--md-text-field-bottom-space);
-  --_top-space: var(--md-text-field-top-space);
-  --_left-space: var(--md-text-field-inline-start-space);
-  --_right-space: var(--md-text-field-inline-end-space);
+  --_field-bottom-space: var(--md-text-field-bottom-space);
+  --_field-top-space: var(--md-text-field-top-space);
+  --_field-left-space: var(--md-text-field-inline-start-space);
+  --_field-right-space: var(--md-text-field-inline-end-space);
 }
 
 :host {
@@ -106,7 +128,9 @@
 
 .text-field__label {
   font-size: var(--md-text-field-label-size);
-  line-height: 1.5rem;
+  font-weight: var(--md-text-field-font-weight);
+  line-height: var(--md-text-field-line-height);
+  letter-spacing: var(--md-text-field-letter-spacing);
   transition: all 200ms cubic-bezier(0, 0, 0.2, 1) 0ms;
 }
 
@@ -123,10 +147,10 @@
   flex-direction: column;
   z-index: 1;
   position: relative;
-  padding-block-end: var(--_bottom-space);
-  padding-block-start: var(--_top-space);
-  padding-inline-start: var(--_left-space);
-  padding-inline-end: var(--_right-space);
+  padding-block-end: var(--_field-bottom-space);
+  padding-block-start: var(--_field-top-space);
+  padding-inline-start: var(--_field-left-space);
+  padding-inline-end: var(--_field-right-space);
   width: 100%;
 }
 
@@ -145,9 +169,11 @@
   border: none;
   background-color: transparent;
   color: var(--md-text-field-foreground-color);
-  line-height: 1.5rem;
-  font-weight: 400;
-  font-size: 1rem;
+  font-family: var(--md-text-field-font-family);
+  line-height: var(--md-text-field-line-height);
+  font-weight: var(--md-text-field-font-weight);
+  font-size: var(--md-text-field-font-size);
+  letter-spacing: var(--md-text-field-letter-spacing);
 }
 
 .text-field__control_disabled {
@@ -164,15 +190,10 @@
 
 .text-field__input {
   text-align: inherit;
-  font-family: inherit;
   width: 100%;
   outline: 0;
   padding: 0;
   height: 1.5rem;
-
-  line-height: 1.5rem;
-  font-weight: 400;
-  font-size: var(--md-text-field-font-size);
 }
 
 .text-field__textarea {
@@ -211,9 +232,10 @@
 .text-field__help-text {
   display: flex;
   flex-wrap: nowrap;
-  font-weight: 400;
-  font-size: 0.75rem;
-  line-height: 1rem;
+  font-weight: var(--md-text-field-font-weight);
+  font-size: var(--md-text-field-help-text-font-size);
+  line-height: var(--md-text-field-help-text-line-height);
+  letter-spacing: var(--md-text-field-help-text-letter-spacing);
   z-index: 0;
   overflow: hidden;
   white-space: nowrap;

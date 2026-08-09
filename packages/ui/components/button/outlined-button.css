@@ -4,10 +4,10 @@
   --md-button-border-color: var(--md-sys-color-outline);
   --md-button-foreground-color: var(--md-sys-color-primary);
   --md-button-border-size: 0.063rem;
-  --_container-space-top: calc(
+  --_btn-container-space-top: calc(
     var(--md-button-block-start-space) - var(--md-button-border-size)
   );
-  --_container-space-bottom: calc(
+  --_btn-container-space-bottom: calc(
     var(--md-button-block-end-space) - var(--md-button-border-size)
   );
 

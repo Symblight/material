@@ -96,7 +96,8 @@ export default class Button extends BaseButton {
               class="button__progress-circular"
             ></md-progress-circular>
           </div>`,
-      )} <slot @slotchange=${this.updateChildren} name="icon"></slot>`;
+      )}
+      <slot part="icon" @slotchange=${this.updateChildren} name="icon"></slot>`;
   }
 
   renderChildrenContent() {
@@ -104,6 +105,7 @@ export default class Button extends BaseButton {
       ${this.renderIcon()}
       <span
         id="label"
+        part="label"
         class="button__content ${classMap({
           button__content_hidden: !this.childrenContent,
         })}"

@@ -47,7 +47,7 @@ export default defineConfig({
       outDir: "dist",
       copyDtsFiles: true,
       exclude: [
-        "**/*.stories.ts",
+        "**/*.stories.js",
         "**/__tests__/**",
         "vite-env.d.ts",
         "components/types.d.ts",

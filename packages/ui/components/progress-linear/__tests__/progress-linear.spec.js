@@ -82,7 +82,9 @@ describe("md-progress-linear", () => {
       const container = /** @type {HTMLElement} */ (
         el.shadowRoot.querySelector(".progress-linear")
       );
-      expect(container.style.getPropertyValue("--_progress")).to.equal("1");
+      expect(
+        container.style.getPropertyValue("--_progress-linear-value"),
+      ).to.equal("1");
     });
 
     it("clamps value below 0 to 0", async () => {
@@ -94,7 +96,9 @@ describe("md-progress-linear", () => {
       const container = /** @type {HTMLElement} */ (
         el.shadowRoot.querySelector(".progress-linear")
       );
-      expect(container.style.getPropertyValue("--_progress")).to.equal("0");
+      expect(
+        container.style.getPropertyValue("--_progress-linear-value"),
+      ).to.equal("0");
     });
   });
 

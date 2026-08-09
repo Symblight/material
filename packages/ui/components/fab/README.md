@@ -30,6 +30,14 @@ A Material Design 3 Floating Action Button (FAB) web component built with Lit.
 | `type`     | `type`     | `"button" \| "submit" \| "reset"`                     | `"button"`  | Native button type                   |
 | `form`     | `form`     | `string`                                              | —           | Associates FAB with a form `id`      |
 
+## Parts
+
+| Part     | Element              | Description                  |
+| -------- | -------------------- | ---------------------------- |
+| `button` | `<button>` or `<a>`  | The interactive root element |
+| `label`  | `<span>`             | The label content wrapper    |
+| `icon`   | `<slot name="icon">` | The icon slot                |
+
 ## CSS Custom Properties
 
 | Variable                         | Default         | Description                        |

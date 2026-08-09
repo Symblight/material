@@ -110,17 +110,18 @@ export default class MdDialog extends LitElement {
 
   render() {
     return html`<dialog
+      part="dialog"
       modal-mode="mega"
       class="dialog"
       @close=${this.handleNativeClose}
     >
-      <header class="dialog__header">
+      <header part="header" class="dialog__header">
         <slot name="headline"></slot>
       </header>
-      <div class="dialog__body">
+      <div part="body" class="dialog__body">
         <slot></slot>
       </div>
-      <footer class="dialog__footer">
+      <footer part="footer" class="dialog__footer">
         <slot name="footer"></slot>
       </footer>
     </dialog>`;

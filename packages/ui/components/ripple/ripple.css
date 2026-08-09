@@ -35,7 +35,7 @@
 .surface::after {
   background: radial-gradient(
     closest-side,
-    var(--md-ripple-pressed-color) max(100% - 70px, 65%),
+    var(--md-ripple-pressed-color) max(100% - 4.375rem, 65%),
     transparent 100%
   );
   transition: opacity 175ms linear;

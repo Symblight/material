@@ -11,7 +11,7 @@ function Ripple() {
 
 /** @type {import("@storybook/web-components").Meta<MdRippleProps>} */
 const meta = {
-  title: "Ripple",
+  title: "Components/Ripple",
   component: "md-ripple",
   tags: ["autodocs"],
   render: Ripple,

@@ -52,7 +52,7 @@
 }
 
 .dialog__header {
-  min-height: 14px;
+  min-height: 0.875rem;
 }
 
 .dialog__body {

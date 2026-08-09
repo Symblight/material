@@ -6,7 +6,7 @@ import "../progress-circular";
 
 /** @type {import("@storybook/web-components").Meta<MdProgressCircularProps>} */
 const meta = {
-  title: "Progress circular",
+  title: "Components/Progress Circular",
   component: "md-progress-circular",
   tags: ["autodocs"],
   argTypes: {

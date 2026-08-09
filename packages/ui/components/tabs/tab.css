@@ -1,12 +1,10 @@
 :host {
   display: inline-flex;
   flex: 1;
-  min-width: 48px;
+  min-width: 3rem;
 
   --md-tab-label-color: var(--md-sys-color-on-surface-variant);
   --md-tab-active-label-color: var(--md-sys-color-primary);
-  --md-tab-icon-color: var(--md-sys-color-on-surface-variant);
-  --md-tab-active-icon-color: var(--md-sys-color-primary);
   --md-tab-active-indicator-color: var(--md-sys-color-primary);
   --md-tab-disabled-color: color-mix(
     in oklch,
@@ -32,8 +30,6 @@
 :host([disabled]) {
   --md-tab-label-color: var(--md-tab-disabled-color);
   --md-tab-active-label-color: var(--md-tab-disabled-color);
-  --md-tab-icon-color: var(--md-tab-disabled-color);
-  --md-tab-active-icon-color: var(--md-tab-disabled-color);
   --md-tab-active-indicator-color: var(--md-tab-disabled-color);
 }
 
@@ -43,11 +39,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 0.25rem;
   width: 100%;
-  height: 48px;
-  min-width: 48px;
-  padding: 0 16px;
+  height: 3rem;
+  min-width: 3rem;
+  padding: 0 1rem;
   background: none;
   border: none;
   cursor: pointer;
@@ -56,10 +52,12 @@
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
   outline: none;
+  color: var(--md-tab-label-color);
+  transition: color 200ms ease;
 }
 
 .tab_icon-and-label {
-  height: 64px;
+  height: 4rem;
 }
 
 .tab_disabled {
@@ -96,24 +94,23 @@
   display: none;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  color: var(--md-tab-icon-color);
+  width: 1.5rem;
+  height: 1.5rem;
   flex-shrink: 0;
-  transition: color 200ms ease;
 }
 
 :where(.tab__icon) ::slotted(*) {
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
   fill: currentColor;
 }
 
-:where(.tab_active) .tab__icon {
-  color: var(--md-tab-active-icon-color);
+:where(.tab_active) {
+  color: var(--md-tab-active-label-color);
 }
 
 .tab_has-icon .tab__icon {
+  font-size: 1.25rem;
   display: flex;
 }
 
@@ -123,13 +120,7 @@
   font-weight: var(--md-tab-label-weight);
   letter-spacing: var(--md-tab-label-tracking);
   line-height: var(--md-tab-label-line-height);
-  color: var(--md-tab-label-color);
-  transition: color 200ms ease;
   user-select: none;
-}
-
-:where(.tab_active) .tab__label {
-  color: var(--md-tab-active-label-color);
 }
 
 .tab__indicator {
@@ -137,8 +128,8 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
+  height: 0.1875rem;
+  border-radius: 0.1875rem 0.1875rem 0 0;
   background: var(--md-tab-active-indicator-color);
   opacity: 0;
   transform-origin: left center;

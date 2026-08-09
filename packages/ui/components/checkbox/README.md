@@ -25,6 +25,13 @@ A Material Design 3 checkbox web component built with Lit.
 | `name`          | `name`          | `string`  | `""`    | Form field name                       |
 | `id`            | `id`            | `string`  | `""`    | Element id                            |
 
+## Parts
+
+| Part    | Element   | Description                                 |
+| ------- | --------- | ------------------------------------------- |
+| `input` | `<input>` | The native (visually hidden) checkbox input |
+| `box`   | `<span>`  | The visible checkbox square                 |
+
 ## CSS Custom Properties
 
 | Variable                         | Default                                  | Description                        |

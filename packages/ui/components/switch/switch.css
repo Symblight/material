@@ -1,8 +1,8 @@
 /* ── MD3 Switch ──────────────────────────────────────────────────────────── */
 :host {
   /* Public API — consumer-overridable */
-  --md-switch-track-width: 52px;
-  --md-switch-track-height: 32px;
+  --md-switch-track-width: 3.25rem;
+  --md-switch-track-height: 2rem;
   --md-switch-track-shape: var(--md-sys-shape-corner-full, 9999px);
 
   /* Track — unselected */
@@ -33,14 +33,14 @@
 
   /* Handle — unselected */
   --md-switch-unselected-handle-color: var(--md-sys-color-outline);
-  --md-switch-unselected-handle-size: 16px;
+  --md-switch-unselected-handle-size: 1rem;
 
   /* Handle — selected */
   --md-switch-selected-handle-color: var(--md-sys-color-on-primary);
-  --md-switch-selected-handle-size: 24px;
+  --md-switch-selected-handle-size: 1.5rem;
 
   /* Handle with icon always shows full size */
-  --md-switch-handle-icon-size: 24px;
+  --md-switch-handle-icon-size: 1.5rem;
 
   /* Icon */
   --md-switch-selected-icon-color: var(--md-sys-color-on-primary-container);
@@ -49,7 +49,7 @@
   );
 
   /* State layer */
-  --md-switch-state-layer-size: 40px;
+  --md-switch-state-layer-size: 2.5rem;
   --md-switch-state-layer-color: var(--md-sys-color-on-surface);
   --md-switch-selected-state-layer-color: var(--md-sys-color-primary);
 
@@ -105,7 +105,7 @@
   border-radius: var(--md-switch-track-shape);
   background-color: var(--md-switch-unselected-track-color);
   box-sizing: border-box;
-  border: 2px solid var(--md-switch-unselected-track-outline-color);
+  border: 0.125rem solid var(--md-switch-unselected-track-outline-color);
   transition:
     background-color 67ms linear,
     border-color 67ms linear;
@@ -144,7 +144,7 @@
         var(--md-switch-state-layer-size) -
           var(--md-switch-unselected-handle-size)
       ) /
-      2 - 2px
+      2 - 0.125rem
   );
   transition: left 300ms cubic-bezier(0.2, 0, 0, 1);
 }
@@ -156,7 +156,7 @@
         var(--md-switch-state-layer-size) +
           var(--md-switch-selected-handle-size)
       ) /
-      2 - 2px
+      2 - 0.125rem
   );
 }
 
@@ -166,7 +166,7 @@
   ) {
   left: calc(
     (var(--md-switch-state-layer-size) - var(--md-switch-handle-icon-size)) /
-      2 - 2px
+      2 - 0.125rem
   );
 }
 
@@ -246,8 +246,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
 }
 
 .switch__icon svg {

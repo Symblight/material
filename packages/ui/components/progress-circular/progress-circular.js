@@ -51,9 +51,9 @@ export default class MdProgressCircular extends LitElement {
 
     return html`<svg
       xmlns="http://www.w3.org/2000/svg"
-      class="progress-circular__svg${indeterminate
-        ? " progress-circular__svg_indeterminate"
-        : ""}"
+      class="progress-circular__svg${
+        indeterminate ? " progress-circular__svg_indeterminate" : ""
+      }"
       viewBox="0 0 100 100"
       focusable="false"
       width="1em"
@@ -66,6 +66,7 @@ export default class MdProgressCircular extends LitElement {
         r="${RADIUS}"
         fill="none"
         stroke-width="10"
+        part="track"
         class="progress-circular__track"
       ></circle>
       <circle
@@ -74,6 +75,7 @@ export default class MdProgressCircular extends LitElement {
         r="${RADIUS}"
         fill="none"
         stroke-width="10"
+        part="circle"
         class="progress-circular__circle"
         stroke-dasharray="${dashArray}"
       ></circle>

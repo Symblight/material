@@ -56,11 +56,12 @@ export default class BaseMdChip extends LitElement {
         <md-ripple for="chip"></md-ripple>
         <slot
           name="leading-icon"
+          part="leading-icon"
           class="${classMap({ "chip__leading-icon": this._hasLeadingIcon })}"
           @slotchange=${(/** @type {Event} */ e) =>
             this._onSlotChange(e, (v) => (this._hasLeadingIcon = v))}
         ></slot>
-        <span class="chip__label"><slot></slot></span>
+        <span part="label" class="chip__label"><slot></slot></span>
       </button>
     `;
   }
