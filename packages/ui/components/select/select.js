@@ -20,6 +20,10 @@ import "../text-field/text-field.js";
 import styles from "./select.css?inline";
 import { MdOptGroup } from "./group.js";
 import { MdHr } from "./hr.js";
+import {
+  FormAssociateMixin,
+  internals,
+} from "../../shared/form-associate-mixin.js";
 
 /**
  * @typedef {import("@lit/context").Context<symbol, { registerBlockConsumer: (option: MdOption) => void }>} ContextSelect
@@ -41,10 +45,8 @@ export const selectContext = createContext(Symbol("select"));
  * @property {MenuItem[]} children
  */
 
-const internals = Symbol("internals");
-
 @customElement("md-select")
-export default class Select extends LitElement {
+export default class Select extends FormAssociateMixin(LitElement) {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {
     firstOptionValue: { state: true },
@@ -60,10 +62,7 @@ export default class Select extends LitElement {
     size: { type: Number },
   };
 
-  static formAssociated = true;
-
-  /** @type {ElementInternals} */
-  [internals];
+  requiredValidationMessage = "Please select an item in the list.";
 
   /** @type {ShadowRootInit} */
   static shadowRootOptions = {
@@ -79,8 +78,6 @@ export default class Select extends LitElement {
 
     /** @type {MenuItem[]} */
     this.options = [];
-
-    this[internals] = this.attachInternals();
 
     /** @type {boolean} */
     this.disabled = false;
@@ -116,6 +113,10 @@ export default class Select extends LitElement {
     return this[internals].form;
   }
 
+  get labels() {
+    return this[internals].labels;
+  }
+
   /** @returns {TextField | null} */
   get textField() {
     return /** @type {TextField | null} */ (
@@ -148,7 +149,7 @@ export default class Select extends LitElement {
     }
   }
 
-  formResetCallback() {
+  resetFormControl() {
     this.setValue(this.firstOptionValue);
     if (this.multiple) {
       this.options.forEach((item) => {
@@ -159,6 +160,21 @@ export default class Select extends LitElement {
     }
   }
 
+  /** @param {import("lit").PropertyValues} changedProperties */
+  updated(changedProperties) {
+    if (changedProperties.has("value") || changedProperties.has("required")) {
+      this.updateValidity();
+    }
+  }
+
+  isValueMissing() {
+    return !this.value;
+  }
+
+  get validationTarget() {
+    return this.select;
+  }
+
   /** @param {string} value */
   setValue(value) {
     this.value = value;
@@ -167,7 +183,7 @@ export default class Select extends LitElement {
 
   /** @param {Event} event */
   handleChange(event) {
-    const value = /** @type {HTMLSelectElement} */ ((event.target) || null)
+    const value = /** @type {HTMLSelectElement} */ (event.target || null)
       ?.value;
     this.setValue(value);
     this.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
@@ -240,6 +256,15 @@ export default class Select extends LitElement {
       ? /** @type {MdOption} */ (selectedOption.element).value
       : this.collectFirstOptionValue(this.options);
 
+    // `value` may still be unset the first time options are known (no
+    // `value` attribute was given). Without this, `required` would report
+    // invalid forever even though a real option is selected by default,
+    // since nothing else ever assigns an initial `value`.
+    if (this.value === undefined) {
+      this.setValue(this.firstOptionValue);
+    }
+    this.updateValidity();
+
     this.requestUpdate();
 
     // After render, imperatively sync select.value if value prop is set
@@ -290,6 +315,7 @@ export default class Select extends LitElement {
       <md-text-field
         .label="${this.label}"
         part="text-field"
+        exportparts="box, input, prefix, suffix, wrapper, label, help-text"
         ?disabled=${this.disabled}
         .variant="${this.variant}"
       >

@@ -3,7 +3,10 @@ import { customElement } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 
 import { RadioSelectionController } from "./radio-selection.js";
-import { FormAssociateMixin, internals } from "./form-associate.js";
+import {
+  FormAssociateMixin,
+  internals,
+} from "../../shared/form-associate-mixin.js";
 
 import "../ripple/ripple.js";
 
@@ -98,6 +101,30 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
     return this.localName;
   }
 
+  resetFormControl() {
+    this.checked = false;
+    this[internals].setFormValue(null);
+  }
+
+  /** Returns the tabindex currently set on the inner input. */
+  getTabIndex() {
+    return this.input ? Number(this.input.getAttribute("tabindex") ?? "0") : 0;
+  }
+
+  /**
+   * Sets the tabindex on the inner input. Called by `RadioSelectionController`
+   * to implement roving tabindex across a group of radios.
+   * @param {number} value
+   */
+  setTabIndex(value) {
+    this.input?.setAttribute("tabindex", String(value));
+  }
+
+  /** Moves focus to the inner input. */
+  focusInteractive() {
+    this.input?.focus();
+  }
+
   /** @param {MouseEvent} event */
   handleClick(event) {
     if (this.disabled || !this.input) return;
@@ -119,9 +146,23 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
     this.checked = target.checked;
   }
 
-  /** @param {import("lit").PropertyValues} _changedProperties */
-  updated(_changedProperties) {
-    if (_changedProperties.has("checked")) {
+  /** @param {import("lit").PropertyValues} changedProperties */
+  firstUpdated(changedProperties) {
+    super.firstUpdated(changedProperties);
+
+    // Validity must be computed proactively, not only reactively on
+    // `change`: `ElementInternals`-based elements default to *valid* until
+    // `setValidity()` is called, unlike native `<input required>` which the
+    // browser validates continuously. Without this, a `required` radio
+    // group with nothing pre-selected reports as valid if the user submits
+    // the form without ever interacting with any radio in the group.
+    this.selectionController.syncTabIndex();
+    this.selectionController.updateGroupValidity();
+  }
+
+  /** @param {import("lit").PropertyValues} changedProperties */
+  updated(changedProperties) {
+    if (changedProperties.has("checked")) {
       if (this.checked) {
         this[internals].setFormValue(this.value);
       } else {
@@ -129,6 +170,14 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
       }
     }
     this[internals].ariaChecked = String(this.checked);
+
+    if (changedProperties.has("checked") || changedProperties.has("disabled")) {
+      this.selectionController.syncTabIndex();
+    }
+
+    if (changedProperties.has("checked") || changedProperties.has("required")) {
+      this.selectionController.updateGroupValidity();
+    }
   }
 
   /** @param {Event} event */
@@ -138,20 +187,42 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
     this.dispatchEvent(copy);
 
     this.selectionController.select();
-    this.updateValidity();
+    this.selectionController.updateGroupValidity();
   }
 
+  /**
+   * Recomputes this radio's own `ElementInternals` validity. Not called
+   * directly by user interaction anymore — use
+   * `selectionController.updateGroupValidity()` instead, which recomputes
+   * validity for every radio sharing this radio's `name` in the group (not
+   * just whichever radio's `handleChange` happened to fire). Kept as a
+   * per-instance method because that's what `updateGroupValidity()` calls
+   * for each radio in the group.
+   */
   updateValidity() {
-    if (!this.required) return;
-
-    if (!this.selectionController.group) return;
-
-    if (this.selectionController.selectedValue) {
+    if (!this.required) {
       this[internals].setValidity({});
       return;
     }
-    this[internals].setValidity({ customError: true }, "required");
-    this[internals].reportValidity();
+
+    const controls = this.selectionController.controls.length
+      ? this.selectionController.controls
+      : [this];
+
+    const hasSelection = controls.some(
+      (radio) => radio.name === this.name && radio.checked,
+    );
+
+    if (hasSelection) {
+      this[internals].setValidity({});
+      return;
+    }
+
+    this[internals].setValidity(
+      { customError: true },
+      "required",
+      this.input ?? undefined,
+    );
   }
 
   render() {
@@ -161,6 +232,7 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
         part="input"
         type="radio"
         class="radio__input"
+        tabindex="0"
         ?disabled=${this.disabled}
         ?required=${this.required}
         .name=${this.name}
@@ -171,6 +243,7 @@ export default class RadioButton extends FormAssociateMixin(LitElement) {
       />
 
       <span
+        part="box"
         class="radio__box ${classMap({
           radio__box_disabled: this.disabled,
           radio__box_checked: this.checked,

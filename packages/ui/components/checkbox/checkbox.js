@@ -7,16 +7,20 @@ import check from "@material-design-icons/svg/filled/check.svg?raw";
 
 import "../ripple/ripple.js";
 
+import {
+  FormAssociateMixin,
+  internals,
+} from "../../shared/form-associate-mixin.js";
+
 import styles from "./checkbox.css?inline";
 
 /**
  * @tag md-checkbox
  * @summary Material Checkbox web component
  */
-const internals = Symbol("internals");
 
 @customElement("md-checkbox")
-export default class Checkbox extends LitElement {
+export default class Checkbox extends FormAssociateMixin(LitElement) {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {
     disabled: { type: Boolean, reflect: true },
@@ -31,10 +35,7 @@ export default class Checkbox extends LitElement {
     focused: { state: true },
   };
 
-  static formAssociated = true;
-
-  /** @type {ElementInternals} */
-  [internals];
+  requiredValidationMessage = "Please check this box if you want to proceed.";
 
   /** @type {ShadowRootInit} */
   static shadowRootOptions = {
@@ -49,7 +50,6 @@ export default class Checkbox extends LitElement {
 
   constructor() {
     super();
-    this[internals] = this.attachInternals();
 
     /** @type {boolean} */
     this.disabled = false;
@@ -93,11 +93,36 @@ export default class Checkbox extends LitElement {
     }
   }
 
+  /** @param {import("lit").PropertyValues} changedProperties */
+  firstUpdated(changedProperties) {
+    super.firstUpdated(changedProperties);
+
+    // Validity must be computed proactively, not only reactively on
+    // `change`: `ElementInternals`-based elements default to *valid* until
+    // `setValidity()` is called, unlike native `<input required>` which the
+    // browser validates continuously. Without this, a `required` checkbox
+    // reports as valid if the user submits the form without ever
+    // interacting with it.
+    this.updateValidity();
+  }
+
   /** @param {Map<string, unknown>} changedValues */
   updated(changedValues) {
-    if (changedValues.has("checked") || changedValues.has("value")) {
-      this[internals].setValidity({});
+    if (
+      changedValues.has("checked") ||
+      changedValues.has("value") ||
+      changedValues.has("required")
+    ) {
+      this.updateValidity();
     }
+  }
+
+  isValueMissing() {
+    return !this.checked;
+  }
+
+  get validationTarget() {
+    return this.input;
   }
 
   /** @returns {HTMLInputElement} */
@@ -143,7 +168,7 @@ export default class Checkbox extends LitElement {
     }
   }
 
-  formResetCallback() {
+  resetFormControl() {
     this.checked = false;
     this[internals].setFormValue(null);
   }
@@ -183,6 +208,7 @@ export default class Checkbox extends LitElement {
         })}"
       />
       <span
+        part="box"
         class="checkbox__box ${classMap({
           checkbox__box_checked: this.checked,
           checkbox__box_focused: this.focused,

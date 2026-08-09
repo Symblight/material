@@ -2,16 +2,20 @@ import { LitElement, html, isServer, nothing } from "lit";
 import { customElement } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 
+import {
+  FormAssociateMixin,
+  internals,
+} from "../../shared/form-associate-mixin.js";
+
 import styles from "./switch.css?inline";
 
 /**
  * @tag md-switch
  * @summary Material Design 3 Switch web component
  */
-const internals = Symbol("internals");
 
 @customElement("md-switch")
-export default class MdSwitch extends LitElement {
+export default class MdSwitch extends FormAssociateMixin(LitElement) {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {
     /** Whether the switch is selected (on). */
@@ -29,10 +33,7 @@ export default class MdSwitch extends LitElement {
     _focused: { state: true },
   };
 
-  static formAssociated = true;
-
-  /** @type {ElementInternals} */
-  [internals];
+  requiredValidationMessage = "Please check this box if you want to proceed.";
 
   /** @type {ShadowRootInit} */
   static shadowRootOptions = {
@@ -47,7 +48,6 @@ export default class MdSwitch extends LitElement {
 
   constructor() {
     super();
-    this[internals] = this.attachInternals();
 
     /** @type {boolean} */
     this.selected = false;
@@ -85,12 +85,37 @@ export default class MdSwitch extends LitElement {
     }
   }
 
+  /** @param {import("lit").PropertyValues} changedProperties */
+  firstUpdated(changedProperties) {
+    super.firstUpdated(changedProperties);
+
+    // Validity must be computed proactively, not only reactively on
+    // `change`: `ElementInternals`-based elements default to *valid* until
+    // `setValidity()` is called, unlike native `<input required>` which the
+    // browser validates continuously. Without this, a `required` switch
+    // reports as valid if the user submits the form without ever
+    // interacting with it.
+    this.updateValidity();
+  }
+
   /** @param {Map<string, unknown>} changedValues */
   updated(changedValues) {
-    if (changedValues.has("selected") || changedValues.has("value")) {
+    if (
+      changedValues.has("selected") ||
+      changedValues.has("value") ||
+      changedValues.has("required")
+    ) {
       this[internals].setFormValue(this.selected ? this.value : null);
-      this[internals].setValidity({ customError: false });
+      this.updateValidity();
     }
+  }
+
+  isValueMissing() {
+    return !this.selected;
+  }
+
+  get validationTarget() {
+    return this.input;
   }
 
   /** @returns {HTMLInputElement} */
@@ -139,7 +164,7 @@ export default class MdSwitch extends LitElement {
     this._focused = this.input?.matches(":focus") ?? false;
   }
 
-  formResetCallback() {
+  resetFormControl() {
     this.selected = false;
     this[internals].setFormValue(null);
   }
@@ -163,6 +188,7 @@ export default class MdSwitch extends LitElement {
         @change=${this._handleChange}
       />
       <div
+        part="track"
         class=${classMap({
           switch__track: true,
           switch__track_selected: this.selected,
@@ -176,41 +202,46 @@ export default class MdSwitch extends LitElement {
             "switch__handle-container_selected": this.selected,
           })}
         >
-          <div class="switch__state-layer"></div>
+          <div part="state-layer" class="switch__state-layer"></div>
           <div
+            part="handle"
             class=${classMap({
               switch__handle: true,
               switch__handle_selected: this.selected,
               "switch__handle_with-icon": this.icons,
             })}
           >
-            ${this.icons
-              ? html`
-                  <div class="switch__icon">
-                    ${this.selected
-                      ? html`<svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          height="16px"
-                          viewBox="0 -960 960 960"
-                          width="16px"
-                        >
-                          <path
-                            d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
-                          />
-                        </svg>`
-                      : html`<svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          height="16px"
-                          viewBox="0 -960 960 960"
-                          width="16px"
-                        >
-                          <path
-                            d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
-                          />
-                        </svg>`}
-                  </div>
-                `
-              : nothing}
+            ${
+              this.icons
+                ? html`
+                    <div part="icon" class="switch__icon">
+                      ${
+                        this.selected
+                          ? html`<svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              height="16px"
+                              viewBox="0 -960 960 960"
+                              width="16px"
+                            >
+                              <path
+                                d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+                              />
+                            </svg>`
+                          : html`<svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              height="16px"
+                              viewBox="0 -960 960 960"
+                              width="16px"
+                            >
+                              <path
+                                d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
+                              />
+                            </svg>`
+                      }
+                    </div>
+                  `
+                : nothing
+            }
           </div>
         </div>
       </div>
