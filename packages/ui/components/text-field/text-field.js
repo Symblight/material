@@ -46,6 +46,15 @@ export class TextField extends FormControlMixin(LitElement) {
     focused: { state: true },
     nativeError: { state: true },
     ariaId: { state: true },
+    /**
+     * The element slotted into `input`, if any (set on `slotchange`). Must
+     * be reactive: the label's `for` binding reads it to decide whether to
+     * target the fallback `<input>` (see `renderFilledLabel`/
+     * `renderOutlinedLabel`) — without `state: true` here, setting it in
+     * `updateSlottedInput()` wouldn't trigger a re-render, leaving `for`
+     * stuck with whatever it was at the last unrelated render.
+     */
+    customInputElement: { state: true },
     /** Indicates whether the text field is disabled or not. */
     disabled: { type: Boolean, attribute: true, reflect: true },
     /** Indicates whether the text field is read-only or not. Default is false. */
@@ -305,12 +314,23 @@ export class TextField extends FormControlMixin(LitElement) {
     `;
   }
 
+  /*
+   * `for` only targets `inputId` when the fallback `<input>`/`<textarea>`
+   * (renderInputOrTextArea) is actually what's rendered. When custom
+   * content is slotted into `input` instead, that fallback element still
+   * exists in the DOM (a <slot>'s fallback content isn't removed, only
+   * unrendered) — so leaving `for` pointed at it means clicking the label
+   * still triggers the browser's native label-click-forwarding onto that
+   * hidden element, firing a second, separate synthetic click that bubbles
+   * up alongside the label's own, double-firing any click listener on an
+   * ancestor (e.g. toggling a popover open then immediately closed again).
+   */
   get renderFilledLabel() {
     return when(
       this.label && this.variant === "filled",
       () => html`
         <label
-          for=${this.inputId}
+          for=${this.customInputElement ? nothing : this.inputId}
           part="label"
           class="text-field__label text-field__filled-label ${classMap({
             "text-field__label_active": this.focused,
@@ -375,7 +395,7 @@ export class TextField extends FormControlMixin(LitElement) {
       this.label && this.variant === "outlined",
       () => html`
         <label
-          for=${this.inputId}
+          for=${this.customInputElement ? nothing : this.inputId}
           part="label"
           class="text-field__label text-field__outlined-label ${classMap({
             "text-field__label_active": this.focused,

@@ -1,0 +1,171 @@
+:host {
+  --md-menu-min-width: 12rem;
+  --md-menu-max-width: 22.5rem;
+  --md-menu-max-height: min(70vh, 32rem);
+  --md-menu-shape: var(
+    --md-sys-shape-corner-large,
+    1rem
+  ); /* 16dp — outer corners */
+  --md-menu-shape-inner: 0.5rem; /* 8px — corners facing the gap between segments */
+  --md-menu-surface-color: var(--md-sys-color-surface-container-low);
+  --md-menu-vibrant-surface-color: var(--md-sys-color-tertiary-container);
+
+  --md-menu-selected-container-color: var(--md-sys-color-secondary-container);
+  --md-menu-selected-label-color: var(--md-sys-color-on-secondary-container);
+  --md-menu-vibrant-selected-container-color: var(
+    --md-sys-color-primary-container
+  );
+  --md-menu-vibrant-selected-label-color: var(
+    --md-sys-color-on-primary-container
+  );
+
+  --md-menu-divider-color: var(--md-sys-color-outline-variant);
+
+  /*
+   * The host itself is the `popover="auto"` surface (see
+   * connectedCallback()/render() in menu.js) — these rules override the
+   * UA default `[popover]` stylesheet (fixed position with inset:0,
+   * margin:auto, a visible border, etc.) the same way `.md-menu` used to
+   * for the internal div this replaced.
+   */
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  overflow: visible;
+  max-inline-size: var(--md-menu-max-width);
+  min-inline-size: var(--md-menu-min-width);
+}
+
+:host(:not(:popover-open)) {
+  display: none;
+}
+
+.md-menu__card {
+  --md-card-container-color: var(--md-menu-surface-color);
+  --md-card-shape: var(--md-menu-shape);
+  display: block;
+  inline-size: 100%;
+  max-inline-size: var(--md-menu-max-width);
+}
+
+:host([variant="vibrant"]) .md-menu__card {
+  --md-card-container-color: var(--md-menu-vibrant-surface-color);
+}
+
+.md-menu__card:not(:only-of-type):first-of-type {
+  --md-card-shape: var(--md-menu-shape) var(--md-menu-shape)
+    var(--md-menu-shape-inner) var(--md-menu-shape-inner);
+}
+
+.md-menu__card:not(:only-of-type):last-of-type {
+  --md-card-shape: var(--md-menu-shape-inner) var(--md-menu-shape-inner)
+    var(--md-menu-shape) var(--md-menu-shape);
+}
+
+.md-menu__card:not(:only-of-type):not(:first-of-type):not(:last-of-type) {
+  --md-card-shape: var(--md-menu-shape-inner);
+}
+
+.md-menu__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.md-menu__segment {
+  display: flex;
+  flex-direction: column;
+  padding-block: 0.5rem;
+  max-block-size: var(--md-menu-max-height);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ── Divider between item groups within a single segment ────────────────── */
+
+::slotted(md-hr) {
+  margin-block: 0.5rem;
+  margin-inline: 0.75rem; /* inset — divider must not span full width */
+  --md-hr-color: var(--md-menu-divider-color);
+}
+
+::slotted(md-menu-group),
+::slotted(md-item-group) {
+  margin-block-start: 0.25rem;
+}
+
+/*
+ * ── Vibrant variant selection colours ───────────────────────────────────
+ * Set as inherited custom properties on the host rather than via
+ * `::slotted(md-menu-item)`: `::slotted()` only matches directly-assigned
+ * nodes, not descendants nested further inside an `md-menu-group`/
+ * `md-item-group` wrapper. Custom properties inherit through the flat tree
+ * regardless of nesting depth, so this reaches every `md-menu-item`
+ * descendant no matter how deep it's wrapped.
+ */
+:host {
+  --md-menu-item-selected-container-color: var(
+    --md-menu-selected-container-color
+  );
+  --md-menu-item-selected-label-text-color: var(--md-menu-selected-label-color);
+}
+
+:host([variant="vibrant"]) {
+  --md-menu-item-selected-container-color: var(
+    --md-menu-vibrant-selected-container-color
+  );
+  --md-menu-item-selected-label-text-color: var(
+    --md-menu-vibrant-selected-label-color
+  );
+}
+
+/*
+ * ── Open/close motion ────────────────────────────────────────────────────
+ * MD3: a menu's position affects how it appears — opened near the top of
+ * the screen, it expands *downward* to avoid being cropped; opened near
+ * the bottom (flip() resolves it above its anchor instead), it expands
+ * *upward*. Unlike a `clip-path` reveal, this stretches the surface itself
+ * vertically via `transform: scaleY()` pinned to the anchor-adjacent edge
+ * (`transform-origin`), so it reads as the shape growing into place rather
+ * than being uncovered. `data-placement` (set by PopoverPositionController
+ * from floating-ui's *resolved*, post-flip() placement) picks the edge.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :host {
+    transform-origin: top; /* default: surface below its anchor */
+    transition:
+      opacity 0.15s ease,
+      transform 0.2s cubic-bezier(0.2, 0, 0, 1),
+      display 0.2s allow-discrete,
+      overlay 0.2s allow-discrete;
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  /* Placement resolved to "top-*" (surface above its anchor, expanding
+     upward): grow from the bottom edge instead. */
+  :host([data-placement^="top"]) {
+    transform-origin: bottom;
+  }
+
+  :host(:not(:popover-open)) {
+    opacity: 0;
+    transform: scaleY(0.85);
+  }
+
+  @starting-style {
+    :host(:popover-open) {
+      opacity: 0;
+      transform: scaleY(0.85);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+}

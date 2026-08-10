@@ -18,3 +18,4 @@ import "./switch/switch.js";
 import "./tabs/index.js";
 import "./select/index.js";
 import "./segmented-button/index.js";
+import "./menu/index.js";
