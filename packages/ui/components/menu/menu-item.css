@@ -124,17 +124,22 @@ md-ripple {
 
 /* ── Selected pill ───────────────────────────────────────────────────────── */
 
-:host([selected]) .md-menu-item__interactive {
+:host([selected]) .md-menu-item__interactive:not([role="option"]),
+.md-menu-item__interactive[aria-selected="true"] {
   background-color: var(--md-menu-item-selected-container-color);
   color: var(--md-menu-item-selected-label-text-color);
 }
 
-:host([selected]) .md-menu-item__label {
+:host([selected])
+  .md-menu-item__interactive:not([role="option"])
+  .md-menu-item__label,
+.md-menu-item__interactive[aria-selected="true"] .md-menu-item__label {
   color: var(--md-menu-item-selected-label-text-color);
 }
 
 @media (forced-colors: active) {
-  :host([selected]) .md-menu-item__interactive {
+  :host([selected]) .md-menu-item__interactive:not([role="option"]),
+  .md-menu-item__interactive[aria-selected="true"] {
     outline: 0.0625rem solid Highlight;
     outline-offset: -0.0625rem;
   }

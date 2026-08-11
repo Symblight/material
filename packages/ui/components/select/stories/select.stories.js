@@ -1,7 +1,18 @@
 import { html } from "lit";
+import { unsafeSVG } from "lit/directives/unsafe-svg.js";
+
+import edit from "@material-design-icons/svg/outlined/edit.svg?raw";
+import cloud from "@material-design-icons/svg/outlined/cloud.svg?raw";
+import share from "@material-design-icons/svg/outlined/share.svg?raw";
 
 import "../select";
+// NOT covered by the "../select" import above — that specifier actually
+// resolves straight to `../select.js` (this directory happens to contain a
+// same-named file), not the `../index.js` barrel, so `md-native-select`
+// needs its own explicit import here.
+import "../native-select.js";
 import "../../button/button.js";
+import "../../icon/icon.js";
 
 /** @import SelectProps from "../select.js" */
 
@@ -121,16 +132,21 @@ export const Required = {
   `,
 };
 
+/**
+ * `multiple`/`size` are real native `<select>` attributes with no menu-mode
+ * equivalent (there's no multi-select UI in the `md-menu`-popover path) —
+ * they live on `md-native-select` only, not `md-select`.
+ */
 /** @type {Story} */
 export const Multiple = {
   args: {},
   render: () => html`
-    <md-select label="Roles" name="roles" multiple size=${4}>
-      <md-option value="tutor">Tutor</md-option>
-      <md-option value="student" selected>Student</md-option>
-      <md-option value="classroom">Classroom</md-option>
-      <md-option value="online">Online</md-option>
-    </md-select>
+    <md-native-select label="Roles" name="roles" multiple size="4">
+      <option value="tutor">Tutor</option>
+      <option value="student" selected>Student</option>
+      <option value="classroom">Classroom</option>
+      <option value="online">Online</option>
+    </md-native-select>
   `,
 };
 
@@ -141,16 +157,84 @@ export const Group = {
     return html`
       <md-select label="Location" name="my-select">
         <md-option value="">--Please choose an option--</md-option>
-        <md-optgroup label="Person">
+        <md-option-group label="Person">
           <md-option value="tutor"> Tutor </md-option>
           <md-option value="student"> Student </md-option>
-        </md-optgroup>
+        </md-option-group>
         <md-hr></md-hr>
-        <md-optgroup label="Place">
+        <md-option-group label="Place">
           <md-option value="classroom"> Classroom </md-option>
           <md-option value="online"> Online </md-option>
-        </md-optgroup>
+        </md-option-group>
       </md-select>
     `;
   },
+};
+
+// ── md-native-select vs. md-select (menu mode) ───────────────────────────
+
+/**
+ * `md-native-select` and `md-select` are two separate components now (they
+ * used to be a single `md-select` flipped by a `native` boolean attribute —
+ * split apart for the same reason `md-menu-item`'s old `type="menuitem" |
+ * "option"` attribute was split into `md-menu-item`/`md-option`: a boolean
+ * flag flipping a component's entire identity/rendering is the wrong shape).
+ * Both are real, form-associated controls (`FormAssociateMixin`/
+ * `ElementInternals` value handling), side by side here for comparison —
+ * the difference is what opens when you click it, and what kind of
+ * children each one takes:
+ *
+ * - **`md-native-select`** (left) — the browser's own OS/platform `<select>`
+ *   dropdown opens; plain text only, no icons. Takes real `<option>`
+ *   elements as children (not `md-option` — a custom element can't be a
+ *   genuine child of a native `<select>`, and can't even be *slotted* into
+ *   one from a shadow root; see `components/select/native-select.js`).
+ * - **`md-select`** (right) — the visible, interactive control is an
+ *   `md-menu` popover instead, so richer content (here, a leading icon per
+ *   option) actually renders, and the selected row gets an automatic
+ *   checkmark. Takes `md-option` children. A native `<select>` still exists
+ *   underneath, visually hidden — kept in sync as the form's
+ *   `validationTarget`/value mirror, but it's not what the user opens/
+ *   clicks. See `components/select/select.js`.
+ */
+/** @type {Story} */
+export const NativeVsMenuMode = {
+  render: () => html`
+    <div style="display: flex; gap: 2rem; flex-wrap: wrap; align-items: start;">
+      <div>
+        <p
+          style="font: var(--md-sys-typescale-label-medium-font, inherit); margin: 0 0 0.5rem;"
+        >
+          md-native-select (browser dropdown)
+        </p>
+        <md-native-select label="Sort by" name="sort-native">
+          <option value="name" selected>Name</option>
+          <option value="date">Date modified</option>
+          <option value="size">Size</option>
+        </md-native-select>
+      </div>
+
+      <div>
+        <p
+          style="font: var(--md-sys-typescale-label-medium-font, inherit); margin: 0 0 0.5rem;"
+        >
+          md-select (md-menu popover)
+        </p>
+        <md-select label="Sort by" name="sort-menu" style="width: 204px;">
+          <md-option value="name" selected>
+            <md-icon slot="leading">${unsafeSVG(edit)}</md-icon>
+            Name
+          </md-option>
+          <md-option value="date">
+            <md-icon slot="leading">${unsafeSVG(cloud)}</md-icon>
+            Date modified
+          </md-option>
+          <md-option value="size">
+            <md-icon slot="leading">${unsafeSVG(share)}</md-icon>
+            Size
+          </md-option>
+        </md-select>
+      </div>
+    </div>
+  `,
 };

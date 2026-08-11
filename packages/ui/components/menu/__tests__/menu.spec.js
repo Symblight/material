@@ -1,4 +1,5 @@
 import { expect, fixture, html } from "@open-wc/testing";
+import { sendKeys } from "@web/test-runner-commands";
 
 import "../index.js";
 
@@ -19,11 +20,11 @@ describe("md-menu", () => {
       expect(el).to.exist;
     });
 
-    it("is itself the popover=auto surface", async () => {
+    it("is itself the popover=manual surface (dismiss is self-managed, not native light-dismiss)", async () => {
       const el = /** @type {MdMenu} */ (
         await fixture(html`<md-menu></md-menu>`)
       );
-      expect(el.getAttribute("popover")).to.equal("auto");
+      expect(el.getAttribute("popover")).to.equal("manual");
     });
 
     it("renders a role=menu container inside md-card", async () => {
@@ -181,7 +182,11 @@ describe("md-menu", () => {
       expect(menu.open).to.be.false;
     });
 
-    it('positioning="fixed" closes on an outside pointerdown (own light-dismiss)', async () => {
+    it('positioning="fixed" closes on an outside click (own light-dismiss)', async () => {
+      // Dismiss is driven by a `document` `click` listener (capture phase),
+      // not `pointerdown` — see `PopoverPositionController._onDocumentClick`
+      // — so a real outside interaction is a pointerdown *followed by* a
+      // click, matching what the browser actually fires for a real click.
       const el = /** @type {HTMLElement} */ (
         await fixture(html`
           <div>
@@ -198,6 +203,9 @@ describe("md-menu", () => {
 
       document.body.dispatchEvent(
         new PointerEvent("pointerdown", { bubbles: true, composed: true }),
+      );
+      document.body.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
       );
       await tick();
 
@@ -652,6 +660,110 @@ describe("md-menu", () => {
       expect(menu.open).to.be.false;
       expect(el.shadowRoot ?? document.activeElement).to.exist;
       expect(document.activeElement).to.equal(trigger);
+    });
+  });
+
+  // ─── Tab ─────────────────────────────────────────────────────────────────
+  //
+  // Uses `sendKeys()` from `@web/test-runner-commands`, which drives the
+  // browser's real input automation (Playwright, per web-test-runner.config)
+  // the same way `page.keyboard.press('Tab')` does — a genuine trusted
+  // keypress, not a synthetic `KeyboardEvent` dispatch. This matters here
+  // specifically: the menu's dismiss is driven entirely by
+  // `PopoverPositionController`'s own `focusout` listener (see
+  // `_onSurfaceFocusOut`), not native `popover` light-dismiss (which is
+  // pointerdown-driven, not focus-driven, and never catches Tab-out even
+  // when it IS used) — only a *real* Tab, which actually moves
+  // `document.activeElement` via the browser's own tab order, fires a real
+  // `focusout` and proves the menu closes. (A synthetic
+  // `dispatchEvent(new KeyboardEvent(...))`, by contrast, never moves focus
+  // and so never fires `focusout` either — correct, unrelated platform
+  // behavior that a regression test for *this* bug shouldn't conflate with
+  // the fix.)
+  describe("Tab", () => {
+    it("closes the menu on a real Tab keypress and lets focus move on natively", async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <button id="tabTrigger">Open</button>
+            <md-menu for="tabTrigger">
+              <md-menu-item id="tabItem" value="one">One</md-menu-item>
+            </md-menu>
+            <button id="tabOutside">Outside</button>
+          </div>
+        `)
+      );
+      const menu = /** @type {MdMenu} */ (el.querySelector("md-menu"));
+      const trigger = /** @type {HTMLButtonElement} */ (
+        el.querySelector("#tabTrigger")
+      );
+      const outside = /** @type {HTMLButtonElement} */ (
+        el.querySelector("#tabOutside")
+      );
+      await menu.updateComplete;
+      trigger.click();
+      await tick();
+      expect(menu.open).to.be.true;
+
+      const item = /** @type {MdMenuItem} */ (el.querySelector("#tabItem"));
+      await item.updateComplete;
+      item.shadowRoot.querySelector(".md-menu-item__interactive").focus();
+
+      await sendKeys({ press: "Tab" });
+      await tick();
+
+      expect(menu.open).to.be.false;
+      // Focus was allowed to land wherever native Tab order sends it (here,
+      // the next focusable sibling) — not forced back to the trigger.
+      expect(document.activeElement).to.equal(outside);
+
+      outside.remove();
+      trigger.remove();
+      menu.remove();
+    });
+
+    it("closes the whole open submenu chain, not just the innermost submenu", async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <button id="tabTrigger2">Open</button>
+            <md-menu for="tabTrigger2">
+              <md-menu-item id="tabParent" value="parent">
+                Parent
+                <md-menu slot="submenu">
+                  <md-menu-item id="tabChild" value="child">Child</md-menu-item>
+                </md-menu>
+              </md-menu-item>
+            </md-menu>
+          </div>
+        `)
+      );
+      const menu = /** @type {MdMenu} */ (el.querySelector("md-menu"));
+      const trigger = /** @type {HTMLButtonElement} */ (
+        el.querySelector("#tabTrigger2")
+      );
+      await menu.updateComplete;
+      trigger.click();
+      await tick();
+
+      const parent = /** @type {MdMenuItem} */ (el.querySelector("#tabParent"));
+      await parent.updateComplete;
+      parent.shadowRoot.querySelector(".md-menu-item__interactive").focus();
+      parent.expandSubmenu();
+      await tick();
+
+      const submenu = parent.submenuEl;
+      expect(submenu.open).to.be.true;
+
+      const child = /** @type {MdMenuItem} */ (el.querySelector("#tabChild"));
+      await child.updateComplete;
+      child.shadowRoot.querySelector(".md-menu-item__interactive").focus();
+
+      await sendKeys({ press: "Tab" });
+      await tick();
+
+      expect(submenu.open).to.be.false;
+      expect(menu.open).to.be.false;
     });
   });
 

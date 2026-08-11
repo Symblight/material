@@ -1,7 +1,6 @@
 import { expect, fixture, html } from "@open-wc/testing";
 
 import "../select.js";
-import "../../menu/menu-item.js";
 /** @import Select from "../select.js" */
 
 describe("md-select", () => {
@@ -79,57 +78,16 @@ describe("md-select", () => {
     });
   });
 
-  describe("options from md-menu-item", () => {
-    it("renders slotted md-menu-item elements as native <option> elements", async () => {
+  describe("md-option label mirroring", () => {
+    it("excludes leading/trailing slot content from the mirrored native option label", async () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-menu-item value="a">Alpha</md-menu-item>
-            <md-menu-item value="b">Beta</md-menu-item>
-          </md-select>
-        `)
-      );
-      await new Promise((r) => setTimeout(r, 0));
-      await el.updateComplete;
-
-      const tf = el.shadowRoot.querySelector("md-text-field");
-      const nativeSelect = /** @type {HTMLSelectElement} */ (
-        tf.querySelector("select")
-      );
-      const options = nativeSelect.querySelectorAll("option");
-      expect(options.length).to.equal(2);
-      expect(options[0].value).to.equal("a");
-      expect(options[0].textContent.trim()).to.equal("Alpha");
-    });
-
-    it("passes value and selected from md-menu-item to native option", async () => {
-      const el = /** @type {Select} */ (
-        await fixture(html`
-          <md-select>
-            <md-menu-item value="green">Green</md-menu-item>
-            <md-menu-item value="blue" selected>Blue</md-menu-item>
-          </md-select>
-        `)
-      );
-      await new Promise((r) => setTimeout(r, 0));
-      await el.updateComplete;
-
-      const tf = el.shadowRoot.querySelector("md-text-field");
-      const options = tf.querySelectorAll("option");
-      expect(options[1].value).to.equal("blue");
-      expect(options[1].selected).to.be.true;
-      expect(el.value).to.equal("blue");
-    });
-
-    it("excludes leading/trailing slot content from the option label", async () => {
-      const el = /** @type {Select} */ (
-        await fixture(html`
-          <md-select>
-            <md-menu-item value="a">
-              <span slot="leading">icon</span>
+            <md-option value="a">
+              <md-icon slot="leading">icon</md-icon>
               Alpha
               <span slot="trailing">⌘A</span>
-            </md-menu-item>
+            </md-option>
           </md-select>
         `)
       );
@@ -142,33 +100,14 @@ describe("md-select", () => {
       );
       expect(option.textContent.trim()).to.equal("Alpha");
     });
-
-    it("supports mixing md-option and md-menu-item children", async () => {
-      const el = /** @type {Select} */ (
-        await fixture(html`
-          <md-select>
-            <md-option value="a">Alpha</md-option>
-            <md-menu-item value="b">Beta</md-menu-item>
-          </md-select>
-        `)
-      );
-      await new Promise((r) => setTimeout(r, 0));
-      await el.updateComplete;
-
-      const tf = el.shadowRoot.querySelector("md-text-field");
-      const options = tf.querySelectorAll("option");
-      expect(options.length).to.equal(2);
-      expect(options[0].value).to.equal("a");
-      expect(options[1].value).to.equal("b");
-    });
   });
 
-  describe("menu mode (md-menu-item present)", () => {
+  describe("menu mode (default)", () => {
     it("renders a trigger button instead of an interactive native select", async () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-option value="a">Alpha</md-option>
           </md-select>
         `)
       );
@@ -191,7 +130,7 @@ describe("md-select", () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-option value="a">Alpha</md-option>
           </md-select>
         `)
       );
@@ -207,12 +146,12 @@ describe("md-select", () => {
       expect(tf.focused).to.be.true;
     });
 
-    it("renders an md-menu with md-menu-item rows mirroring the options", async () => {
+    it("renders an md-menu, forwarding md-option children into it", async () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-menu-item value="a">Alpha</md-menu-item>
-            <md-menu-item value="b" selected>Beta</md-menu-item>
+            <md-option value="a">Alpha</md-option>
+            <md-option value="b" selected>Beta</md-option>
           </md-select>
         `)
       );
@@ -226,7 +165,7 @@ describe("md-select", () => {
       // anchoring to it misaligned the popover from the field's visible box.
       expect(menu.getAttribute("for")).to.equal("select-field");
 
-      const items = menu.querySelectorAll("md-menu-item");
+      const items = el.querySelectorAll("md-option");
       expect(items.length).to.equal(2);
       expect(items[1].hasAttribute("selected")).to.be.true;
     });
@@ -235,8 +174,8 @@ describe("md-select", () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-menu-item value="a">Alpha</md-menu-item>
-            <md-menu-item value="b" selected>Beta</md-menu-item>
+            <md-option value="a">Alpha</md-option>
+            <md-option value="b" selected>Beta</md-option>
           </md-select>
         `)
       );
@@ -253,7 +192,7 @@ describe("md-select", () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-option value="a">Alpha</md-option>
           </md-select>
         `)
       );
@@ -273,7 +212,7 @@ describe("md-select", () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-option value="a">Alpha</md-option>
           </md-select>
         `)
       );
@@ -290,11 +229,12 @@ describe("md-select", () => {
       expect(trigger.getAttribute("aria-expanded")).to.equal("true");
     });
 
-    it("renders menu-mode md-menu-item rows with type=option (role=option)", async () => {
+    it("renders menu-mode md-option rows with role=option and aria-selected reflecting the current value", async () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-option value="a">Alpha</md-option>
+            <md-option value="b" selected>Beta</md-option>
           </md-select>
         `)
       );
@@ -304,21 +244,33 @@ describe("md-select", () => {
       const menu = el.shadowRoot.querySelector("md-menu");
       expect(menu.getAttribute("menu-role")).to.equal("listbox");
 
-      const item = menu.querySelector("md-menu-item");
-      await item.updateComplete;
-      expect(item.type).to.equal("option");
-      const interactive = item.shadowRoot.querySelector(
+      const options = /** @type {import("../option.js").MdOption[]} */ (
+        Array.from(el.querySelectorAll("md-option"))
+      );
+      await Promise.all(options.map((o) => o.updateComplete));
+
+      for (const option of options) {
+        const interactive = option.shadowRoot.querySelector(
+          ".md-menu-item__interactive",
+        );
+        expect(interactive.getAttribute("role")).to.equal("option");
+      }
+
+      const selected = options.find((o) => o.value === "b");
+      const selectedInteractive = selected.shadowRoot.querySelector(
         ".md-menu-item__interactive",
       );
-      expect(interactive.getAttribute("role")).to.equal("option");
+      expect(selectedInteractive.getAttribute("aria-selected")).to.equal(
+        "true",
+      );
     });
 
     it("ArrowDown on the closed trigger opens the menu and focuses the selected item", async () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-menu-item value="a">Alpha</md-menu-item>
-            <md-menu-item value="b" selected>Beta</md-menu-item>
+            <md-option value="a">Alpha</md-option>
+            <md-option value="b" selected>Beta</md-option>
           </md-select>
         `)
       );
@@ -339,7 +291,7 @@ describe("md-select", () => {
       await el.updateComplete;
 
       expect(menu.open).to.be.true;
-      const betaItem = Array.from(menu.querySelectorAll("md-menu-item")).find(
+      const betaItem = Array.from(el.querySelectorAll("md-option")).find(
         (item) => item.value === "b",
       );
       expect(betaItem.getTabIndex()).to.equal(0);
@@ -349,8 +301,8 @@ describe("md-select", () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-menu-item value="a">Alpha</md-menu-item>
-            <md-menu-item value="b" selected>Beta</md-menu-item>
+            <md-option value="a">Alpha</md-option>
+            <md-option value="b" selected>Beta</md-option>
           </md-select>
         `)
       );
@@ -371,7 +323,7 @@ describe("md-select", () => {
       await el.updateComplete;
 
       expect(menu.open).to.be.true;
-      const alphaItem = Array.from(menu.querySelectorAll("md-menu-item")).find(
+      const alphaItem = Array.from(el.querySelectorAll("md-option")).find(
         (item) => item.value === "a",
       );
       expect(alphaItem.getTabIndex()).to.equal(0);
@@ -381,8 +333,8 @@ describe("md-select", () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-menu-item value="a">Alpha</md-menu-item>
-            <md-menu-item value="b">Beta</md-menu-item>
+            <md-option value="a">Alpha</md-option>
+            <md-option value="b">Beta</md-option>
           </md-select>
         `)
       );
@@ -403,18 +355,18 @@ describe("md-select", () => {
       await el.updateComplete;
 
       expect(menu.open).to.be.true;
-      const betaItem = Array.from(menu.querySelectorAll("md-menu-item")).find(
+      const betaItem = Array.from(el.querySelectorAll("md-option")).find(
         (item) => item.value === "b",
       );
       expect(betaItem.getTabIndex()).to.equal(0);
     });
 
-    it("selecting a menu item updates the value and syncs the hidden native select", async () => {
+    it("selecting an option updates the value and syncs the hidden native select", async () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select name="role">
-            <md-menu-item value="a">Alpha</md-menu-item>
-            <md-menu-item value="b">Beta</md-menu-item>
+            <md-option value="a">Alpha</md-option>
+            <md-option value="b">Beta</md-option>
           </md-select>
         `)
       );
@@ -426,15 +378,12 @@ describe("md-select", () => {
         changed = true;
       });
 
-      const menu = /** @type {import("../../menu/menu.js").MdMenu} */ (
-        el.shadowRoot.querySelector("md-menu")
+      const betaItem = /** @type {import("../option.js").MdOption} */ (
+        Array.from(el.querySelectorAll("md-option")).find(
+          (item) => item.value === "b",
+        )
       );
-      const betaItem =
-        /** @type {import("../../menu/menu-item.js").MdMenuItem} */ (
-          Array.from(menu.querySelectorAll("md-menu-item")).find(
-            (item) => item.value === "b",
-          )
-        );
+      await betaItem.updateComplete;
       betaItem.shadowRoot.querySelector(".md-menu-item__interactive").click();
       await new Promise((r) => setTimeout(r, 30));
       await el.updateComplete;
@@ -611,28 +560,6 @@ describe("md-select", () => {
     });
   });
 
-  // ─── multiple ─────────────────────────────────────────────────────────────
-
-  describe("multiple", () => {
-    it("is false by default", async () => {
-      const el = /** @type {Select} */ (
-        await fixture(html`<md-select></md-select>`)
-      );
-      expect(el.multiple).to.be.false;
-    });
-
-    it("passes multiple to the native select", async () => {
-      const el = /** @type {Select} */ (
-        await fixture(html`<md-select multiple></md-select>`)
-      );
-      const tf = el.shadowRoot.querySelector("md-text-field");
-      const nativeSelect = /** @type {HTMLSelectElement} */ (
-        tf.querySelector("select")
-      );
-      expect(nativeSelect.multiple).to.be.true;
-    });
-  });
-
   // ─── formResetCallback ────────────────────────────────────────────────────
 
   describe("formResetCallback", () => {
@@ -653,24 +580,6 @@ describe("md-select", () => {
 
       el.formResetCallback();
       expect(el.value).to.equal("alpha");
-    });
-
-    it("formResetCallback resets multiple-select selections", async () => {
-      const el = /** @type {Select} */ (
-        await fixture(html`
-          <md-select multiple>
-            <md-option value="a" selected>A</md-option>
-            <md-option value="b">B</md-option>
-          </md-select>
-        `)
-      );
-      await new Promise((r) => setTimeout(r, 0));
-      await el.updateComplete;
-
-      // Calling reset should not throw
-      el.formResetCallback();
-      await el.updateComplete;
-      expect(el).to.exist;
     });
   });
 
@@ -705,13 +614,13 @@ describe("md-select", () => {
   // ─── optgroup rendering ───────────────────────────────────────────────────
 
   describe("optgroup options", () => {
-    it("renders native optgroup when md-optgroup is slotted", async () => {
+    it("renders native optgroup when md-option-group is slotted", async () => {
       const el = /** @type {Select} */ (
         await fixture(html`
           <md-select>
-            <md-optgroup label="Fruits">
+            <md-option-group label="Fruits">
               <md-option value="apple">Apple</md-option>
-            </md-optgroup>
+            </md-option-group>
           </md-select>
         `)
       );

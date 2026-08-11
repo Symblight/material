@@ -161,69 +161,7 @@ export const IconButtonTrigger = {
   `,
 };
 
-// ── 2. md-select: two approaches ────────────────────────────────────────────
-
-/**
- * `md-select` accepts two different child types, side by side here for
- * comparison — both are real, form-associated controls (same `md-select`,
- * same `FormAssociateMixin`/`ElementInternals` value handling), the only
- * difference is what opens when you click it:
- *
- * - **`md-option`** (left) — native mode, unchanged from before `md-menu`
- *   existed. The browser's own OS/platform dropdown opens; plain text only,
- *   no icons.
- * - **`md-menu-item`** (right) — as soon as any child is an `md-menu-item`,
- *   `md-select` switches into **menu mode**: the visible, interactive
- *   control becomes an `md-menu` popover instead, so richer content (here,
- *   a leading icon per option) actually renders, and the selected row gets
- *   an automatic checkmark. A native `<select>` still exists underneath,
- *   visually hidden — kept in sync as the form's `validationTarget`/value
- *   mirror, but it's no longer what the user opens/clicks. See
- *   `components/select/select.js`.
- */
-/** @type {Story} */
-export const SelectApproaches = {
-  render: () => html`
-    <div style="display: flex; gap: 2rem; flex-wrap: wrap; align-items: start;">
-      <div>
-        <p
-          style="font: var(--md-sys-typescale-label-medium-font, inherit); margin: 0 0 0.5rem;"
-        >
-          md-option (native dropdown)
-        </p>
-        <md-select label="Sort by" name="sort-native">
-          <md-option value="name" selected>Name</md-option>
-          <md-option value="date">Date modified</md-option>
-          <md-option value="size">Size</md-option>
-        </md-select>
-      </div>
-
-      <div>
-        <p
-          style="font: var(--md-sys-typescale-label-medium-font, inherit); margin: 0 0 0.5rem;"
-        >
-          md-menu-item (md-menu popover, menu mode)
-        </p>
-        <md-select label="Sort by" name="sort-menu" style="width: 204px;">
-          <md-menu-item value="name" selected>
-            <md-icon slot="leading">${unsafeSVG(edit)}</md-icon>
-            Name
-          </md-menu-item>
-          <md-menu-item value="date">
-            <md-icon slot="leading">${unsafeSVG(cloud)}</md-icon>
-            Date modified
-          </md-menu-item>
-          <md-menu-item value="size">
-            <md-icon slot="leading">${unsafeSVG(share)}</md-icon>
-            Size
-          </md-menu-item>
-        </md-select>
-      </div>
-    </div>
-  `,
-};
-
-// ── 3. Vertical / expressive menu ───────────────────────────────────────────
+// ── 2. Vertical / expressive menu ───────────────────────────────────────────
 
 function firstThreeItems() {
   return html`
@@ -332,7 +270,7 @@ export const VerticalMenuGapVsDivider = {
   `,
 };
 
-// ── 4. Nested submenus ───────────────────────────────────────────────────────
+// ── 3. Nested submenus ───────────────────────────────────────────────────────
 
 /**
  * A `md-menu-item` opens a nested `md-menu` via its `submenu` slot — nested
@@ -384,7 +322,7 @@ export const NestedSubmenu = {
   `,
 };
 
-// ── 5. Context menu ──────────────────────────────────────────────────────────
+// ── 4. Context menu ──────────────────────────────────────────────────────────
 
 /**
  * Opens on secondary click (`contextmenu`) via `openAtPoint`, anchored to
@@ -421,7 +359,7 @@ export const ContextMenu = {
   `,
 };
 
-// ── 6. positioning: escaping a clipping ancestor ────────────────────────────
+// ── 5. positioning: escaping a clipping ancestor ────────────────────────────
 
 /**
  * Renders one trigger + menu pair inside a small `overflow: hidden;
@@ -512,7 +450,7 @@ export const PositioningModes = {
   `,
 };
 
-// ── 7. animation="false": instant show/hide ─────────────────────────────────
+// ── 6. animation="false": instant show/hide ─────────────────────────────────
 
 /**
  * `animation="false"` disables the open/close motion entirely, independent
@@ -567,7 +505,7 @@ export const AnimationToggle = {
   `,
 };
 
-// ── 8. Lifecycle events ─────────────────────────────────────────────────────
+// ── 7. Lifecycle events ─────────────────────────────────────────────────────
 
 /**
  * `md-menu` dispatches four plain (non-`CustomEvent`, no `detail`)
@@ -639,7 +577,7 @@ export const LifecycleEvents = {
   },
 };
 
-// ── 9. md-menu-item href: navigation vs. action items ───────────────────────
+// ── 8. md-menu-item href: navigation vs. action items ───────────────────────
 
 /**
  * Setting `href` on an `md-menu-item` renders its interactive element as

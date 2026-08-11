@@ -1,36 +1,13 @@
-import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 
-@customElement("md-optgroup")
-export class MdOptGroup extends LitElement {
-  /** @type {import("lit").PropertyDeclarations} */
-  static properties = {
-    label: { type: String },
-    options: { state: true },
-  };
+import { MdMenuGroup } from "../menu/group.js";
 
-  constructor() {
-    super();
-
-    this.label = "";
-
-    /** @type {Map<string, HTMLOptionElement>} */
-    this.options = new Map();
-  }
-
-  /** @returns {HTMLOptGroupElement[]} */
-  get groupElement() {
-    const slot = /** @type {HTMLSlotElement | null} */ (
-      this.renderRoot?.querySelector("slot:not([name])")
-    );
-    return /** @type {HTMLOptGroupElement[]} */ (
-      slot?.assignedElements() ?? []
-    );
-  }
-
-  render() {
-    return html`<optgroup label="${this.label}">
-      <slot></slot>
-    </optgroup>`;
-  }
-}
+/**
+ * @tag md-option-group
+ * @summary Material Design 3 select option group.
+ *
+ * Groups `md-option` elements under an optional label. Extends
+ * `md-menu-group` verbatim, purely for a clearer select-specific tag name.
+ */
+@customElement("md-option-group")
+export class MdOptionGroup extends MdMenuGroup {}

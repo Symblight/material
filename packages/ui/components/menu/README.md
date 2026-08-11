@@ -62,7 +62,7 @@ import "@symblight/wc-material/menu";
 
 ### 2. Grouped items with a label header
 
-`md-menu-group` mirrors `md-optgroup` — an optional "Label text" header above a set of items, purely visual/semantic. Keyboard navigation and typeahead flatten through it automatically.
+`md-menu-group` mirrors `md-option-group` (`components/select/group.js`) — an optional "Label text" header above a set of items, purely visual/semantic. Keyboard navigation and typeahead flatten through it automatically.
 
 ```html
 <md-button id="trigger-2">Sort by</md-button>
@@ -140,16 +140,9 @@ document.querySelector("#canvas").addEventListener("contextmenu", (event) => {
 
 ### 6. Listbox mode (used internally by `md-select`)
 
-Set `menu-role="listbox"` and `type="option"` on each item to get `role="listbox"`/`role="option"` and `aria-selected` instead of `role="menu"`/`role="menuitem"`. Pair with `keep-open` so selecting an option doesn't close the menu, and `focus-on-open="selected"` to focus the currently-selected option when it reopens.
+`menu-role="listbox"` (`role="listbox"` instead of `role="menu"`) plus `focus-on-open="selected"` (focuses the currently-selected item when the menu reopens) is what `md-select` sets up internally when in its default menu mode — see `components/select/select.js`.
 
-```html
-<md-button id="trigger-6">Choose a color</md-button>
-<md-menu for="trigger-6" menu-role="listbox" focus-on-open="selected">
-  <md-menu-item type="option" value="red" keep-open selected>Red</md-menu-item>
-  <md-menu-item type="option" value="green" keep-open>Green</md-menu-item>
-  <md-menu-item type="option" value="blue" keep-open>Blue</md-menu-item>
-</md-menu>
-```
+This mode isn't meant to be hand-authored directly with `md-menu-item`: `role="option"`/`aria-selected` on items now comes from `md-option` (`components/select/option.js`, via `ListboxItemMixin` shared with `md-menu-item`), which only renders that way as a child of `md-select` — it reads the current mode/value from `md-select`'s own context. `md-menu-item` itself always renders `role="menuitem"`, with no `aria-selected`, regardless of `menu-role`. See [`../select/README.md`](../select/README.md).
 
 ### 7. Hover trigger and vibrant variant
 
@@ -204,7 +197,7 @@ await menu.close(); // closes and returns focus to the trigger
 | `trigger`          | `trigger`            | `"click" \| "hover" \| "contextmenu"`              | `"click"`                                       | How the `for`-resolved anchor opens the menu.                                                                      |
 | `animation`        | `animation`          | `"true" \| "false"`                                | `"true"`                                        | Set to `"false"` to disable the open/close transition.                                                             |
 | `matchAnchorWidth` | `match-anchor-width` | `boolean`                                          | `false`                                         | Constrains the surface's inline size to match the anchor's.                                                        |
-| `menuRole`         | `menu-role`          | `"menu" \| "listbox"`                              | `"menu"`                                        | ARIA role of the surface. `"listbox"` for `md-select`-style usage — pair with `type="option"` on items.            |
+| `menuRole`         | `menu-role`          | `"menu" \| "listbox"`                              | `"menu"`                                        | ARIA role of the surface. `"listbox"` for `md-select`-style usage — see the listbox mode example above.            |
 | `focusOnOpen`      | `focus-on-open`      | `"first" \| "selected"`                            | `"first"`                                       | Which item receives focus when the menu opens.                                                                     |
 | `anchorElement`    | —                    | `HTMLElement \| undefined`                         | `undefined`                                     | Explicit anchor override, bypassing `for` resolution. Used internally for submenus (anchored to the parent item).  |
 
@@ -259,14 +252,13 @@ await menu.close(); // closes and returns focus to the trigger
 
 ### Properties
 
-| Property   | Attribute   | Type                     | Default      | Description                                                                                                              |
-| ---------- | ----------- | ------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `value`    | `value`     | `string`                 | `""`         | Value dispatched in the `select` event detail.                                                                           |
-| `href`     | `href`      | `string \| undefined`    | `undefined`  | Renders an inner `<a href>` instead of `<button>` — a navigation item.                                                   |
-| `disabled` | `disabled`  | `boolean`                | `false`      | Focusable but not activatable, per APG. Reflects as an attribute.                                                        |
-| `selected` | `selected`  | `boolean`                | `false`      | Applies the selected-pill styling and (with `type="option"`) `aria-selected`. Reflects as an attribute.                  |
-| `keepOpen` | `keep-open` | `boolean`                | `false`      | Prevents the parent `md-menu` from closing after this item is selected. Reflects as an attribute.                        |
-| `type`     | `type`      | `"menuitem" \| "option"` | `"menuitem"` | `"option"` renders `role="option"`/`aria-selected` for listbox-style usage (e.g. `md-select`). Reflects as an attribute. |
+| Property   | Attribute   | Type                  | Default     | Description                                                                                                                                                                        |
+| ---------- | ----------- | --------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`    | `value`     | `string`              | `""`        | Value dispatched in the `select` event detail.                                                                                                                                     |
+| `href`     | `href`      | `string \| undefined` | `undefined` | Renders an inner `<a href>` instead of `<button>` — a navigation item.                                                                                                             |
+| `disabled` | `disabled`  | `boolean`             | `false`     | Focusable but not activatable, per APG. Reflects as an attribute.                                                                                                                  |
+| `selected` | `selected`  | `boolean`             | `false`     | Applies the selected-pill styling. Reflects as an attribute. `md-menu-item` never emits `aria-selected` — see `md-option` for listbox-style `role="option"`/`aria-selected` usage. |
+| `keepOpen` | `keep-open` | `boolean`             | `false`     | Prevents the parent `md-menu` from closing after this item is selected. Reflects as an attribute.                                                                                  |
 
 ### Methods
 
@@ -343,7 +335,7 @@ All slots are optional. A slot's wrapper is hidden (`display: none`) when empty,
 
 ## API — md-menu-group
 
-Wraps a set of `md-menu-item` elements under an optional "Label text" header. Mirrors `md-optgroup`. Purely visual/semantic — `md-menu`'s keyboard navigation and typeahead flatten through it automatically.
+Wraps a set of `md-menu-item` elements under an optional "Label text" header. Mirrored by `md-option-group` (`components/select/group.js`, which extends this class). Purely visual/semantic — `md-menu`'s keyboard navigation and typeahead flatten through it automatically.
 
 ### Properties
 
@@ -383,18 +375,17 @@ Wraps a set of `md-menu-item` elements into a visually distinct card segment (MD
 
 ## Accessibility
 
-| Aspect                           | Detail                                                                                                                                                                                                                                                                                             |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Host role                        | `role="menu"` (default) or `role="listbox"` when `menu-role="listbox"`                                                                                                                                                                                                                             |
-| Accessible name                  | `aria-labelledby` set on the host, pointing at the `for`-resolved trigger's `id`                                                                                                                                                                                                                   |
-| Trigger ARIA                     | `aria-haspopup="menu"` and `aria-expanded` kept in sync on the trigger element                                                                                                                                                                                                                     |
-| Keyboard — open menu             | `ArrowDown`/`ArrowUp` move focus and wrap; `Home`/`End` jump to first/last; `ArrowRight`/`Enter`/`Space` open a submenu on an item that has one; `ArrowLeft`/`Escape` closes (submenu returns focus to its parent item); `Tab` lets focus leave naturally (native popover light-dismiss closes it) |
-| Typeahead                        | Printable-character keys jump to the next item whose label starts with the typed prefix; repeating the same character cycles through matches                                                                                                                                                       |
-| Disabled items                   | Focusable and part of the roving-tabindex sequence, but not activatable (APG)                                                                                                                                                                                                                      |
-| Submenu ARIA                     | Parent `md-menu-item` gets `aria-haspopup="menu"` and `aria-expanded`, synced to the submenu's open state                                                                                                                                                                                          |
-| `md-menu-item` (`href`)          | `aria-disabled` + `tabindex="-1"` + `pointer-events: none` in place of native `disabled` (`<a>` has no native disabled state)                                                                                                                                                                      |
-| `md-menu-item` (`type="option"`) | `role="option"` and `aria-selected` instead of `role="menuitem"`, for listbox-style usage                                                                                                                                                                                                          |
-| Reduced motion                   | `prefers-reduced-motion: reduce` disables the open/close transition; same effect as `animation="false"`                                                                                                                                                                                            |
+| Aspect                  | Detail                                                                                                                                                                                                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host role               | `role="menu"` (default) or `role="listbox"` when `menu-role="listbox"`                                                                                                                                                                                                                             |
+| Accessible name         | `aria-labelledby` set on the host, pointing at the `for`-resolved trigger's `id`                                                                                                                                                                                                                   |
+| Trigger ARIA            | `aria-haspopup="menu"` and `aria-expanded` kept in sync on the trigger element                                                                                                                                                                                                                     |
+| Keyboard — open menu    | `ArrowDown`/`ArrowUp` move focus and wrap; `Home`/`End` jump to first/last; `ArrowRight`/`Enter`/`Space` open a submenu on an item that has one; `ArrowLeft`/`Escape` closes (submenu returns focus to its parent item); `Tab` lets focus leave naturally (native popover light-dismiss closes it) |
+| Typeahead               | Printable-character keys jump to the next item whose label starts with the typed prefix; repeating the same character cycles through matches                                                                                                                                                       |
+| Disabled items          | Focusable and part of the roving-tabindex sequence, but not activatable (APG)                                                                                                                                                                                                                      |
+| Submenu ARIA            | Parent `md-menu-item` gets `aria-haspopup="menu"` and `aria-expanded`, synced to the submenu's open state                                                                                                                                                                                          |
+| `md-menu-item` (`href`) | `aria-disabled` + `tabindex="-1"` + `pointer-events: none` in place of native `disabled` (`<a>` has no native disabled state)                                                                                                                                                                      |
+| Reduced motion          | `prefers-reduced-motion: reduce` disables the open/close transition; same effect as `animation="false"`                                                                                                                                                                                            |
 
 ---
 

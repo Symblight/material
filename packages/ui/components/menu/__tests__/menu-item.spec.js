@@ -25,44 +25,15 @@ describe("md-menu-item", () => {
       expect(el.keepOpen).to.be.false;
     });
 
-    it('defaults type to "menuitem"', async () => {
-      const el = /** @type {MdMenuItem} */ (
-        await fixture(html`<md-menu-item></md-menu-item>`)
-      );
-      expect(el.type).to.equal("menuitem");
-    });
-  });
-
-  describe('type="option"', () => {
-    it("renders role=option on the interactive control instead of role=menuitem", async () => {
-      const el = /** @type {MdMenuItem} */ (
-        await fixture(
-          html`<md-menu-item type="option" value="a">A</md-menu-item>`,
-        )
-      );
-      const button = el.shadowRoot.querySelector(".md-menu-item__interactive");
-      expect(button.getAttribute("role")).to.equal("option");
-    });
-
-    it("reflects aria-selected from the selected property", async () => {
-      const el = /** @type {MdMenuItem} */ (
-        await fixture(
-          html`<md-menu-item type="option" value="a" selected>A</md-menu-item>`,
-        )
-      );
-      const button = el.shadowRoot.querySelector(".md-menu-item__interactive");
-      expect(button.getAttribute("aria-selected")).to.equal("true");
-
-      el.selected = false;
-      await el.updateComplete;
-      expect(button.getAttribute("aria-selected")).to.equal("false");
-    });
-
-    it("does not set aria-selected for the default menuitem type", async () => {
+    it("never sets aria-selected, even when selected", async () => {
+      // `md-menu-item` always renders role="menuitem" — role="option"/
+      // aria-selected for listbox-style usage now comes from `md-option`
+      // (components/select/option.js), not a `type` attribute here.
       const el = /** @type {MdMenuItem} */ (
         await fixture(html`<md-menu-item value="a" selected>A</md-menu-item>`)
       );
       const button = el.shadowRoot.querySelector(".md-menu-item__interactive");
+      expect(button.getAttribute("role")).to.equal("menuitem");
       expect(button.hasAttribute("aria-selected")).to.be.false;
     });
   });

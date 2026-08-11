@@ -1,14 +1,7 @@
 :host {
-  /*
-   * Unstyled custom elements default to `display: inline` (per the UA
-   * stylesheet), and `width`/`height` don't apply to non-replaced inline
-   * boxes — so a consumer's `style="width: ..."` on `<md-select>` silently
-   * did nothing. `inline-block` matches how native `<select>` behaves by
-   * default (sits inline with surrounding content, but respects an
-   * explicit width).
-   */
   display: inline-block;
   max-inline-size: 100%;
+  cursor: pointer;
 }
 
 .select__field {
@@ -30,17 +23,9 @@
 }
 
 .select__block {
+  display: flex;
   height: 1.5rem;
   line-height: var(--md-text-field-line-height, 1.5rem);
-  width: 100%;
-}
-
-.select__native-control::after {
-  content: "";
-  display: block;
-  position: absolute;
-  inset: 0;
-  height: 100%;
   width: 100%;
 }
 

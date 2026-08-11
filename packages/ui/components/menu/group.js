@@ -8,9 +8,10 @@ import styles from "./group.css?inline";
  * @summary Material Design 3 menu section group.
  *
  * Wraps a set of `md-menu-item` elements under an optional "Label text"
- * header, mirroring `md-optgroup` (`components/select/group.js`). Purely a
- * visual/semantic grouping — `md-menu`'s keyboard navigation and typeahead
- * flatten through a group's children automatically.
+ * header, mirrored by `md-option-group` (`components/select/group.js`,
+ * which extends this class). Purely a visual/semantic grouping —
+ * `md-menu`'s keyboard navigation and typeahead flatten through a group's
+ * children automatically.
  */
 @customElement("md-menu-group")
 export class MdMenuGroup extends LitElement {
@@ -31,6 +32,7 @@ export class MdMenuGroup extends LitElement {
     this.label = "";
   }
 
+  /** @returns {import("lit").TemplateResult<1>} */
   render() {
     return html`
       <div

@@ -25,18 +25,16 @@ const TYPEAHEAD_RESET_DELAY = 500;
  * @tag md-menu
  * @summary Material Design 3 menu.
  *
- * Anchors a `popover="auto"` surface (rendered via `<md-card variant="elevated">`)
- * to a trigger element resolved via the `for` attribute, or to arbitrary
- * viewport coordinates via `openAtPoint()` for the context-menu variant.
- * Positioning, anchor resolution, and imperative `showPopover()`/
- * `hidePopover()` are delegated to `PopoverPositionController`
- * (`shared/popover-position-controller.js`) — a reusable primitive shared
- * with any future `popover`-backed component (e.g. a tooltip) that needs
- * the same floating-ui-driven anchor/position/show-hide behavior without
- * any menu-specific concepts. `md-menu` itself only owns menu-specific
- * concerns: trigger wiring (click/hover/contextmenu +
- * `aria-haspopup`/`aria-expanded`), roving tabindex, typeahead, submenu
- * chevron rendering, and `select` event dispatch.
+ * Anchors a `popover="manual"` surface (an `<md-card variant="elevated">`)
+ * to a `for`-resolved trigger, or to arbitrary viewport coordinates via
+ * `openAtPoint()` for the context-menu variant. `"manual"`, not `"auto"` —
+ * dismiss is handled entirely by `PopoverPositionController`, not native
+ * light-dismiss (see that controller's class doc for why).
+ *
+ * Positioning, anchor resolution, and show/hide/dismiss are delegated to
+ * `PopoverPositionController` (a reusable primitive also meant for a future
+ * tooltip); `md-menu` itself only owns menu-specific concerns: trigger
+ * wiring, roving tabindex, typeahead, submenu chevrons, `select` dispatch.
  *
  * Slot: *(default)* — `md-menu-item`, `md-menu-group`, and `md-hr` children.
  */
@@ -47,29 +45,16 @@ export class MdMenu extends LitElement {
     open: { type: Boolean, reflect: true },
     placement: { type: String, reflect: true },
     offset: { type: Number, reflect: true },
-    /**
-     * Extra nudge along the anchor-relative cross axis (perpendicular to
-     * `offset`) — e.g. shifts a "bottom-start" menu sideways without
-     * changing how far below the anchor it sits. Additive with `offset`,
-     * not a replacement for it: default 0 means no behavior change.
-     */
+    /** Extra nudge along the anchor-relative cross axis, additive with `offset`. */
     xOffset: { type: Number, reflect: true, attribute: "x-offset" },
-    /**
-     * Extra nudge along the anchor-relative main axis, added on top of
-     * `offset` (e.g. `offset="4" y-offset="4"` opens 8px below the anchor).
-     * Kept separate from `offset` so consumers mirroring Material Web's
-     * `xOffset`/`yOffset` API have a direct equivalent, without breaking
-     * this component's existing `offset` default/behavior.
-     */
+    /** Extra nudge along the anchor-relative main axis, added on top of `offset`. */
     yOffset: { type: Number, reflect: true, attribute: "y-offset" },
     /**
-     * Whether the positioning algorithm calculates relative to the nearest
-     * positioned ancestor (`"absolute"`), the window (`"fixed"`), the
-     * whole document regardless of any intervening positioned ancestor
-     * (`"document"` — the surface is moved to be a direct child of
-     * `<body>`), or rendered in the top-layer via the native Popover API
-     * (`"popover"`, the default — falls back to `"fixed"` if the browser
-     * doesn't support it). See `_resolvedPositioning`.
+     * Positioning strategy: nearest positioned ancestor (`"absolute"`), the
+     * window (`"fixed"`), the whole document via hoisting to `<body>`
+     * (`"document"`), or the native Popover API top layer (`"popover"`,
+     * default — falls back to `"fixed"` if unsupported). See
+     * `_resolvedPositioning`.
      */
     positioning: { type: String, reflect: true },
     flip: { type: Boolean, reflect: true },
@@ -144,22 +129,14 @@ export class MdMenu extends LitElement {
 
     /**
      * Tracks the in-flight `_handleOpen()` call so `show()` can await the
-     * *full* open sequence (popover positioning + `_initRovingTabindex()`),
-     * not just the Lit update that kicks it off — `updated()` invokes
-     * `_handleOpen()` without awaiting it, so without this a caller doing
-     * `await menu.show()` then an explicit `focusFirstItem()`/
-     * `focusLastItem()` could race `_initRovingTabindex()` and have its
-     * choice of focus target silently overwritten.
+     * full open sequence, not just the Lit update that kicks it off —
+     * otherwise a caller's `focusFirstItem()` right after `show()` could
+     * race `_initRovingTabindex()` and get silently overwritten.
      * @type {Promise<void>}
      */
     this._openPromise = Promise.resolve();
 
-    /**
-     * Same role as `_openPromise`, for the close path — lets `close()` await
-     * the full close sequence (popover hide + `closing`/`closed` events),
-     * not just the Lit update that kicks it off.
-     * @type {Promise<void>}
-     */
+    /** Same role as `_openPromise`, for the close path. @type {Promise<void>} */
     this._closePromise = Promise.resolve();
 
     /** @type {number} */
@@ -174,29 +151,10 @@ export class MdMenu extends LitElement {
     /** @type {string} */
     this._typeaheadBuffer = "";
 
-    /**
-     * Native popover light-dismiss runs on `pointerdown`, which fires
-     * *before* the trigger's own `click` handler — so a click on an
-     * already-open menu's trigger has already been light-dismissed by the
-     * time `_onTriggerClick` runs, and would otherwise be misread as
-     * "currently closed" and immediately reopen it. This flag, set for one
-     * tick whenever a close is native (not requested via `close()`),
-     * suppresses that reopen — matching native `popovertarget` toggle-button
-     * semantics (click-to-close, not close-then-reopen flicker).
-     * @type {boolean}
-     */
-    this._justDismissed = false;
-
-    // Owns anchor resolution, floating-ui positioning, autoUpdate, and
-    // imperative showPopover()/hidePopover() — see file header docs.
     this._popover = new PopoverPositionController(this, {
       // The host itself is the popover surface — see render()/menu.css.
       getSurfaceEl: () => this,
       getPlacement: () => this.placement,
-      // floating-ui's offset() middleware accepts either a bare number
-      // (mainAxis only) or a { mainAxis, crossAxis } object — combining
-      // `offset`/`xOffset`/`yOffset` here needs no changes to the shared
-      // controller itself.
       getOffset: () => ({
         mainAxis: this.offset + this.yOffset,
         crossAxis: this.xOffset,
@@ -213,12 +171,6 @@ export class MdMenu extends LitElement {
       onAnchorChange: (next, prev) => this._onAnchorChange(next, prev),
       onOpenChange: (isOpen) => {
         if (this.open === isOpen) return;
-        if (!isOpen) {
-          this._justDismissed = true;
-          setTimeout(() => {
-            this._justDismissed = false;
-          }, 0);
-        }
         this.open = isOpen;
       },
     });
@@ -233,10 +185,7 @@ export class MdMenu extends LitElement {
       this._onKeydown(event);
     };
 
-    // Tracks additions/removals of direct light-DOM children (menu items,
-    // `md-menu-group`/`md-item-group` wrappers) so segments can be
-    // recomputed when consumers mutate the menu's content after first
-    // render.
+    // Recomputes segments when consumers mutate menu content after first render.
     this._childrenObserver = new MutationController(this, {
       config: { childList: true },
     });
@@ -248,9 +197,7 @@ export class MdMenu extends LitElement {
   /**
    * `positioning`, with the `"popover"` → `"fixed"` fallback applied when
    * the browser doesn't support the Popover API. Everything that cares how
-   * the surface is actually positioned/shown (`PopoverPositionController`
-   * wiring, the `popover` attribute, `"document"` hoisting) reads this
-   * instead of `positioning` directly.
+   * the surface is actually positioned/shown reads this instead.
    * @returns {"absolute" | "fixed" | "document" | "popover"}
    */
   get _resolvedPositioning() {
@@ -266,23 +213,19 @@ export class MdMenu extends LitElement {
   /**
    * Syncs the `popover` attribute and `"document"`-mode DOM hoisting to
    * `_resolvedPositioning`. Called on connect and whenever `positioning`
-   * changes. Native popover semantics (top-layer, built-in light-dismiss)
-   * only apply with the real `popover` attribute present, so every other
-   * mode must not have it — `PopoverPositionController` is told via
-   * `getUseNativePopover()` to manage visibility/dismissal itself instead.
+   * changes. Always `"manual"`, never `"auto"` — dismissal is handled by
+   * `PopoverPositionController` regardless of positioning mode.
    */
   _syncPositioningMode() {
     if (this._resolvedPositioning === "popover") {
-      this.setAttribute("popover", "auto");
+      this.setAttribute("popover", "manual");
     } else {
       this.removeAttribute("popover");
     }
 
-    // "document": relative to the whole document regardless of any
-    // intervening positioned ancestor — achieved by making the surface a
-    // direct child of <body>, so there *is* no closer positioned ancestor.
-    // Moving an already-connected node within the same document doesn't
-    // re-trigger connectedCallback, so this is safe to call from inside it.
+    // "document" mode: hoist to a direct child of <body> so there's no
+    // closer positioned ancestor. Safe from connectedCallback — moving an
+    // already-connected node doesn't re-trigger it.
     if (
       this._resolvedPositioning === "document" &&
       this.parentNode !== document.body
@@ -310,10 +253,9 @@ export class MdMenu extends LitElement {
   }
 
   /**
-   * Direct light-DOM children. Read directly off the host rather than via
-   * `assignedElements()` because children are routed to one of several
-   * `seg-${n}` named slots (see `_syncSegments()`), not a single default
-   * slot.
+   * Direct light-DOM children, read off the host directly since children
+   * are routed to `seg-${n}` named slots (see `_syncSegments()`), not one
+   * default slot `assignedElements()` could read.
    * @returns {Element[]}
    */
   get _slottedChildren() {
@@ -321,9 +263,14 @@ export class MdMenu extends LitElement {
   }
 
   /**
-   * Flattens `md-menu-item` children, descending into `md-item-group`
-   * (visual/segment grouping) and `md-menu-group` ("Label text" header
-   * grouping) wrappers.
+   * Flattens listbox-item-like children (anything implementing
+   * `ListboxItemMixin`'s roving-tabindex API, recognized by duck-typing so
+   * any future item type works without a `menu.js` change), descending
+   * into `md-item-group`/`md-menu-group`/`md-option-group` wrappers.
+   *
+   * Also resolves through a forwarded `<slot>` — `md-select` forwards its
+   * own default slot straight into `<md-menu>`, so `md-menu`'s only real
+   * DOM child in that case is the `<slot>` itself.
    * @returns {MdMenuItem[]}
    */
   get _menuItems() {
@@ -332,11 +279,18 @@ export class MdMenu extends LitElement {
     /** @param {Element[]} nodes */
     const collect = (nodes) => {
       for (const node of nodes) {
-        if (node.tagName === "MD-MENU-ITEM") {
+        if (node instanceof HTMLSlotElement) {
+          collect(
+            /** @type {Element[]} */ (node.assignedElements({ flatten: true })),
+          );
+        } else if (
+          typeof (/** @type {any} */ (node).getTabIndex) === "function"
+        ) {
           items.push(/** @type {MdMenuItem} */ (node));
         } else if (
           node.tagName === "MD-MENU-GROUP" ||
-          node.tagName === "MD-ITEM-GROUP"
+          node.tagName === "MD-ITEM-GROUP" ||
+          node.tagName === "MD-OPTION-GROUP"
         ) {
           collect(Array.from(node.children));
         }
@@ -493,17 +447,15 @@ export class MdMenu extends LitElement {
 
   /**
    * Called by `PopoverPositionController` whenever the `for`-resolved
-   * control element changes. Attaches/detaches this menu's own trigger
-   * listeners (click/hover/contextmenu) and `aria-haspopup`/`aria-expanded`
-   * — concerns the shared controller intentionally knows nothing about.
+   * control changes. Attaches/detaches trigger listeners and
+   * `aria-haspopup`/`aria-expanded` — concerns the shared controller
+   * doesn't know about.
    *
-   * When no `for` attribute is set, `HTMLForController` falls back to the
-   * host's root node (the `Document` or an ancestor `ShadowRoot`) rather
-   * than a real anchor element — e.g. the context-menu variant (AC §6),
-   * which is driven entirely via `openAtPoint()`. Trigger wiring is skipped
-   * in that case: it isn't a real `HTMLElement` (no `setAttribute`), and
-   * attaching a click/contextmenu listener to the whole document would
-   * silently intercept unrelated events anywhere on the page.
+   * With no `for` attribute, `HTMLForController` falls back to the host's
+   * root node (e.g. the context-menu variant, driven via `openAtPoint()`)
+   * rather than a real element — trigger wiring is skipped then, since
+   * that isn't an `HTMLElement` and listening on the whole document would
+   * intercept unrelated events.
    * @param {HTMLElement | null} next
    * @param {HTMLElement | null} prev
    */
@@ -531,20 +483,11 @@ export class MdMenu extends LitElement {
   }
 
   /**
-   * Gives `role="menu"`/`"listbox"` (reflected onto the host — see
-   * `updated()`'s `menuRole` handling) an accessible name via
-   * `aria-labelledby` pointing at the resolved trigger. APG: a menu needs
-   * `aria-labelledby` referring to its trigger, or an `aria-label`.
-   * Without this, a screen-reader user who navigates directly into an open
-   * menu (not sequentially via the trigger) hears an unlabeled "menu".
-   * Set on the host, not `.md-menu__list` — `aria-labelledby` IDREFs don't
-   * reliably resolve from inside a shadow root out to a light-DOM element,
-   * only within the same tree scope the host and its trigger both live in.
-   * `control` always already has an `id` here: this only ever runs with a
-   * `for`-resolved element (see `_onAnchorChange`'s doc comment), and
-   * `HTMLForController` resolves `for` via `getElementById()` — an
-   * `anchorElement` override (e.g. a submenu's parent item) never reaches
-   * this method, since it doesn't go through `_onAnchorChange` at all.
+   * Gives the menu role an accessible name via `aria-labelledby` pointing
+   * at the trigger (APG requirement), so a screen-reader user landing
+   * directly in an open menu doesn't hear an unlabeled "menu". Set on the
+   * host, not `.md-menu__list` — `aria-labelledby` IDREFs don't resolve
+   * out of a shadow root to a light-DOM element otherwise.
    * @param {HTMLElement} control
    */
   _syncAccessibleName(control) {
@@ -566,12 +509,9 @@ export class MdMenu extends LitElement {
   /** @param {MouseEvent} event */
   _onTriggerClick(event) {
     event.stopPropagation();
-    if (this._justDismissed) {
-      // Light-dismiss already closed the menu for this same interaction —
-      // treat this click as the dismiss, not a request to reopen.
-      this._justDismissed = false;
-      return;
-    }
+    // The dismiss listener excludes clicks on the anchor itself (see
+    // `PopoverPositionController._onDocumentClick`), so this is the only
+    // code path that toggles `open` for a trigger click.
     this._popover.clearPointAnchor();
     if (this.open) {
       this.close();
@@ -630,16 +570,10 @@ export class MdMenu extends LitElement {
   }
 
   /**
-   * Waits for the open/close CSS transition on `:host` (menu.css) to
-   * finish, or resolves immediately if none is running — reduced motion,
-   * `animation="false"`, or a future edit that drops the transition.
-   * Doesn't guess a duration or poll `getAnimations()`: `transitionrun`
-   * fires whenever the browser actually creates the transition (however
-   * many rendering updates that takes), and `transitionend`/
-   * `transitioncancel` (the latter for an interrupted/reversed transition,
-   * e.g. closing right after opening) are the real completion signal. The
-   * two-frame race is only a bail-out for "nothing is going to animate" —
-   * it never gates how long an actual transition is waited for.
+   * Waits for the open/close CSS transition on `:host` to finish, or
+   * resolves immediately if none runs (reduced motion, `animation="false"`,
+   * etc). The two-frame race is only a bail-out for "nothing will animate";
+   * `transitionend`/`transitioncancel` are the real completion signal.
    * @returns {Promise<void>}
    */
   async _waitForMotion() {
@@ -786,11 +720,6 @@ export class MdMenu extends LitElement {
         this.close({ returnFocus: true });
         return;
       }
-      case "Tab": {
-        // Let focus leave the menu naturally; native popover light-dismiss
-        // will close it.
-        return;
-      }
       default: {
         if (
           event.key.length === 1 &&
@@ -827,13 +756,9 @@ export class MdMenu extends LitElement {
     clearTimeout(this._typeaheadTimer);
     const lowerChar = char.toLowerCase();
 
-    // A run of the *same* character, with nothing else typed in between,
-    // cycles through every item that starts with it — one step forward per
-    // keypress (e.g. "S","S","S" advances Settings -> Share -> Sign out)
-    // instead of always re-landing on the first match — matching native
-    // <select> and most desktop menus. Typing a different character (or a
-    // second, different character right after the first) instead extends a
-    // normal multi-character prefix search from the top, as before.
+    // Repeating the same character cycles through matches one step per
+    // keypress (e.g. "S","S","S" -> Settings, Share, Sign out), matching
+    // native <select>. Any other character extends a prefix search instead.
     const isRepeatCycle =
       this._typeaheadBuffer.length > 0 &&
       [...this._typeaheadBuffer].every((c) => c === lowerChar);
