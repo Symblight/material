@@ -2,11 +2,8 @@
   --md-menu-min-width: 12rem;
   --md-menu-max-width: 22.5rem;
   --md-menu-max-height: min(70vh, 32rem);
-  --md-menu-shape: var(
-    --md-sys-shape-corner-large,
-    1rem
-  ); /* 16dp — outer corners */
-  --md-menu-shape-inner: 0.5rem; /* 8px — corners facing the gap between segments */
+  --md-menu-shape: var(--md-sys-shape-corner-large, 1rem);
+  --md-menu-shape-inner: 0.5rem;
   --md-menu-surface-color: var(--md-sys-color-surface-container-low);
   --md-menu-vibrant-surface-color: var(--md-sys-color-tertiary-container);
 
@@ -20,14 +17,6 @@
   );
 
   --md-menu-divider-color: var(--md-sys-color-outline-variant);
-
-  /*
-   * The host itself is the `popover="auto"` surface (see
-   * connectedCallback()/render() in menu.js) — these rules override the
-   * UA default `[popover]` stylesheet (fixed position with inset:0,
-   * margin:auto, a visible border, etc.) the same way `.md-menu` used to
-   * for the internal div this replaced.
-   */
   position: fixed;
   inset: auto;
   margin: 0;
@@ -39,28 +28,10 @@
   min-inline-size: var(--md-menu-min-width);
 }
 
-/* Scoped to positioning="popover" — :popover-open never matches at all
-   without a real `popover` attribute, which the other three modes never
-   set (see below), so this must not apply to them unconditionally. */
 :host([positioning="popover"]:not(:popover-open)) {
   display: none;
 }
 
-/*
- * ── `positioning` (non-`popover` modes) ─────────────────────────────────
- * `positioning="popover"` (default) keeps the base `position: fixed` above
- * and relies on native top-layer rendering for stacking — see menu.js's
- * `_resolvedPositioning`/`_syncPositioningMode()` for how the `popover`
- * attribute and `PopoverPositionController`'s strategy/native-popover
- * wiring follow this attribute. The other three modes render as a normal
- * (non-top-layer) element instead, so they need their own visibility rule
- * — keyed off the `open` attribute Lit already reflects, since
- * `:popover-open` never matches without a real `popover` attribute — and
- * their own stacking story, since z-index (however high) still can't beat
- * genuinely top-layer content (a native modal `<dialog>`, or another
- * `positioning="popover"` menu); reach for `positioning="popover"` if that
- * matters for a given menu.
- */
 :host(:not([positioning="popover"]):not([open])) {
   display: none;
 }
@@ -70,8 +41,6 @@
 }
 
 :host([positioning="document"]) {
-  /* Hoisted to a direct child of <body> in menu.js — nothing closer than
-     the initial containing block remains to be "absolute" relative to. */
   position: absolute;
 }
 
@@ -135,15 +104,6 @@
   margin-block-start: 0.25rem;
 }
 
-/*
- * ── Vibrant variant selection colours ───────────────────────────────────
- * Set as inherited custom properties on the host rather than via
- * `::slotted(md-menu-item)`: `::slotted()` only matches directly-assigned
- * nodes, not descendants nested further inside an `md-menu-group`/
- * `md-item-group` wrapper. Custom properties inherit through the flat tree
- * regardless of nesting depth, so this reaches every `md-menu-item`
- * descendant no matter how deep it's wrapped.
- */
 :host {
   --md-menu-item-selected-container-color: var(
     --md-menu-selected-container-color
@@ -160,17 +120,6 @@
   );
 }
 
-/*
- * ── Open/close motion ────────────────────────────────────────────────────
- * MD3: a menu's position affects how it appears — opened near the top of
- * the screen, it expands *downward* to avoid being cropped; opened near
- * the bottom (flip() resolves it above its anchor instead), it expands
- * *upward*. Unlike a `clip-path` reveal, this stretches the surface itself
- * vertically via `transform: scaleY()` pinned to the anchor-adjacent edge
- * (`transform-origin`), so it reads as the shape growing into place rather
- * than being uncovered. `data-placement` (set by PopoverPositionController
- * from floating-ui's *resolved*, post-flip() placement) picks the edge.
- */
 @media (prefers-reduced-motion: no-preference) {
   :host {
     transform-origin: top; /* default: surface below its anchor */
@@ -183,14 +132,10 @@
     transform: scaleY(1);
   }
 
-  /* Placement resolved to "top-*" (surface above its anchor, expanding
-     upward): grow from the bottom edge instead. */
   :host([data-placement^="top"]) {
     transform-origin: bottom;
   }
 
-  /* Scoped to positioning="popover" for the same reason as the display
-     rule above — :popover-open never matches at all otherwise. */
   :host([positioning="popover"]:not(:popover-open)) {
     opacity: 0;
     transform: scaleY(0.85);
@@ -203,8 +148,6 @@
     }
   }
 
-  /* Non-`popover` positioning modes: same motion, keyed off `[open]`
-     instead of `:popover-open` — see the `positioning` rules above. */
   :host(:not([positioning="popover"]):not([open])) {
     opacity: 0;
     transform: scaleY(0.85);

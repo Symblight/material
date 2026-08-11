@@ -436,26 +436,14 @@ export class MdMenu extends LitElement {
   // ── Lifecycle ────────────────────────────────────────────────────────────
 
   connectedCallback() {
-    // Read BEFORE super.connectedCallback() schedules Lit's own first
-    // update: `placement` is a `reflect: true` property with a constructor
-    // default, so by the time that update runs, Lit will have written
-    // "bottom-start" onto the attribute regardless of whether the author
-    // set one — checking `hasAttribute` any later can no longer tell an
-    // authored value apart from our own default.
     const placementAuthored = this.hasAttribute("placement");
 
     super.connectedCallback();
 
-    // Submenus default to opening beside their parent item, not below it —
-    // unless the author explicitly set a placement. Read `parentItem`
-    // (depends on `this.parentElement`) before `_syncPositioningMode()`,
-    // which may reparent `this` under <body> for `positioning="document"`.
     if (!placementAuthored && this.parentItem) {
       this.placement = "right-start";
     }
 
-    // The host itself is the popover surface (see render()/menu.css) — sets
-    // (or clears) the `popover` attribute per `_resolvedPositioning`.
     this._syncPositioningMode();
 
     this.addEventListener("keydown", this._handleKeydown);
@@ -468,8 +456,6 @@ export class MdMenu extends LitElement {
     this.removeEventListener("keydown", this._handleKeydown);
     this.removeEventListener("select", this._onItemSelect);
     this._detachTriggerListeners(this._popover.anchorEl);
-    // Positioning/autoUpdate/toggle-listener teardown is handled by
-    // PopoverPositionController's own hostDisconnected().
     clearTimeout(this._hoverTimer);
     clearTimeout(this._typeaheadTimer);
   }
@@ -479,11 +465,6 @@ export class MdMenu extends LitElement {
     super.updated(changed);
 
     if (changed.has("menuRole")) {
-      // `aria-controls`/similar references (e.g. `md-select`'s trigger
-      // button pointing at this element by id) resolve against the HOST's
-      // own accessible role — `.md-menu__list` having `role="listbox"`
-      // doesn't propagate that up to a shadow-DOM-encapsulated host with no
-      // role of its own, so it needs setting here too, not just in render().
       this.setAttribute(
         "role",
         this.menuRole === "listbox" ? "listbox" : "menu",
@@ -495,10 +476,6 @@ export class MdMenu extends LitElement {
       this._attachTriggerListeners(this._popover.anchorEl);
     }
 
-    // Not meaningful mid-open (native popover state and light-dismiss
-    // wiring can't be swapped out from under an already-shown surface) —
-    // only resync when a consumer sets `positioning` before ever opening,
-    // or while currently closed.
     if (changed.has("positioning") && !this.open) {
       this._syncPositioningMode();
     }
@@ -636,12 +613,6 @@ export class MdMenu extends LitElement {
       this._popover.anchorEl.setAttribute("aria-expanded", "true");
     }
     this._initRovingTabindex();
-    // Deliberately NOT awaited: `show()`/`_openPromise` resolve once the
-    // menu is functionally open (positioned, focusable) — existing callers
-    // (e.g. md-select's Home/End handling) chain focus management off that
-    // and expect it to settle quickly, not ~200ms later once the open
-    // animation finishes. `opened` is a separate, later signal for
-    // consumers that specifically want "after any animations".
     this._waitForMotion().then(() => this.dispatchEvent(new Event("opened")));
   }
 
@@ -654,8 +625,7 @@ export class MdMenu extends LitElement {
     this._closeDescendantSubmenus();
     this._typeaheadBuffer = "";
     clearTimeout(this._typeaheadTimer);
-    // Same reasoning as `_handleOpen()` — `close()`/`_closePromise` resolve
-    // quickly; `closed` fires later, once the close animation finishes.
+
     this._waitForMotion().then(() => this.dispatchEvent(new Event("closed")));
   }
 
@@ -663,23 +633,33 @@ export class MdMenu extends LitElement {
    * Waits for the open/close CSS transition on `:host` (menu.css) to
    * finish, or resolves immediately if none is running — reduced motion,
    * `animation="false"`, or a future edit that drops the transition.
-   * Reads `transition-duration`/`transition-delay` from computed style
-   * instead of hardcoding a duration, so `opened`/`closed` can't drift out
-   * of sync with however long menu.css actually animates for.
+   * Doesn't guess a duration or poll `getAnimations()`: `transitionrun`
+   * fires whenever the browser actually creates the transition (however
+   * many rendering updates that takes), and `transitionend`/
+   * `transitioncancel` (the latter for an interrupted/reversed transition,
+   * e.g. closing right after opening) are the real completion signal. The
+   * two-frame race is only a bail-out for "nothing is going to animate" —
+   * it never gates how long an actual transition is waited for.
    * @returns {Promise<void>}
    */
   async _waitForMotion() {
-    const style = getComputedStyle(this);
-    const durations = style.transitionDuration.split(",").map(parseFloat);
-    const delays = style.transitionDelay.split(",").map(parseFloat);
-    const totalSeconds = Math.max(
-      0,
-      ...durations.map(
-        (duration, i) => duration + (delays[i % delays.length] || 0),
+    const started = await Promise.race([
+      new Promise((resolve) =>
+        this.addEventListener("transitionrun", () => resolve(true), {
+          once: true,
+        }),
       ),
-    );
-    if (totalSeconds <= 0) return;
-    await new Promise((resolve) => setTimeout(resolve, totalSeconds * 1000));
+      new Promise((resolve) =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => resolve(false)),
+        ),
+      ),
+    ]);
+    if (!started) return;
+    await new Promise((resolve) => {
+      this.addEventListener("transitionend", resolve, { once: true });
+      this.addEventListener("transitioncancel", resolve, { once: true });
+    });
   }
 
   /** Closes any still-open submenus. Defensive fallback for §7 — see menu.spec.js. */
