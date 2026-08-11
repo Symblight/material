@@ -333,6 +333,9 @@ All slots are optional. A slot's wrapper is hidden (`display: none`) when empty,
 | `--md-menu-item-selected-label-text-color`   | `var(--md-sys-color-on-secondary-container)` (via `md-menu`) | Selected-pill label color            |
 | `--md-menu-item-leading-icon-size`           | `1.125rem` (18dp)                                            | Width/height of the leading zone     |
 | `--md-menu-item-trailing-icon-size`          | `1.125rem` (18dp)                                            | Width/height of the trailing chevron |
+| `--md-menu-item-min-block-size`              | `3rem` (48dp)                                                | Minimum block size of the row        |
+| `--md-menu-item-padding-inline`              | `0.75rem`                                                    | Inline padding of the row            |
+| `--md-menu-item-padding-block`               | `0.5rem`                                                     | Block padding of the row             |
 
 `--md-menu-item-selected-*` are set by the parent `md-menu` (from its own `--md-menu-selected-*`/`--md-menu-vibrant-selected-*` tokens) but can be overridden per item.
 
