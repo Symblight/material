@@ -120,6 +120,119 @@ describe("md-menu", () => {
     });
   });
 
+  // ─── positioning ─────────────────────────────────────────────────────────
+
+  describe("positioning", () => {
+    it('defaults to "popover"', async () => {
+      const el = /** @type {MdMenu} */ (
+        await fixture(html`<md-menu></md-menu>`)
+      );
+      expect(el.positioning).to.equal("popover");
+    });
+
+    it('positioning="fixed" does not set the popover attribute and stays position:fixed', async () => {
+      const el = /** @type {MdMenu} */ (
+        await fixture(html`<md-menu positioning="fixed"></md-menu>`)
+      );
+      expect(el.hasAttribute("popover")).to.be.false;
+      expect(getComputedStyle(el).position).to.equal("fixed");
+    });
+
+    it('positioning="absolute" does not set the popover attribute and computes position:absolute', async () => {
+      const el = /** @type {MdMenu} */ (
+        await fixture(html`<md-menu positioning="absolute"></md-menu>`)
+      );
+      expect(el.hasAttribute("popover")).to.be.false;
+      expect(getComputedStyle(el).position).to.equal("absolute");
+    });
+
+    it('positioning="document" hoists the surface to a direct child of <body>', async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <md-menu positioning="document" id="doc-menu"></md-menu>
+          </div>
+        `)
+      );
+      const menu = document.getElementById("doc-menu");
+      expect(menu.parentNode).to.equal(document.body);
+      expect(el.querySelector("#doc-menu")).to.not.exist;
+      menu.remove();
+    });
+
+    it('positioning="fixed" still opens/closes via show()/close(), without :popover-open', async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <button id="fixedTrigger1">Open</button>
+            <md-menu for="fixedTrigger1" positioning="fixed">
+              <md-menu-item value="one">One</md-menu-item>
+            </md-menu>
+          </div>
+        `)
+      );
+      const menu = /** @type {MdMenu} */ (el.querySelector("md-menu"));
+      await menu.show();
+      expect(menu.open).to.be.true;
+      expect(menu.matches(":popover-open")).to.be.false;
+      expect(getComputedStyle(menu).display).to.not.equal("none");
+
+      await menu.close();
+      expect(menu.open).to.be.false;
+    });
+
+    it('positioning="fixed" closes on an outside pointerdown (own light-dismiss)', async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <button id="fixedTrigger2">Open</button>
+            <md-menu for="fixedTrigger2" positioning="fixed">
+              <md-menu-item value="one">One</md-menu-item>
+            </md-menu>
+          </div>
+        `)
+      );
+      const menu = /** @type {MdMenu} */ (el.querySelector("md-menu"));
+      await menu.show();
+      expect(menu.open).to.be.true;
+
+      document.body.dispatchEvent(
+        new PointerEvent("pointerdown", { bubbles: true, composed: true }),
+      );
+      await tick();
+
+      expect(menu.open).to.be.false;
+    });
+
+    it('positioning="fixed" closes when focus moves outside it (Tab dismiss, no native popover to do it for free)', async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <button id="fixedTrigger3">Open</button>
+            <md-menu for="fixedTrigger3" positioning="fixed">
+              <md-menu-item id="fixedItem" value="one">One</md-menu-item>
+            </md-menu>
+            <button id="outsideButton">Outside</button>
+          </div>
+        `)
+      );
+      const menu = /** @type {MdMenu} */ (el.querySelector("md-menu"));
+      const item = /** @type {MdMenuItem} */ (el.querySelector("#fixedItem"));
+      const outside = /** @type {HTMLButtonElement} */ (
+        el.querySelector("#outsideButton")
+      );
+      await menu.show();
+      await item.updateComplete;
+      item.shadowRoot.querySelector(".md-menu-item__interactive").focus();
+      expect(menu.open).to.be.true;
+
+      outside.focus();
+      await tick();
+
+      expect(menu.open).to.be.false;
+    });
+  });
+
   // ─── Opens / closes via trigger ─────────────────────────────────────────
 
   describe("opens/closes via trigger", () => {
@@ -197,6 +310,22 @@ describe("md-menu", () => {
       trigger.click();
       await tick();
       expect(trigger.getAttribute("aria-expanded")).to.equal("true");
+    });
+
+    it("labels the menu via aria-labelledby pointing at the resolved trigger, generating an id if needed", async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <button id="trigger-with-id">Open</button>
+            <md-menu for="trigger-with-id">
+              <md-menu-item value="one">One</md-menu-item>
+            </md-menu>
+          </div>
+        `)
+      );
+      const menu = /** @type {MdMenu} */ (el.querySelector("md-menu"));
+      await menu.updateComplete;
+      expect(menu.getAttribute("aria-labelledby")).to.equal("trigger-with-id");
     });
   });
 
@@ -332,14 +461,19 @@ describe("md-menu", () => {
       const button = /** @type {HTMLButtonElement} */ (
         item.shadowRoot.querySelector(".md-menu-item__interactive")
       );
-      expect(button.disabled).to.be.true;
+      // APG: disabled menu items are focusable but not activatable — no
+      // native `disabled` (which would remove it from focus entirely),
+      // `aria-disabled` + a blocked click instead. See the next test for
+      // the focusability side of this.
+      expect(button.hasAttribute("disabled")).to.be.false;
+      expect(button.getAttribute("aria-disabled")).to.equal("true");
       button.click();
       await tick();
 
       expect(fired).to.be.false;
     });
 
-    it("disabled items are excluded from roving tabindex / keyboard nav", async () => {
+    it("disabled items stay in the roving tabindex sequence (focusable, not activatable)", async () => {
       const el = /** @type {HTMLElement} */ (
         await fixture(html`
           <div>
@@ -375,10 +509,110 @@ describe("md-menu", () => {
       );
       await menu.updateComplete;
 
-      // Disabled item (i2) is skipped — focus/tabindex moves directly to i3.
+      // Disabled item (i2) is reachable — ArrowDown lands ON it, not past
+      // it — so a screen-reader/keyboard user can discover it exists.
+      expect(i2.getTabIndex()).to.equal(0);
+      expect(i1.getTabIndex()).to.equal(-1);
+
+      // Still not activatable: a click on it does not select.
+      const btn2 = /** @type {HTMLButtonElement} */ (
+        i2.shadowRoot.querySelector(".md-menu-item__interactive")
+      );
+      let fired = false;
+      menu.addEventListener("select", () => {
+        fired = true;
+      });
+      btn2.click();
+      await tick();
+      expect(fired).to.be.false;
+
+      // ArrowDown again moves past it normally to i3.
+      menu.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+      );
+      await menu.updateComplete;
       expect(i3.getTabIndex()).to.equal(0);
       expect(i2.getTabIndex()).to.equal(-1);
-      expect(i1.getTabIndex()).to.equal(-1);
+    });
+  });
+
+  // ─── Submenu keyboard navigation ────────────────────────────────────────
+
+  describe("submenu keyboard navigation", () => {
+    it("Enter on a focused item with a submenu opens it and focuses its first item", async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <button id="trigger16">Open</button>
+            <md-menu for="trigger16">
+              <md-menu-item id="parent" value="parent">
+                Parent
+                <md-menu slot="submenu">
+                  <md-menu-item id="child" value="child">Child</md-menu-item>
+                </md-menu>
+              </md-menu-item>
+            </md-menu>
+          </div>
+        `)
+      );
+      const menu = /** @type {MdMenu} */ (el.querySelector("md-menu"));
+      const trigger = /** @type {HTMLButtonElement} */ (
+        el.querySelector("#trigger16")
+      );
+      await menu.updateComplete;
+      trigger.click();
+      await tick();
+
+      const parent = /** @type {MdMenuItem} */ (el.querySelector("#parent"));
+      await parent.updateComplete;
+      parent.shadowRoot.querySelector(".md-menu-item__interactive").focus();
+
+      menu.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      );
+      await tick();
+
+      expect(parent.submenuEl.open).to.be.true;
+      const child = /** @type {MdMenuItem} */ (el.querySelector("#child"));
+      expect(child.getTabIndex()).to.equal(0);
+      expect(
+        child.shadowRoot.querySelector(".md-menu-item__interactive"),
+      ).to.equal(child.shadowRoot.activeElement);
+    });
+
+    it("Space on a focused item without a submenu does not intercept native activation", async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <button id="trigger17">Open</button>
+            <md-menu for="trigger17">
+              <md-menu-item id="plain" value="plain">Plain</md-menu-item>
+            </md-menu>
+          </div>
+        `)
+      );
+      const menu = /** @type {MdMenu} */ (el.querySelector("md-menu"));
+      const trigger = /** @type {HTMLButtonElement} */ (
+        el.querySelector("#trigger17")
+      );
+      await menu.updateComplete;
+      trigger.click();
+      await tick();
+
+      const plain = /** @type {MdMenuItem} */ (el.querySelector("#plain"));
+      await plain.updateComplete;
+      const button = plain.shadowRoot.querySelector(
+        ".md-menu-item__interactive",
+      );
+      button.focus();
+
+      const event = new KeyboardEvent("keydown", {
+        key: " ",
+        bubbles: true,
+        cancelable: true,
+      });
+      menu.dispatchEvent(event);
+      expect(event.defaultPrevented).to.be.false;
     });
   });
 
@@ -493,6 +727,130 @@ describe("md-menu", () => {
       // Wraps from the first item to the last.
       expect(d.getTabIndex()).to.equal(0);
       expect(c.getTabIndex()).to.equal(-1);
+    });
+  });
+
+  // ─── Typeahead ───────────────────────────────────────────────────────────
+
+  describe("typeahead", () => {
+    /**
+     * @param {HTMLElement} el
+     * @param {string} key
+     */
+    function press(el, key) {
+      el.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+    }
+
+    it("a single keypress focuses the first item whose label starts with it", async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <button id="trigger18">Open</button>
+            <md-menu for="trigger18">
+              <md-menu-item id="alpha" value="alpha">Alpha</md-menu-item>
+              <md-menu-item id="beta" value="beta">Beta</md-menu-item>
+            </md-menu>
+          </div>
+        `)
+      );
+      const menu = /** @type {MdMenu} */ (el.querySelector("md-menu"));
+      const trigger = /** @type {HTMLButtonElement} */ (
+        el.querySelector("#trigger18")
+      );
+      await menu.updateComplete;
+      trigger.click();
+      await tick();
+
+      const beta = /** @type {MdMenuItem} */ (el.querySelector("#beta"));
+      await beta.updateComplete;
+
+      press(menu, "b");
+      await menu.updateComplete;
+
+      expect(beta.getTabIndex()).to.equal(0);
+    });
+
+    it("multi-character prefixes still search from the top, not cycling", async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <button id="trigger19">Open</button>
+            <md-menu for="trigger19">
+              <md-menu-item id="settings" value="settings"
+                >Settings</md-menu-item
+              >
+              <md-menu-item id="share" value="share">Share</md-menu-item>
+              <md-menu-item id="signout" value="signout">Sign out</md-menu-item>
+            </md-menu>
+          </div>
+        `)
+      );
+      const menu = /** @type {MdMenu} */ (el.querySelector("md-menu"));
+      const trigger = /** @type {HTMLButtonElement} */ (
+        el.querySelector("#trigger19")
+      );
+      await menu.updateComplete;
+      trigger.click();
+      await tick();
+
+      const share = /** @type {MdMenuItem} */ (el.querySelector("#share"));
+      await share.updateComplete;
+
+      press(menu, "s");
+      press(menu, "h");
+      await menu.updateComplete;
+
+      expect(share.getTabIndex()).to.equal(0);
+    });
+
+    it("repeating the same character cycles through every match instead of always landing on the first", async () => {
+      const el = /** @type {HTMLElement} */ (
+        await fixture(html`
+          <div>
+            <button id="trigger20">Open</button>
+            <md-menu for="trigger20">
+              <md-menu-item id="settings" value="settings"
+                >Settings</md-menu-item
+              >
+              <md-menu-item id="share" value="share">Share</md-menu-item>
+              <md-menu-item id="signout" value="signout">Sign out</md-menu-item>
+            </md-menu>
+          </div>
+        `)
+      );
+      const menu = /** @type {MdMenu} */ (el.querySelector("md-menu"));
+      const trigger = /** @type {HTMLButtonElement} */ (
+        el.querySelector("#trigger20")
+      );
+      await menu.updateComplete;
+      trigger.click();
+      await tick();
+
+      const settings = /** @type {MdMenuItem} */ (
+        el.querySelector("#settings")
+      );
+      const share = /** @type {MdMenuItem} */ (el.querySelector("#share"));
+      const signout = /** @type {MdMenuItem} */ (el.querySelector("#signout"));
+      await Promise.all(
+        [settings, share, signout].map((i) => i.updateComplete),
+      );
+
+      press(menu, "s");
+      await menu.updateComplete;
+      expect(settings.getTabIndex()).to.equal(0);
+
+      press(menu, "s");
+      await menu.updateComplete;
+      expect(share.getTabIndex()).to.equal(0);
+
+      press(menu, "s");
+      await menu.updateComplete;
+      expect(signout.getTabIndex()).to.equal(0);
+
+      // Wraps back to the first match.
+      press(menu, "s");
+      await menu.updateComplete;
+      expect(settings.getTabIndex()).to.equal(0);
     });
   });
 

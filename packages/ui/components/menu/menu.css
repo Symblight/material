@@ -39,8 +39,46 @@
   min-inline-size: var(--md-menu-min-width);
 }
 
-:host(:not(:popover-open)) {
+/* Scoped to positioning="popover" — :popover-open never matches at all
+   without a real `popover` attribute, which the other three modes never
+   set (see below), so this must not apply to them unconditionally. */
+:host([positioning="popover"]:not(:popover-open)) {
   display: none;
+}
+
+/*
+ * ── `positioning` (non-`popover` modes) ─────────────────────────────────
+ * `positioning="popover"` (default) keeps the base `position: fixed` above
+ * and relies on native top-layer rendering for stacking — see menu.js's
+ * `_resolvedPositioning`/`_syncPositioningMode()` for how the `popover`
+ * attribute and `PopoverPositionController`'s strategy/native-popover
+ * wiring follow this attribute. The other three modes render as a normal
+ * (non-top-layer) element instead, so they need their own visibility rule
+ * — keyed off the `open` attribute Lit already reflects, since
+ * `:popover-open` never matches without a real `popover` attribute — and
+ * their own stacking story, since z-index (however high) still can't beat
+ * genuinely top-layer content (a native modal `<dialog>`, or another
+ * `positioning="popover"` menu); reach for `positioning="popover"` if that
+ * matters for a given menu.
+ */
+:host(:not([positioning="popover"]):not([open])) {
+  display: none;
+}
+
+:host([positioning="absolute"]) {
+  position: absolute;
+}
+
+:host([positioning="document"]) {
+  /* Hoisted to a direct child of <body> in menu.js — nothing closer than
+     the initial containing block remains to be "absolute" relative to. */
+  position: absolute;
+}
+
+:host([positioning="fixed"]),
+:host([positioning="absolute"]),
+:host([positioning="document"]) {
+  z-index: var(--md-menu-z-index, 1000);
 }
 
 .md-menu__card {
@@ -151,13 +189,29 @@
     transform-origin: bottom;
   }
 
-  :host(:not(:popover-open)) {
+  /* Scoped to positioning="popover" for the same reason as the display
+     rule above — :popover-open never matches at all otherwise. */
+  :host([positioning="popover"]:not(:popover-open)) {
     opacity: 0;
     transform: scaleY(0.85);
   }
 
   @starting-style {
-    :host(:popover-open) {
+    :host([positioning="popover"]:popover-open) {
+      opacity: 0;
+      transform: scaleY(0.85);
+    }
+  }
+
+  /* Non-`popover` positioning modes: same motion, keyed off `[open]`
+     instead of `:popover-open` — see the `positioning` rules above. */
+  :host(:not([positioning="popover"]):not([open])) {
+    opacity: 0;
+    transform: scaleY(0.85);
+  }
+
+  @starting-style {
+    :host(:not([positioning="popover"])[open]) {
       opacity: 0;
       transform: scaleY(0.85);
     }
@@ -168,4 +222,10 @@
   :host {
     transition: none;
   }
+}
+
+:host([animation="false"]) {
+  transition: none;
+  opacity: 1;
+  transform: scaleY(1);
 }

@@ -580,6 +580,18 @@ export default class Select extends FormAssociateMixin(LitElement) {
         ${
           this._menuMode
             ? html`
+                <!--
+                  a11y note: this combobox trigger keeps real DOM focus-move
+                  into the open listbox (menuEl.focusFirstItem()/etc. below
+                  and md-menu's own roving tabindex) rather than the
+                  canonical ARIA combobox pattern of keeping focus on this
+                  button and pointing aria-activedescendant at the "active"
+                  option. Real-focus-move popups are a recognized, valid
+                  alternative — not broken — but it's a deliberate choice,
+                  not an oversight: switching to aria-activedescendant would
+                  need real screen-reader (NVDA/JAWS) validation before
+                  landing, which isn't feasible to do blind.
+                -->
                 <button
                   id="select-trigger"
                   type="button"

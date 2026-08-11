@@ -15,6 +15,7 @@ import styles from "./menu.css?inline";
 /** @typedef {"standard" | "vibrant"} MenuVariant */
 /** @typedef {"click" | "hover" | "contextmenu"} MenuTrigger */
 /** @typedef {import("@floating-ui/dom").Placement} MenuPlacement */
+/** @typedef {"absolute" | "fixed" | "document" | "popover"} MenuPositioning */
 
 const HOVER_OPEN_DELAY = 150;
 const HOVER_CLOSE_DELAY = 150;
@@ -46,46 +47,48 @@ export class MdMenu extends LitElement {
     open: { type: Boolean, reflect: true },
     placement: { type: String, reflect: true },
     offset: { type: Number, reflect: true },
+    /**
+     * Extra nudge along the anchor-relative cross axis (perpendicular to
+     * `offset`) — e.g. shifts a "bottom-start" menu sideways without
+     * changing how far below the anchor it sits. Additive with `offset`,
+     * not a replacement for it: default 0 means no behavior change.
+     */
+    xOffset: { type: Number, reflect: true, attribute: "x-offset" },
+    /**
+     * Extra nudge along the anchor-relative main axis, added on top of
+     * `offset` (e.g. `offset="4" y-offset="4"` opens 8px below the anchor).
+     * Kept separate from `offset` so consumers mirroring Material Web's
+     * `xOffset`/`yOffset` API have a direct equivalent, without breaking
+     * this component's existing `offset` default/behavior.
+     */
+    yOffset: { type: Number, reflect: true, attribute: "y-offset" },
+    /**
+     * Whether the positioning algorithm calculates relative to the nearest
+     * positioned ancestor (`"absolute"`), the window (`"fixed"`), the
+     * whole document regardless of any intervening positioned ancestor
+     * (`"document"` — the surface is moved to be a direct child of
+     * `<body>`), or rendered in the top-layer via the native Popover API
+     * (`"popover"`, the default — falls back to `"fixed"` if the browser
+     * doesn't support it). See `_resolvedPositioning`.
+     */
+    positioning: { type: String, reflect: true },
     flip: { type: Boolean, reflect: true },
     variant: { type: String, reflect: true },
     trigger: { type: String, reflect: true },
-    /**
-     * Forces the surface to be exactly as wide as its anchor (e.g.
-     * `md-select`'s menu-mode popover matching the trigger's width) instead
-     * of sizing to its own content.
-     */
+    animation: { type: String, reflect: true },
+
     matchAnchorWidth: {
       type: Boolean,
       reflect: true,
       attribute: "match-anchor-width",
     },
-    /**
-     * ARIA role of the `.md-menu__list` container. `"menu"` (default) is
-     * the generic action-menu; `"listbox"` is for a consumer using this
-     * menu as a listbox-style popover (e.g. `md-select`'s menu mode —
-     * paired with `md-menu-item[type="option"]`). Purely an ARIA concern;
-     * roving tabindex/typeahead/`select`-event dispatch are unaffected.
-     */
+
     menuRole: { type: String, reflect: true, attribute: "menu-role" },
-    /**
-     * Which item receives focus when the menu opens via its trigger
-     * (click, contextmenu, or a consumer's own keyboard-driven open).
-     * `"first"` (default) matches existing generic-menu behavior;
-     * `"selected"` opts into focusing the enabled item with `selected`
-     * set instead (falling back to the first item), matching how a native
-     * `<select>` opens to its current value — see `focusSelectedItem()`.
-     */
+
     focusOnOpen: { type: String, reflect: true, attribute: "focus-on-open" },
-    /**
-     * Overrides the floating-ui reference element. Set imperatively by a
-     * parent `md-menu-item` when this menu is used as a `submenu`.
-     */
+
     anchorElement: { attribute: false },
-    /**
-     * Number of `.md-menu__card` segments to render — one per top-level
-     * `md-item-group`, plus one for each run of non-grouped children. See
-     * `_syncSegments()`.
-     */
+
     _segmentCount: { state: true },
   };
 
@@ -106,6 +109,15 @@ export class MdMenu extends LitElement {
     /** @type {number} */
     this.offset = 4;
 
+    /** @type {number} */
+    this.xOffset = 0;
+
+    /** @type {number} */
+    this.yOffset = 0;
+
+    /** @type {MenuPositioning} */
+    this.positioning = "popover";
+
     /** @type {boolean} */
     this.flip = true;
 
@@ -114,6 +126,9 @@ export class MdMenu extends LitElement {
 
     /** @type {MenuTrigger} */
     this.trigger = "click";
+
+    /** @type {"true" | "false"} */
+    this.animation = "true";
 
     /** @type {boolean} */
     this.matchAnchorWidth = false;
@@ -138,6 +153,14 @@ export class MdMenu extends LitElement {
      * @type {Promise<void>}
      */
     this._openPromise = Promise.resolve();
+
+    /**
+     * Same role as `_openPromise`, for the close path — lets `close()` await
+     * the full close sequence (popover hide + `closing`/`closed` events),
+     * not just the Lit update that kicks it off.
+     * @type {Promise<void>}
+     */
+    this._closePromise = Promise.resolve();
 
     /** @type {number} */
     this._segmentCount = 1;
@@ -170,8 +193,21 @@ export class MdMenu extends LitElement {
       // The host itself is the popover surface — see render()/menu.css.
       getSurfaceEl: () => this,
       getPlacement: () => this.placement,
-      getOffset: () => this.offset,
+      // floating-ui's offset() middleware accepts either a bare number
+      // (mainAxis only) or a { mainAxis, crossAxis } object — combining
+      // `offset`/`xOffset`/`yOffset` here needs no changes to the shared
+      // controller itself.
+      getOffset: () => ({
+        mainAxis: this.offset + this.yOffset,
+        crossAxis: this.xOffset,
+      }),
       getFlip: () => this.flip,
+      getStrategy: () =>
+        this._resolvedPositioning === "fixed" ||
+        this._resolvedPositioning === "popover"
+          ? "fixed"
+          : "absolute",
+      getUseNativePopover: () => this._resolvedPositioning === "popover",
       getMatchAnchorWidth: () => this.matchAnchorWidth,
       getAnchorOverride: () => this.anchorElement ?? null,
       onAnchorChange: (next, prev) => this._onAnchorChange(next, prev),
@@ -207,6 +243,52 @@ export class MdMenu extends LitElement {
     this._childrenObserver.callback = () => {
       this._syncSegments();
     };
+  }
+
+  /**
+   * `positioning`, with the `"popover"` → `"fixed"` fallback applied when
+   * the browser doesn't support the Popover API. Everything that cares how
+   * the surface is actually positioned/shown (`PopoverPositionController`
+   * wiring, the `popover` attribute, `"document"` hoisting) reads this
+   * instead of `positioning` directly.
+   * @returns {"absolute" | "fixed" | "document" | "popover"}
+   */
+  get _resolvedPositioning() {
+    if (
+      this.positioning === "popover" &&
+      typeof HTMLElement.prototype.showPopover !== "function"
+    ) {
+      return "fixed";
+    }
+    return this.positioning;
+  }
+
+  /**
+   * Syncs the `popover` attribute and `"document"`-mode DOM hoisting to
+   * `_resolvedPositioning`. Called on connect and whenever `positioning`
+   * changes. Native popover semantics (top-layer, built-in light-dismiss)
+   * only apply with the real `popover` attribute present, so every other
+   * mode must not have it — `PopoverPositionController` is told via
+   * `getUseNativePopover()` to manage visibility/dismissal itself instead.
+   */
+  _syncPositioningMode() {
+    if (this._resolvedPositioning === "popover") {
+      this.setAttribute("popover", "auto");
+    } else {
+      this.removeAttribute("popover");
+    }
+
+    // "document": relative to the whole document regardless of any
+    // intervening positioned ancestor — achieved by making the surface a
+    // direct child of <body>, so there *is* no closer positioned ancestor.
+    // Moving an already-connected node within the same document doesn't
+    // re-trigger connectedCallback, so this is safe to call from inside it.
+    if (
+      this._resolvedPositioning === "document" &&
+      this.parentNode !== document.body
+    ) {
+      document.body.appendChild(this);
+    }
   }
 
   /** The `md-menu-item` that hosts this menu as a submenu, if any. */
@@ -283,12 +365,17 @@ export class MdMenu extends LitElement {
     if (!this.open) return;
     this.open = false;
     await this.updateComplete;
-    if (!returnFocus) return;
-    if (this.parentItem) {
-      this.parentItem.focusInteractive();
-    } else if (this._popover.anchorEl instanceof HTMLElement) {
-      this._popover.anchorEl.focus();
+    // Focus returns immediately — matching native popover light-dismiss —
+    // rather than waiting on `_closePromise` below, so keyboard users
+    // aren't stuck waiting out the close animation.
+    if (returnFocus) {
+      if (this.parentItem) {
+        this.parentItem.focusInteractive();
+      } else if (this._popover.anchorEl instanceof HTMLElement) {
+        this._popover.anchorEl.focus();
+      }
     }
+    await this._closePromise;
   }
 
   /**
@@ -302,17 +389,21 @@ export class MdMenu extends LitElement {
     this.open = true;
   }
 
-  /** Sets tabindex=0 on the first enabled item and focuses it. */
+  /**
+   * Sets tabindex=0 on the first item and focuses it. Includes disabled
+   * items — APG: "disabled menu items are focusable but cannot be
+   * activated," so they still take part in the roving-tabindex sequence.
+   */
   focusFirstItem() {
-    const items = this._enabledMenuItems;
+    const items = this._menuItems;
     if (!items.length) return;
     items.forEach((item, i) => item.setTabIndex(i === 0 ? 0 : -1));
     items[0].focusInteractive();
   }
 
-  /** Sets tabindex=0 on the last enabled item and focuses it. */
+  /** Sets tabindex=0 on the last item (including disabled) and focuses it. */
   focusLastItem() {
-    const items = this._enabledMenuItems;
+    const items = this._menuItems;
     if (!items.length) return;
     const last = items.length - 1;
     items.forEach((item, i) => item.setTabIndex(i === last ? 0 : -1));
@@ -322,11 +413,11 @@ export class MdMenu extends LitElement {
   /**
    * Opt-in counterpart to `focusFirstItem()` for consumers (e.g.
    * `md-select`) whose items carry persistent `selected` state — focuses
-   * the enabled item with `selected` set, falling back to the first
-   * enabled item if none is selected.
+   * the item with `selected` set, falling back to the first item if none is
+   * selected.
    */
   focusSelectedItem() {
-    const items = this._enabledMenuItems;
+    const items = this._menuItems;
     if (!items.length) return;
     const target = items.find((item) => item.selected) ?? items[0];
     items.forEach((item) => item.setTabIndex(item === target ? 0 : -1));
@@ -355,15 +446,17 @@ export class MdMenu extends LitElement {
 
     super.connectedCallback();
 
-    // The host itself is the popover surface (see render()/menu.css) —
-    // always "auto" for native top-layer rendering + light-dismiss.
-    this.setAttribute("popover", "auto");
-
     // Submenus default to opening beside their parent item, not below it —
-    // unless the author explicitly set a placement.
+    // unless the author explicitly set a placement. Read `parentItem`
+    // (depends on `this.parentElement`) before `_syncPositioningMode()`,
+    // which may reparent `this` under <body> for `positioning="document"`.
     if (!placementAuthored && this.parentItem) {
       this.placement = "right-start";
     }
+
+    // The host itself is the popover surface (see render()/menu.css) — sets
+    // (or clears) the `popover` attribute per `_resolvedPositioning`.
+    this._syncPositioningMode();
 
     this.addEventListener("keydown", this._handleKeydown);
     this.addEventListener("select", this._onItemSelect);
@@ -402,11 +495,19 @@ export class MdMenu extends LitElement {
       this._attachTriggerListeners(this._popover.anchorEl);
     }
 
+    // Not meaningful mid-open (native popover state and light-dismiss
+    // wiring can't be swapped out from under an already-shown surface) —
+    // only resync when a consumer sets `positioning` before ever opening,
+    // or while currently closed.
+    if (changed.has("positioning") && !this.open) {
+      this._syncPositioningMode();
+    }
+
     if (changed.has("open")) {
       if (this.open) {
         this._openPromise = this._handleOpen();
       } else {
-        this._handleClose();
+        this._closePromise = this._handleClose();
       }
     }
   }
@@ -439,6 +540,7 @@ export class MdMenu extends LitElement {
     if (!(control instanceof HTMLElement)) return;
     control.setAttribute("aria-haspopup", "menu");
     control.setAttribute("aria-expanded", this.open ? "true" : "false");
+    this._syncAccessibleName(control);
 
     if (this.trigger === "click") {
       control.addEventListener("click", this._onTriggerClick);
@@ -451,11 +553,33 @@ export class MdMenu extends LitElement {
     }
   }
 
+  /**
+   * Gives `role="menu"`/`"listbox"` (reflected onto the host — see
+   * `updated()`'s `menuRole` handling) an accessible name via
+   * `aria-labelledby` pointing at the resolved trigger. APG: a menu needs
+   * `aria-labelledby` referring to its trigger, or an `aria-label`.
+   * Without this, a screen-reader user who navigates directly into an open
+   * menu (not sequentially via the trigger) hears an unlabeled "menu".
+   * Set on the host, not `.md-menu__list` — `aria-labelledby` IDREFs don't
+   * reliably resolve from inside a shadow root out to a light-DOM element,
+   * only within the same tree scope the host and its trigger both live in.
+   * `control` always already has an `id` here: this only ever runs with a
+   * `for`-resolved element (see `_onAnchorChange`'s doc comment), and
+   * `HTMLForController` resolves `for` via `getElementById()` — an
+   * `anchorElement` override (e.g. a submenu's parent item) never reaches
+   * this method, since it doesn't go through `_onAnchorChange` at all.
+   * @param {HTMLElement} control
+   */
+  _syncAccessibleName(control) {
+    this.setAttribute("aria-labelledby", control.id);
+  }
+
   /** @param {HTMLElement | null} control */
   _detachTriggerListeners(control) {
     if (!(control instanceof HTMLElement)) return;
     control.removeAttribute("aria-haspopup");
     control.removeAttribute("aria-expanded");
+    this.removeAttribute("aria-labelledby");
     control.removeEventListener("click", this._onTriggerClick);
     control.removeEventListener("pointerenter", this._onTriggerPointerEnter);
     control.removeEventListener("pointerleave", this._onTriggerPointerLeave);
@@ -506,14 +630,23 @@ export class MdMenu extends LitElement {
   // ── Popover open / close orchestration ──────────────────────────────────
 
   async _handleOpen() {
+    this.dispatchEvent(new Event("opening"));
     await this._popover.show();
     if (this._popover.anchorEl instanceof HTMLElement) {
       this._popover.anchorEl.setAttribute("aria-expanded", "true");
     }
     this._initRovingTabindex();
+    // Deliberately NOT awaited: `show()`/`_openPromise` resolve once the
+    // menu is functionally open (positioned, focusable) — existing callers
+    // (e.g. md-select's Home/End handling) chain focus management off that
+    // and expect it to settle quickly, not ~200ms later once the open
+    // animation finishes. `opened` is a separate, later signal for
+    // consumers that specifically want "after any animations".
+    this._waitForMotion().then(() => this.dispatchEvent(new Event("opened")));
   }
 
-  _handleClose() {
+  async _handleClose() {
+    this.dispatchEvent(new Event("closing"));
     this._popover.hide();
     if (this._popover.anchorEl instanceof HTMLElement) {
       this._popover.anchorEl.setAttribute("aria-expanded", "false");
@@ -521,6 +654,32 @@ export class MdMenu extends LitElement {
     this._closeDescendantSubmenus();
     this._typeaheadBuffer = "";
     clearTimeout(this._typeaheadTimer);
+    // Same reasoning as `_handleOpen()` — `close()`/`_closePromise` resolve
+    // quickly; `closed` fires later, once the close animation finishes.
+    this._waitForMotion().then(() => this.dispatchEvent(new Event("closed")));
+  }
+
+  /**
+   * Waits for the open/close CSS transition on `:host` (menu.css) to
+   * finish, or resolves immediately if none is running — reduced motion,
+   * `animation="false"`, or a future edit that drops the transition.
+   * Reads `transition-duration`/`transition-delay` from computed style
+   * instead of hardcoding a duration, so `opened`/`closed` can't drift out
+   * of sync with however long menu.css actually animates for.
+   * @returns {Promise<void>}
+   */
+  async _waitForMotion() {
+    const style = getComputedStyle(this);
+    const durations = style.transitionDuration.split(",").map(parseFloat);
+    const delays = style.transitionDelay.split(",").map(parseFloat);
+    const totalSeconds = Math.max(
+      0,
+      ...durations.map(
+        (duration, i) => duration + (delays[i % delays.length] || 0),
+      ),
+    );
+    if (totalSeconds <= 0) return;
+    await new Promise((resolve) => setTimeout(resolve, totalSeconds * 1000));
   }
 
   /** Closes any still-open submenus. Defensive fallback for §7 — see menu.spec.js. */
@@ -534,7 +693,9 @@ export class MdMenu extends LitElement {
   }
 
   _initRovingTabindex() {
-    const items = this._enabledMenuItems;
+    // Disabled items stay in the sequence (see focusFirstItem()) — only
+    // activation is blocked, not focusability.
+    const items = this._menuItems;
     if (!items.length) return;
     const alreadyTabbable = items.filter((item) => item.getTabIndex() === 0);
     let target = alreadyTabbable[0] ?? items[0];
@@ -571,7 +732,10 @@ export class MdMenu extends LitElement {
 
   /** @param {KeyboardEvent} event */
   _onKeydown(event) {
-    const items = this._enabledMenuItems;
+    // Includes disabled items: ArrowDown/Up/Home/End/typeahead should still
+    // land on and announce them (APG — focusable, just not activatable),
+    // not skip them as if they didn't exist.
+    const items = this._menuItems;
     const focused = items.find((item) => item.matches(":focus-within"));
     const currentIndex = focused ? items.indexOf(focused) : -1;
 
@@ -612,6 +776,19 @@ export class MdMenu extends LitElement {
         if (focused?.expandSubmenu()) {
           event.preventDefault();
           event.stopPropagation();
+        }
+        return;
+      }
+      case "Enter":
+      case " ": {
+        // APG: Enter/Space on a menuitem that owns a submenu opens it and
+        // moves focus to its first item — same as ArrowRight. For a plain
+        // item, fall through to native <button>/<a> click-from-keypress
+        // activation (unhandled here) rather than reimplementing it.
+        if (focused?.hasSubmenu) {
+          event.preventDefault();
+          event.stopPropagation();
+          focused.expandSubmenu();
         }
         return;
       }
@@ -668,13 +845,37 @@ export class MdMenu extends LitElement {
    */
   _handleTypeahead(char, items) {
     clearTimeout(this._typeaheadTimer);
-    this._typeaheadBuffer += char.toLowerCase();
+    const lowerChar = char.toLowerCase();
+
+    // A run of the *same* character, with nothing else typed in between,
+    // cycles through every item that starts with it — one step forward per
+    // keypress (e.g. "S","S","S" advances Settings -> Share -> Sign out)
+    // instead of always re-landing on the first match — matching native
+    // <select> and most desktop menus. Typing a different character (or a
+    // second, different character right after the first) instead extends a
+    // normal multi-character prefix search from the top, as before.
+    const isRepeatCycle =
+      this._typeaheadBuffer.length > 0 &&
+      [...this._typeaheadBuffer].every((c) => c === lowerChar);
+
+    this._typeaheadBuffer += lowerChar;
     this._typeaheadTimer = setTimeout(() => {
       this._typeaheadBuffer = "";
     }, TYPEAHEAD_RESET_DELAY);
 
-    const match = items.find((item) =>
-      item.label.toLowerCase().startsWith(this._typeaheadBuffer),
+    const searchTerm = isRepeatCycle ? lowerChar : this._typeaheadBuffer;
+    const currentIndex = items.findIndex((item) =>
+      item.matches(":focus-within"),
+    );
+    const startIndex =
+      isRepeatCycle && currentIndex >= 0 ? currentIndex + 1 : 0;
+    const searchOrder =
+      startIndex === 0
+        ? items
+        : [...items.slice(startIndex), ...items.slice(0, startIndex)];
+
+    const match = searchOrder.find((item) =>
+      item.label.toLowerCase().startsWith(searchTerm),
     );
     if (match) {
       this._focusItem(items, items.indexOf(match));

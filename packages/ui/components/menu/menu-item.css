@@ -104,7 +104,8 @@
   outline-offset: -0.1875rem;
 }
 
-.md-menu-item__interactive:disabled {
+.md-menu-item__interactive:disabled,
+.md-menu-item__interactive[aria-disabled="true"] {
   cursor: default;
   opacity: 0.38;
   pointer-events: none;
@@ -126,6 +127,27 @@ md-ripple {
 
 :host([selected]) .md-menu-item__label {
   color: var(--md-menu-item-selected-label-text-color);
+}
+
+/*
+ * ── Forced colors (Windows High Contrast) fallback ──────────────────────
+ * Selected/disabled above are communicated via background-color/opacity
+ * alone, both commonly neutralized under forced-colors — add non-color
+ * signals so the states stay perceivable. Disabled additionally lost the
+ * browser's automatic forced-colors dimming it got for free from native
+ * `disabled`, once that was removed from the interactive element so
+ * disabled items could stay focusable (APG — see menu-item.js).
+ */
+@media (forced-colors: active) {
+  :host([selected]) .md-menu-item__interactive {
+    outline: 0.0625rem solid Highlight;
+    outline-offset: -0.0625rem;
+  }
+
+  .md-menu-item__interactive:disabled,
+  .md-menu-item__interactive[aria-disabled="true"] {
+    color: GrayText;
+  }
 }
 
 /* ── Zones ──────────────────────────────────────────────────────────────── */

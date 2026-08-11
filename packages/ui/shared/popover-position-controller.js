@@ -1,5 +1,5 @@
 /** @import { ReactiveController, ReactiveControllerHost } from "lit" */
-/** @import { Placement, ReferenceElement } from "@floating-ui/dom" */
+/** @import { Placement, ReferenceElement, OffsetOptions } from "@floating-ui/dom" */
 
 import {
   computePosition,
@@ -19,8 +19,23 @@ import { HTMLForController } from "../components/html-for-controller/html-for-co
  *   Queried fresh on every call since Lit's `renderRoot` can be empty until
  *   first render.
  * @property {() => Placement} getPlacement
- * @property {() => number} getOffset
+ * @property {() => OffsetOptions} getOffset
  * @property {() => boolean} getFlip
+ * @property {() => "absolute" | "fixed"} [getStrategy]
+ *   floating-ui's `computePosition()` strategy. Defaults to `"fixed"`
+ *   (the original, only, behavior). `"absolute"` positions relative to the
+ *   nearest positioned ancestor/containing block instead of the viewport —
+ *   e.g. `<md-menu positioning="absolute">`.
+ * @property {() => boolean} [getUseNativePopover]
+ *   Whether `show()`/`hide()` drive the surface via the native Popover API
+ *   (`showPopover()`/`hidePopover()`, native `toggle` event, top-layer
+ *   rendering + built-in light-dismiss). Defaults to `true`. When `false`,
+ *   this controller instead attaches its own outside-pointerdown light
+ *   dismiss (see `_onDocumentPointerDown`) since none of that native
+ *   behavior applies to a plain, non-`popover` element — the consumer is
+ *   responsible for the element's own visibility (CSS keyed off its own
+ *   `open`-reflecting attribute rather than `:popover-open`) and for not
+ *   setting the `popover` attribute in the first place.
  * @property {() => boolean} [getMatchAnchorWidth]
  *   Opt-in: when true, forces the surface's `min-width` (inline style, so
  *   it wins over any CSS `min-inline-size`) to match the reference
@@ -95,7 +110,17 @@ export class PopoverPositionController {
     /** @type {HTMLElement | undefined} */
     this._toggleTarget = undefined;
 
+    /**
+     * Whether `_onDocumentPointerDown` is currently attached — tracked
+     * explicitly rather than re-derived, since unlike the toggle listener
+     * it isn't tied to a specific target element to compare against.
+     * @type {boolean}
+     */
+    this._lightDismissAttached = false;
+
     this._onToggle = this._onToggle.bind(this);
+    this._onDocumentPointerDown = this._onDocumentPointerDown.bind(this);
+    this._onSurfaceFocusOut = this._onSurfaceFocusOut.bind(this);
 
     // Reuses the same `for`-attribute-resolves-an-element-by-id pattern used
     // by `md-ripple`, rather than reimplementing anchor resolution here.
@@ -110,6 +135,12 @@ export class PopoverPositionController {
   hostDisconnected() {
     this.stopAutoUpdate();
     this._detachToggleListener();
+    this._detachLightDismiss();
+  }
+
+  /** @returns {boolean} */
+  get _useNativePopover() {
+    return this.options.getUseNativePopover?.() ?? true;
   }
 
   /** The `for`-resolved control element, if any. */
@@ -172,30 +203,34 @@ export class PopoverPositionController {
     const surface = this.options.getSurfaceEl();
     if (!surface) return;
 
-    this._attachToggleListener(surface);
+    if (this._useNativePopover) {
+      this._attachToggleListener(surface);
 
-    if (!surface.matches(":popover-open")) {
-      // `source` establishes the imperative popover-invoker relationship so
-      // native popover ancestor-stacking (light-dismiss closing only the
-      // innermost popover in a chain) still works even though we call
-      // showPopover() imperatively instead of via a declarative
-      // `popovertarget`. Not yet supported in every browser — fall back to
-      // plain showPopover() where the options-object form throws.
-      const source =
-        this.options.getAnchorOverride?.() ?? this._anchorEl ?? undefined;
-      try {
-        // `{ source }` isn't in TS's bundled DOM lib yet even though it
-        // ships in current browsers — cast to bypass the stale type.
-        /** @type {(options?: { source?: Element }) => void} */ (
-          surface.showPopover
-        ).call(surface, source ? { source } : undefined);
-      } catch {
+      if (!surface.matches(":popover-open")) {
+        // `source` establishes the imperative popover-invoker relationship so
+        // native popover ancestor-stacking (light-dismiss closing only the
+        // innermost popover in a chain) still works even though we call
+        // showPopover() imperatively instead of via a declarative
+        // `popovertarget`. Not yet supported in every browser — fall back to
+        // plain showPopover() where the options-object form throws.
+        const source =
+          this.options.getAnchorOverride?.() ?? this._anchorEl ?? undefined;
         try {
-          surface.showPopover();
+          // `{ source }` isn't in TS's bundled DOM lib yet even though it
+          // ships in current browsers — cast to bypass the stale type.
+          /** @type {(options?: { source?: Element }) => void} */ (
+            surface.showPopover
+          ).call(surface, source ? { source } : undefined);
         } catch {
-          /* already open, or Popover API unsupported */
+          try {
+            surface.showPopover();
+          } catch {
+            /* already open, or Popover API unsupported */
+          }
         }
       }
+    } else {
+      this._attachLightDismiss();
     }
 
     this.startAutoUpdate();
@@ -208,12 +243,16 @@ export class PopoverPositionController {
    */
   hide() {
     const surface = this.options.getSurfaceEl();
-    if (surface?.matches(":popover-open")) {
-      try {
-        surface.hidePopover();
-      } catch {
-        /* already closed */
+    if (this._useNativePopover) {
+      if (surface?.matches(":popover-open")) {
+        try {
+          surface.hidePopover();
+        } catch {
+          /* already closed */
+        }
       }
+    } else {
+      this._detachLightDismiss();
     }
     this.stopAutoUpdate();
   }
@@ -243,7 +282,7 @@ export class PopoverPositionController {
 
     const { x, y, placement } = await computePosition(reference, surface, {
       placement: this.options.getPlacement(),
-      strategy: "fixed",
+      strategy: this.options.getStrategy?.() ?? "fixed",
       middleware,
     });
 
@@ -289,5 +328,63 @@ export class PopoverPositionController {
   _onToggle(event) {
     const isOpen = /** @type {ToggleEvent} */ (event).newState === "open";
     this.options.onOpenChange(isOpen);
+  }
+
+  /**
+   * Non-native-popover equivalent of the built-in light-dismiss a real
+   * popover gets for free: closes on any pointerdown whose composed path
+   * lands outside both the surface and its reference/anchor element
+   * (`_onDocumentPointerDown`), and closes when focus moves outside the
+   * surface entirely (`_onSurfaceFocusOut`) — native `popover="auto"` closes
+   * on Tab-out for free via the browser's own focus handling, which none of
+   * this applies to without the real `popover` attribute. Capture-phase on
+   * the pointerdown listener so it still sees the event even if some
+   * intervening handler calls `stopPropagation()`.
+   */
+  _attachLightDismiss() {
+    if (this._lightDismissAttached) return;
+    document.addEventListener("pointerdown", this._onDocumentPointerDown, {
+      capture: true,
+    });
+    this.options
+      .getSurfaceEl()
+      ?.addEventListener("focusout", this._onSurfaceFocusOut);
+    this._lightDismissAttached = true;
+  }
+
+  _detachLightDismiss() {
+    if (!this._lightDismissAttached) return;
+    document.removeEventListener("pointerdown", this._onDocumentPointerDown, {
+      capture: true,
+    });
+    this.options
+      .getSurfaceEl()
+      ?.removeEventListener("focusout", this._onSurfaceFocusOut);
+    this._lightDismissAttached = false;
+  }
+
+  /** @param {PointerEvent} event */
+  _onDocumentPointerDown(event) {
+    const surface = this.options.getSurfaceEl();
+    if (!surface) return;
+    const path = event.composedPath();
+    if (path.includes(surface)) return;
+    const reference = this.referenceEl;
+    if (reference instanceof HTMLElement && path.includes(reference)) return;
+    this.options.onOpenChange(false);
+  }
+
+  /** @param {FocusEvent} event */
+  _onSurfaceFocusOut(event) {
+    const surface = this.options.getSurfaceEl();
+    if (!surface) return;
+    // `Node.contains()` is shadow-including, so this correctly recognizes
+    // focus moving between menu items (each item's interactive element
+    // lives in its own shadow root) as "still inside" — only a genuine
+    // focus-out (including focus leaving the document, where relatedTarget
+    // is null) triggers the close.
+    const next = /** @type {Node | null} */ (event.relatedTarget);
+    if (next && surface.contains(next)) return;
+    this.options.onOpenChange(false);
   }
 }

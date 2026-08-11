@@ -43,6 +43,11 @@ export class MdMenuItem extends LitElement {
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {
     value: { type: String },
+    /**
+     * When set, the item's interactive element renders as an `<a href>`
+     * instead of a `<button>` — a navigation item rather than an action.
+     */
+    href: { type: String },
     disabled: { type: Boolean, reflect: true },
     selected: { type: Boolean, reflect: true },
     keepOpen: { type: Boolean, reflect: true, attribute: "keep-open" },
@@ -61,6 +66,8 @@ export class MdMenuItem extends LitElement {
     _hasTrailingBadge: { state: true },
     _hasTrailing: { state: true },
     _hasSubmenu: { state: true },
+    /** Mirrors the submenu's own open state onto `aria-expanded`. */
+    _submenuOpen: { state: true },
   };
 
   /** @returns {import("lit").CSSResultGroup} */
@@ -73,6 +80,9 @@ export class MdMenuItem extends LitElement {
 
     /** @type {string} */
     this.value = "";
+
+    /** @type {string | undefined} */
+    this.href = undefined;
 
     /** @type {boolean} */
     this.disabled = false;
@@ -91,6 +101,7 @@ export class MdMenuItem extends LitElement {
     this._hasTrailingBadge = false;
     this._hasTrailing = false;
     this._hasSubmenu = false;
+    this._submenuOpen = false;
 
     /** @type {ReturnType<typeof setTimeout> | undefined} */
     this._hoverTimer = undefined;
@@ -192,7 +203,12 @@ export class MdMenuItem extends LitElement {
 
   /** @param {MouseEvent} event */
   _onClick(event) {
-    if (this.disabled) return;
+    if (this.disabled) {
+      // `<a>` has no native `disabled` — unlike `<button disabled>`, it
+      // still fires `click` and would navigate unless stopped here.
+      event.preventDefault();
+      return;
+    }
     if (this._hasSubmenu) {
       event.stopPropagation();
       const submenu = this.submenuEl;
@@ -210,6 +226,19 @@ export class MdMenuItem extends LitElement {
         composed: true,
       }),
     );
+  }
+
+  /**
+   * `<a>` only fires `click` on Enter, not Space — unlike `<button>`,
+   * which activates on both. Without this, Space silently does nothing on
+   * an `href` item while it activates a `<button>`-based one, an
+   * inconsistency a keyboard user would notice in a menu that mixes both.
+   * @param {KeyboardEvent} event
+   */
+  _onInteractiveKeydown(event) {
+    if (event.key !== " ") return;
+    event.preventDefault();
+    /** @type {HTMLElement | undefined} */ (this._interactiveEl)?.click();
   }
 
   /**
@@ -249,6 +278,17 @@ export class MdMenuItem extends LitElement {
           () => this._closeSubmenu(),
           HOVER_CLOSE_DELAY,
         );
+      });
+
+      // Mirrors onto aria-expanded (see _renderInteractive()) — "opening"/
+      // "closing" fire synchronously, before the open/close animation, so
+      // the ARIA state updates immediately rather than trailing ~200ms
+      // behind the visual state.
+      submenu.addEventListener("opening", () => {
+        this._submenuOpen = true;
+      });
+      submenu.addEventListener("closing", () => {
+        this._submenuOpen = false;
       });
     }
   }
@@ -340,32 +380,80 @@ export class MdMenuItem extends LitElement {
             </md-icon>`
           : nothing
       }
-      <slot
-        name="submenu"
-        @slotchange=${(/** @type {Event} */ e) => this._onSubmenuSlotChange(e)}
-      ></slot>
     `;
   }
 
-  render() {
+  _renderInteractive() {
+    const role = this.type === "option" ? "option" : "menuitem";
+    const ariaSelected =
+      this.type === "option" ? String(this.selected) : nothing;
+    // APG: "A parent menuitem has aria-haspopup set to menu/true... and
+    // aria-expanded set to false/true" synced to the submenu's visibility.
+    const ariaHaspopup = this._hasSubmenu ? "menu" : nothing;
+    const ariaExpanded = this._hasSubmenu ? String(this._submenuOpen) : nothing;
+    const content = html`<md-ripple for="menu-item"></md-ripple>
+      ${this._renderLeadingZone()} ${this._renderTextZone()}
+      ${this._renderTrailingZone()}`;
+
+    if (this.href) {
+      // `disabled` has no effect on `<a>` — mirror md-card/md-button's
+      // href-variant handling: aria-disabled + tabindex=-1 instead, with
+      // pointer-events:none in CSS to block clicks.
+      return html`
+        <a
+          id="menu-item"
+          class="md-menu-item__interactive"
+          part="interactive"
+          role=${role}
+          href=${this.href}
+          tabindex="-1"
+          aria-disabled=${this.disabled ? "true" : nothing}
+          aria-selected=${ariaSelected}
+          aria-haspopup=${ariaHaspopup}
+          aria-expanded=${ariaExpanded}
+          @click=${this._onClick}
+          @keydown=${this._onInteractiveKeydown}
+          @pointerleave=${this._onPointerLeave}
+        >
+          ${content}
+        </a>
+      `;
+    }
+
     return html`
       <button
         id="menu-item"
         class="md-menu-item__interactive"
         part="interactive"
         type="button"
-        role=${this.type === "option" ? "option" : "menuitem"}
+        role=${role}
         tabindex="-1"
-        ?disabled=${this.disabled}
         aria-disabled=${this.disabled ? "true" : nothing}
-        aria-selected=${this.type === "option" ? String(this.selected) : nothing}
+        aria-selected=${ariaSelected}
+        aria-haspopup=${ariaHaspopup}
+        aria-expanded=${ariaExpanded}
         @click=${this._onClick}
         @pointerleave=${this._onPointerLeave}
       >
-        <md-ripple for="menu-item"></md-ripple>
-        ${this._renderLeadingZone()} ${this._renderTextZone()}
-        ${this._renderTrailingZone()}
+        ${content}
       </button>
+    `;
+  }
+
+  render() {
+    // The submenu slot is a sibling of the interactive element, not nested
+    // inside it: `role="menu"`'s only valid children are
+    // `menuitem`/`menuitemradio`/`menuitemcheckbox`/`group` — nesting a
+    // whole second `menu` widget inside this item's own `<button>`/`<a>`
+    // broke the accessibility tree (browsers commonly flatten a button's
+    // subtree to its text content, hiding the submenu's items from AT) and
+    // let submenu-item clicks bubble through this item's own `@click`.
+    return html`
+      ${this._renderInteractive()}
+      <slot
+        name="submenu"
+        @slotchange=${(/** @type {Event} */ e) => this._onSubmenuSlotChange(e)}
+      ></slot>
     `;
   }
 }

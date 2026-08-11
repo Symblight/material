@@ -67,8 +67,86 @@ describe("md-menu-item", () => {
     });
   });
 
+  describe("href", () => {
+    it("renders an <a href> instead of a <button> when href is set", async () => {
+      const el = /** @type {MdMenuItem} */ (
+        await fixture(
+          html`<md-menu-item value="a" href="/somewhere">A</md-menu-item>`,
+        )
+      );
+      const interactive = el.shadowRoot.querySelector(
+        ".md-menu-item__interactive",
+      );
+      expect(interactive.tagName).to.equal("A");
+      expect(interactive.getAttribute("href")).to.equal("/somewhere");
+    });
+
+    it("renders a <button> when href is unset", async () => {
+      const el = /** @type {MdMenuItem} */ (
+        await fixture(html`<md-menu-item value="a">A</md-menu-item>`)
+      );
+      const interactive = el.shadowRoot.querySelector(
+        ".md-menu-item__interactive",
+      );
+      expect(interactive.tagName).to.equal("BUTTON");
+    });
+
+    it("a disabled href item is aria-disabled and does not navigate on click", async () => {
+      const el = /** @type {MdMenuItem} */ (
+        await fixture(
+          html`<md-menu-item value="a" href="/somewhere" disabled
+            >A</md-menu-item
+          >`,
+        )
+      );
+      const interactive = /** @type {HTMLAnchorElement} */ (
+        el.shadowRoot.querySelector(".md-menu-item__interactive")
+      );
+      expect(interactive.getAttribute("aria-disabled")).to.equal("true");
+
+      let navigated = false;
+      interactive.addEventListener("click", (event) => {
+        navigated = !event.defaultPrevented;
+      });
+      interactive.click();
+      expect(navigated).to.be.false;
+    });
+
+    it("Space activates an href item, matching native <button> Enter/Space activation", async () => {
+      // Native <a> only fires `click` on Enter, not Space — without
+      // _onInteractiveKeydown, Space would silently do nothing here while
+      // activating a <button>-based item. `href="#"` avoids a real page
+      // navigation (unlike an absolute path) so the test stays on-page.
+      const el = /** @type {MdMenuItem} */ (
+        await fixture(html`<md-menu-item value="a" href="#">A</md-menu-item>`)
+      );
+      const interactive = /** @type {HTMLAnchorElement} */ (
+        el.shadowRoot.querySelector(".md-menu-item__interactive")
+      );
+
+      let fired = false;
+      el.addEventListener("select", () => {
+        fired = true;
+      });
+
+      const event = new KeyboardEvent("keydown", {
+        key: " ",
+        bubbles: true,
+        cancelable: true,
+      });
+      interactive.dispatchEvent(event);
+
+      expect(event.defaultPrevented).to.be.true;
+      expect(fired).to.be.true;
+    });
+  });
+
   describe("disabled", () => {
-    it("reflects disabled and sets aria-disabled + native disabled on the button", async () => {
+    it("reflects disabled and sets aria-disabled, without native disabled on the button", async () => {
+      // No native `disabled` — APG: disabled menu items stay focusable
+      // (just not activatable), which native `disabled` would prevent
+      // entirely. aria-disabled + a blocked click (see menu.spec.js
+      // "disabled items") carries the state instead.
       const el = /** @type {MdMenuItem} */ (
         await fixture(html`<md-menu-item disabled>A</md-menu-item>`)
       );
@@ -76,7 +154,7 @@ describe("md-menu-item", () => {
       const button = /** @type {HTMLButtonElement} */ (
         el.shadowRoot.querySelector(".md-menu-item__interactive")
       );
-      expect(button.disabled).to.be.true;
+      expect(button.hasAttribute("disabled")).to.be.false;
       expect(button.getAttribute("aria-disabled")).to.equal("true");
     });
   });
@@ -235,6 +313,75 @@ describe("md-menu-item", () => {
 
       const submenuSlot = el.shadowRoot.querySelector('slot[name="submenu"]');
       expect(getComputedStyle(submenuSlot).display).to.not.equal("none");
+    });
+
+    it("renders the submenu slot as a sibling of the interactive element, not nested inside it", async () => {
+      // role="menu"'s only valid children are menuitem/menuitemradio/
+      // menuitemcheckbox/group — nesting a whole second menu inside this
+      // item's own <button> broke the accessibility tree (browsers commonly
+      // flatten a button's subtree to its text content) and let submenu
+      // clicks bubble through this item's own click handler.
+      const el = /** @type {MdMenuItem} */ (
+        await fixture(html`
+          <md-menu-item value="parent">
+            Parent
+            <md-menu slot="submenu">
+              <md-menu-item value="child">Child</md-menu-item>
+            </md-menu>
+          </md-menu-item>
+        `)
+      );
+      await el.updateComplete;
+
+      const interactive = el.shadowRoot.querySelector(
+        ".md-menu-item__interactive",
+      );
+      expect(interactive.querySelector('slot[name="submenu"]')).to.not.exist;
+      expect(el.shadowRoot.querySelector('slot[name="submenu"]')).to.exist;
+    });
+
+    it("sets aria-haspopup and toggles aria-expanded on the interactive element as the submenu opens/closes", async () => {
+      const el = /** @type {MdMenuItem} */ (
+        await fixture(html`
+          <md-menu-item value="parent">
+            Parent
+            <md-menu slot="submenu">
+              <md-menu-item value="child">Child</md-menu-item>
+            </md-menu>
+          </md-menu-item>
+        `)
+      );
+      await el.updateComplete;
+      await new Promise((r) => setTimeout(r, 0));
+
+      const interactive = el.shadowRoot.querySelector(
+        ".md-menu-item__interactive",
+      );
+      expect(interactive.getAttribute("aria-haspopup")).to.equal("menu");
+      expect(interactive.getAttribute("aria-expanded")).to.equal("false");
+
+      interactive.click();
+      // `_submenuOpen` is set from the submenu's own "opening" event, which
+      // fires from the submenu's *own* update cycle (triggered by setting
+      // `submenu.open = true`) — a separate, later microtask than `el`'s.
+      await el.submenuEl.updateComplete;
+      await el.updateComplete;
+      expect(interactive.getAttribute("aria-expanded")).to.equal("true");
+
+      await el.submenuEl.close();
+      await el.updateComplete;
+      expect(interactive.getAttribute("aria-expanded")).to.equal("false");
+    });
+
+    it("does not set aria-haspopup/aria-expanded without a submenu", async () => {
+      const el = /** @type {MdMenuItem} */ (
+        await fixture(html`<md-menu-item value="a">A</md-menu-item>`)
+      );
+      const interactive = el.shadowRoot.querySelector(
+        ".md-menu-item__interactive",
+      );
+      expect(interactive.hasAttribute("aria-haspopup")).to.be.false;
+      expect(interactive.hasAttribute("aria-expanded")).to.be.false;
     });
   });
 
