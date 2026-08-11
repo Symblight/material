@@ -120,14 +120,17 @@ export const IconButtonTrigger = {
     xOffset,
     yOffset,
   }) => html`
-    <md-icon-button
-      id="more-actions-trigger"
-      variant="standard"
-      aria-label="More actions"
+    <div
+      style="width: 500px; height: 500px; display: flex; justify-content: center; align-items: center;"
     >
-      <md-icon>${unsafeSVG(moreVert)}</md-icon>
-    </md-icon-button>
-
+      <md-icon-button
+        id="more-actions-trigger"
+        variant="standard"
+        aria-label="More actions"
+      >
+        <md-icon>${unsafeSVG(moreVert)}</md-icon>
+      </md-icon-button>
+    </div>
     <md-menu
       for="more-actions-trigger"
       placement=${placement}
@@ -590,7 +593,10 @@ export const LifecycleEvents = {
         minute: "2-digit",
         second: "2-digit",
       });
-      line.textContent = `${time}.${new Date().getMilliseconds().toString().padStart(3, "0")} — ${message}`;
+      line.textContent = `${time}.${new Date()
+        .getMilliseconds()
+        .toString()
+        .padStart(3, "0")} — ${message}`;
       log.prepend(line);
     }
 
