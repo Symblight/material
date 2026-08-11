@@ -1,7 +1,7 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.0.3",
+  "version": "0.2.0",
   "description": "Material Design 3 web components library built with Lit",
   "author": "Aleksei Tkachenko <leshtkachenko@gmail.com>",
   "license": "MIT",
@@ -101,6 +101,10 @@
       "import": "./dist/list/index.js",
       "types": "./dist/list/index.d.ts"
     },
+    "./menu": {
+      "import": "./dist/menu/index.js",
+      "types": "./dist/menu/index.d.ts"
+    },
     "./progress-circular": {
       "import": "./dist/progress-circular/progress-circular2.js",
       "types": "./dist/progress-circular/progress-circular.d.ts"
@@ -149,6 +153,7 @@
     "lit": ">=3.0.0"
   },
   "dependencies": {
+    "@floating-ui/dom": "^1.6.13",
     "@lit-labs/observers": "^2.1.0",
     "@lit/context": "^1.1.6",
     "rollup-plugin-postcss-lit": "^2.2.0"

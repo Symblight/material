@@ -1,6 +1,7 @@
 import { expect, fixture, html } from "@open-wc/testing";
 
 import "../select.js";
+import "../../menu/menu-item.js";
 /** @import Select from "../select.js" */
 
 describe("md-select", () => {
@@ -75,6 +76,372 @@ describe("md-select", () => {
       );
       expect(option).to.exist;
       expect(option.value).to.equal("red");
+    });
+  });
+
+  describe("options from md-menu-item", () => {
+    it("renders slotted md-menu-item elements as native <option> elements", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-menu-item value="b">Beta</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const tf = el.shadowRoot.querySelector("md-text-field");
+      const nativeSelect = /** @type {HTMLSelectElement} */ (
+        tf.querySelector("select")
+      );
+      const options = nativeSelect.querySelectorAll("option");
+      expect(options.length).to.equal(2);
+      expect(options[0].value).to.equal("a");
+      expect(options[0].textContent.trim()).to.equal("Alpha");
+    });
+
+    it("passes value and selected from md-menu-item to native option", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="green">Green</md-menu-item>
+            <md-menu-item value="blue" selected>Blue</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const tf = el.shadowRoot.querySelector("md-text-field");
+      const options = tf.querySelectorAll("option");
+      expect(options[1].value).to.equal("blue");
+      expect(options[1].selected).to.be.true;
+      expect(el.value).to.equal("blue");
+    });
+
+    it("excludes leading/trailing slot content from the option label", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">
+              <span slot="leading">icon</span>
+              Alpha
+              <span slot="trailing">⌘A</span>
+            </md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const tf = el.shadowRoot.querySelector("md-text-field");
+      const option = /** @type {HTMLOptionElement} */ (
+        tf.querySelector("option")
+      );
+      expect(option.textContent.trim()).to.equal("Alpha");
+    });
+
+    it("supports mixing md-option and md-menu-item children", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-option value="a">Alpha</md-option>
+            <md-menu-item value="b">Beta</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const tf = el.shadowRoot.querySelector("md-text-field");
+      const options = tf.querySelectorAll("option");
+      expect(options.length).to.equal(2);
+      expect(options[0].value).to.equal("a");
+      expect(options[1].value).to.equal("b");
+    });
+  });
+
+  describe("menu mode (md-menu-item present)", () => {
+    it("renders a trigger button instead of an interactive native select", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">Alpha</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const tf = el.shadowRoot.querySelector("md-text-field");
+      const trigger = tf.querySelector("#select-trigger");
+      expect(trigger).to.exist;
+      expect(trigger.tagName).to.equal("BUTTON");
+
+      const nativeSelect = tf.querySelector("select");
+      expect(nativeSelect.classList.contains("select__native-control_hidden"))
+        .to.be.true;
+      expect(nativeSelect.getAttribute("aria-hidden")).to.equal("true");
+      expect(nativeSelect.getAttribute("tabindex")).to.equal("-1");
+    });
+
+    it("highlights the text-field when the popover opens", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">Alpha</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const tf = el.shadowRoot.querySelector("md-text-field");
+      expect(tf.focused).to.be.false;
+
+      const trigger = tf.querySelector("#select-trigger");
+      trigger.click();
+      await new Promise((r) => setTimeout(r, 30));
+      expect(tf.focused).to.be.true;
+    });
+
+    it("renders an md-menu with md-menu-item rows mirroring the options", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-menu-item value="b" selected>Beta</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const menu = el.shadowRoot.querySelector("md-menu");
+      expect(menu).to.exist;
+      // Anchored to the whole md-text-field, not the inner trigger button —
+      // the button excludes the field's own padding/leading area, so
+      // anchoring to it misaligned the popover from the field's visible box.
+      expect(menu.getAttribute("for")).to.equal("select-field");
+
+      const items = menu.querySelectorAll("md-menu-item");
+      expect(items.length).to.equal(2);
+      expect(items[1].hasAttribute("selected")).to.be.true;
+    });
+
+    it("shows the selected item's label on the trigger button", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-menu-item value="b" selected>Beta</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const trigger = el.shadowRoot
+        .querySelector("md-text-field")
+        .querySelector("#select-trigger");
+      expect(trigger.textContent.trim()).to.equal("Beta");
+    });
+
+    it("sets combobox/listbox ARIA on the trigger button", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">Alpha</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const trigger = el.shadowRoot
+        .querySelector("md-text-field")
+        .querySelector("#select-trigger");
+      expect(trigger.getAttribute("role")).to.equal("combobox");
+      expect(trigger.getAttribute("aria-haspopup")).to.equal("listbox");
+      expect(trigger.getAttribute("aria-controls")).to.equal("select-listbox");
+      expect(trigger.getAttribute("aria-expanded")).to.equal("false");
+    });
+
+    it("aria-expanded on the trigger tracks the popover open state", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">Alpha</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const trigger = el.shadowRoot
+        .querySelector("md-text-field")
+        .querySelector("#select-trigger");
+      trigger.click();
+      await new Promise((r) => setTimeout(r, 30));
+      await el.updateComplete;
+
+      expect(trigger.getAttribute("aria-expanded")).to.equal("true");
+    });
+
+    it("renders menu-mode md-menu-item rows with type=option (role=option)", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">Alpha</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const menu = el.shadowRoot.querySelector("md-menu");
+      expect(menu.getAttribute("menu-role")).to.equal("listbox");
+
+      const item = menu.querySelector("md-menu-item");
+      await item.updateComplete;
+      expect(item.type).to.equal("option");
+      const interactive = item.shadowRoot.querySelector(
+        ".md-menu-item__interactive",
+      );
+      expect(interactive.getAttribute("role")).to.equal("option");
+    });
+
+    it("ArrowDown on the closed trigger opens the menu and focuses the selected item", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-menu-item value="b" selected>Beta</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const trigger = el.shadowRoot
+        .querySelector("md-text-field")
+        .querySelector("#select-trigger");
+      const menu = /** @type {import("../../menu/menu.js").MdMenu} */ (
+        el.shadowRoot.querySelector("md-menu")
+      );
+
+      trigger.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+      );
+      await new Promise((r) => setTimeout(r, 30));
+      await el.updateComplete;
+
+      expect(menu.open).to.be.true;
+      const betaItem = Array.from(menu.querySelectorAll("md-menu-item")).find(
+        (item) => item.value === "b",
+      );
+      expect(betaItem.getTabIndex()).to.equal(0);
+    });
+
+    it("Home on the closed trigger opens the menu and focuses the first item", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-menu-item value="b" selected>Beta</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const trigger = el.shadowRoot
+        .querySelector("md-text-field")
+        .querySelector("#select-trigger");
+      const menu = /** @type {import("../../menu/menu.js").MdMenu} */ (
+        el.shadowRoot.querySelector("md-menu")
+      );
+
+      trigger.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Home", bubbles: true }),
+      );
+      await new Promise((r) => setTimeout(r, 30));
+      await el.updateComplete;
+
+      expect(menu.open).to.be.true;
+      const alphaItem = Array.from(menu.querySelectorAll("md-menu-item")).find(
+        (item) => item.value === "a",
+      );
+      expect(alphaItem.getTabIndex()).to.equal(0);
+    });
+
+    it("End on the closed trigger opens the menu and focuses the last item", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select>
+            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-menu-item value="b">Beta</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      const trigger = el.shadowRoot
+        .querySelector("md-text-field")
+        .querySelector("#select-trigger");
+      const menu = /** @type {import("../../menu/menu.js").MdMenu} */ (
+        el.shadowRoot.querySelector("md-menu")
+      );
+
+      trigger.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "End", bubbles: true }),
+      );
+      await new Promise((r) => setTimeout(r, 30));
+      await el.updateComplete;
+
+      expect(menu.open).to.be.true;
+      const betaItem = Array.from(menu.querySelectorAll("md-menu-item")).find(
+        (item) => item.value === "b",
+      );
+      expect(betaItem.getTabIndex()).to.equal(0);
+    });
+
+    it("selecting a menu item updates the value and syncs the hidden native select", async () => {
+      const el = /** @type {Select} */ (
+        await fixture(html`
+          <md-select name="role">
+            <md-menu-item value="a">Alpha</md-menu-item>
+            <md-menu-item value="b">Beta</md-menu-item>
+          </md-select>
+        `)
+      );
+      await new Promise((r) => setTimeout(r, 0));
+      await el.updateComplete;
+
+      let changed = false;
+      el.addEventListener("change", () => {
+        changed = true;
+      });
+
+      const menu = /** @type {import("../../menu/menu.js").MdMenu} */ (
+        el.shadowRoot.querySelector("md-menu")
+      );
+      const betaItem =
+        /** @type {import("../../menu/menu-item.js").MdMenuItem} */ (
+          Array.from(menu.querySelectorAll("md-menu-item")).find(
+            (item) => item.value === "b",
+          )
+        );
+      betaItem.shadowRoot.querySelector(".md-menu-item__interactive").click();
+      await new Promise((r) => setTimeout(r, 30));
+      await el.updateComplete;
+
+      expect(el.value).to.equal("b");
+      expect(changed).to.be.true;
+      expect(el.select.value).to.equal("b");
     });
   });
 

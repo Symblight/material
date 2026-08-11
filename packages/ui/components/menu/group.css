@@ -1,0 +1,29 @@
+:host {
+  --md-menu-group-label-color: var(--md-sys-color-on-surface-variant);
+  --md-menu-group-label-size: var(
+    --md-sys-typescale-label-small-size,
+    0.6875rem
+  );
+  --md-menu-group-label-weight: var(--md-sys-typescale-label-small-weight, 500);
+  --md-menu-group-label-line-height: var(
+    --md-sys-typescale-label-small-line-height,
+    1rem
+  );
+  --md-menu-group-label-tracking: var(
+    --md-sys-typescale-label-small-tracking,
+    0.03125rem
+  );
+
+  display: block;
+}
+
+.md-menu-group__label {
+  padding-inline: 1rem;
+  padding-block: 0.5rem 0.25rem;
+  color: var(--md-menu-group-label-color);
+  font-size: var(--md-menu-group-label-size);
+  font-weight: var(--md-menu-group-label-weight);
+  line-height: var(--md-menu-group-label-line-height);
+  letter-spacing: var(--md-menu-group-label-tracking);
+  text-transform: uppercase;
+}

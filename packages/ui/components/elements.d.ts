@@ -27,6 +27,10 @@ import Icon from "./icon/icon.js";
 import { MdSkeleton } from "./skeleton/skeleton.js";
 import { MdSegmentedButton } from "./segmented-button/segmented-button.js";
 import { MdSegmentedButtonGroup } from "./segmented-button/segmented-button-group.js";
+import { MdMenu } from "./menu/menu.js";
+import { MdMenuItem } from "./menu/menu-item.js";
+import { MdMenuGroup } from "./menu/group.js";
+import { MdItemGroup } from "./menu/item-group.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -59,5 +63,9 @@ declare global {
     "md-skeleton": MdSkeleton;
     "md-segmented-button": MdSegmentedButton;
     "md-segmented-button-group": MdSegmentedButtonGroup;
+    "md-menu": MdMenu;
+    "md-menu-item": MdMenuItem;
+    "md-menu-group": MdMenuGroup;
+    "md-item-group": MdItemGroup;
   }
 }
