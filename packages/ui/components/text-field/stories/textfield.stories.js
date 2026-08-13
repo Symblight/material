@@ -265,6 +265,81 @@ export const Password = {
   },
 };
 
+/**
+ * Demonstrates the two supported theming mechanisms:
+ * - CSS custom properties (`--md-text-field-*`, `--md-filled-text-field-*`,
+ *   `--md-outlined-text-field-*`) for colors, spacing, typography and shape.
+ * - `::part()` selectors (`box`, `wrapper`, `input`, `label`, `prefix`,
+ *   `suffix`, `help-text`) for structural tweaks the tokens don't cover,
+ *   like a custom box-shadow or a pill-shaped outline.
+ */
+/** @type {Story} */
+export const CustomStyling = {
+  render: () => {
+    return html`
+      <style>
+        .custom-styling-demo {
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+          max-width: 20rem;
+        }
+
+        /* Brand color override via CSS custom properties. */
+        .brand-field {
+          --md-text-field-primary-color: #6750a4;
+          --md-text-field-border-color: #958da5;
+          --md-text-field-background-color: #f4eff4;
+        }
+
+        /* Pill-shaped outline, custom font size via tokens. */
+        .pill-field {
+          --md-outlined-text-field-shape: 999px;
+          --md-outlined-text-field-border-color: #386a20;
+          --md-text-field-primary-color: #386a20;
+          --md-text-field-font-size: 1.125rem;
+        }
+        .pill-field::part(wrapper) {
+          padding-inline: 1.25rem;
+        }
+
+        /* Square, flat filled field styled entirely through ::part(). */
+        .flat-field {
+          --md-filled-text-field-shape: 8rem;
+        }
+        .flat-field::part(input) {
+          font-family: "Courier New", monospace;
+        }
+        .flat-field::part(indicator) {
+          display: none;
+        }
+      </style>
+
+      <div class="custom-styling-demo">
+        <md-text-field
+          class="brand-field"
+          label="Brand colors"
+          placeholder="Type something"
+        ></md-text-field>
+
+        <md-text-field
+          class="pill-field"
+          variant="outlined"
+          label="Pill shape"
+        ></md-text-field>
+
+        <md-text-field
+          class="flat-field"
+          placeholder="Flat + monospace"
+          value="Styled via ::part()"
+        >
+          <md-icon slot="trailing"> ${unsafeSVG(search)} </md-icon>
+        </md-text-field>
+      </div>
+    `;
+  },
+};
+
 /** @type {Story} */
 export const CustomInputSelect = {
   args: {

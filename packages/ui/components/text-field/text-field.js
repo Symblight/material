@@ -357,6 +357,7 @@ export class TextField extends FormControlMixin(LitElement) {
       this.variant === "filled",
       () =>
         html`<div
+          part="indicator"
           class="text-field__indicator ${classMap({
             "text-field__indicator_focused": this.focused,
             "text-field__indicator_error": this.hasValidation,
@@ -372,6 +373,7 @@ export class TextField extends FormControlMixin(LitElement) {
       () =>
         html`<fieldset
           aria-hidden="true"
+          part="indicator"
           class="text-field__outlined-indicator ${classMap({
             "text-field__outlined-indicator_focused": this.focused,
             "text-field__outlined-indicator_error": this.hasValidation,
