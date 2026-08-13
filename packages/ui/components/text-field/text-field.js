@@ -254,16 +254,31 @@ export class TextField extends FormControlMixin(LitElement) {
     if (this.customInputElement) {
       this.customInputElement.removeEventListener("focus", this.handleFocus);
       this.customInputElement.removeEventListener("blur", this.handleFocus);
+      this.customInputElement.removeEventListener(
+        "input",
+        this.handleCustomInput,
+      );
     }
 
     if (inputElement instanceof HTMLElement) {
       this.customInputElement = inputElement;
       inputElement.addEventListener("focus", this.handleFocus);
       inputElement.addEventListener("blur", this.handleFocus);
+      inputElement.addEventListener("input", this.handleCustomInput);
     } else {
       this.customInputElement = null;
     }
   }
+
+  /** @param {Event} event */
+  handleCustomInput = (event) => {
+    if (this.disabled) return;
+    const target = /** @type {HTMLInputElement} */ (event.target);
+    this.value = target.value ?? target.textContent ?? "";
+    this.setValue(this.value);
+    this.dispatchEvent(new Event("change"));
+    this.dirty = true;
+  };
 
   get renderInput() {
     const ariaId = this.hasValidation && this.ariaId;
@@ -314,17 +329,6 @@ export class TextField extends FormControlMixin(LitElement) {
     `;
   }
 
-  /*
-   * `for` only targets `inputId` when the fallback `<input>`/`<textarea>`
-   * (renderInputOrTextArea) is actually what's rendered. When custom
-   * content is slotted into `input` instead, that fallback element still
-   * exists in the DOM (a <slot>'s fallback content isn't removed, only
-   * unrendered) — so leaving `for` pointed at it means clicking the label
-   * still triggers the browser's native label-click-forwarding onto that
-   * hidden element, firing a second, separate synthetic click that bubbles
-   * up alongside the label's own, double-firing any click listener on an
-   * ancestor (e.g. toggling a popover open then immediately closed again).
-   */
   get renderFilledLabel() {
     return when(
       this.label && this.variant === "filled",
@@ -486,7 +490,7 @@ export class TextField extends FormControlMixin(LitElement) {
           })}"
         >
           ${this.renderFilledLabel}
-          <div class="text-field__wrapper">
+          <div part="content" class="text-field__wrapper">
             ${this.renderPrefix}
             <slot name="input" @slotchange=${this.updateSlottedInput}>
               ${this.renderInputOrTextArea}
