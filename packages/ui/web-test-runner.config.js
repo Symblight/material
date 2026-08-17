@@ -103,6 +103,14 @@ function processEnvShimPlugin() {
 export default {
   nodeResolve: true,
   coverage: true,
+  // Serialized rather than the default (cpus/2) concurrent pages: a native
+  // `<dialog>.showModal()` call in one test file can stall an unrelated
+  // concurrently-running file's page for multiple seconds in this
+  // Playwright setup (cross-page contention, not a bug in either
+  // component) — see dialog.spec.js / menu.spec.js's positioning="fixed"
+  // test. Per-file overhead dominates total runtime here, so serializing
+  // costs only ~10-20% more wall time.
+  concurrency: 1,
   coverageConfig: {
     include: ["components/**/*.js"],
     exclude: [
@@ -123,6 +131,16 @@ export default {
     },
   },
   files: ["components/**/*.spec.js", "!node_modules/", "!.wireit/"],
+  // Default Mocha timeout (2000ms) is too tight under concurrent test
+  // files — a native `<dialog>.showModal()` call in one file can stall an
+  // unrelated file's page for 2+s in this Playwright setup (cross-page
+  // contention, not a bug in either component). 5000ms absorbs that jitter
+  // while still failing on genuine hangs.
+  testFramework: {
+    config: {
+      timeout: "2000",
+    },
+  },
   plugins: [
     svgRawPlugin(),
     cssInlinePlugin(),

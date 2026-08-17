@@ -16,6 +16,7 @@ import "../../icon-button/icon-button.js";
 import "../../icon/icon.js";
 import "../../select/select.js";
 import "../../card/card.js";
+import "../../button/button.js";
 
 /** @import { MdMenu } from "../menu.js" */
 
@@ -577,7 +578,68 @@ export const LifecycleEvents = {
   },
 };
 
-// ── 8. md-menu-item href: navigation vs. action items ───────────────────────
+// ── 8. Imperative show/toggle with an explicit `source` invoker ────────────
+
+/**
+ * `md-menu` can be driven entirely imperatively — no `for` attribute at
+ * all — via `show(options)`/`toggle(options)`. `options.source` sets the
+ * native popover invoker (`HTMLElement.showPopover({ source })`), which
+ * establishes an ancestor relationship for top-layer stacking/light-dismiss
+ * purposes; it's independent of *position*, so this demo also points
+ * `anchorElement` at whichever button was clicked so the menu visually
+ * anchors to it. `toggle()` mirrors native `togglePopover()`: open if
+ * closed, close if open, or pass `force` to pin the outcome either way.
+ */
+/** @type {Story} */
+export const ImperativeSourceInvoker = {
+  render: () => {
+    /** @param {PointerEvent} event */
+    function toggleFrom(event) {
+      const button = /** @type {HTMLElement} */ (event.currentTarget);
+      const menu = /** @type {MdMenu} */ (
+        document.getElementById("imperative-source-menu")
+      );
+      menu.anchorElement = button;
+      menu.toggle({ source: button });
+    }
+
+    return html`
+      <div style="display: flex; gap: 1rem;">
+        <md-button
+          id="imperative-source-a"
+          variant="outlined"
+          @click=${toggleFrom}
+        >
+          Open from A
+        </md-button>
+        <md-button
+          id="imperative-source-b"
+          variant="outlined"
+          @click=${toggleFrom}
+        >
+          Open from B
+        </md-button>
+      </div>
+
+      <md-menu id="imperative-source-menu" placement="bottom-start">
+        <md-menu-item value="edit">
+          <md-icon slot="leading">${unsafeSVG(edit)}</md-icon>
+          Edit
+        </md-menu-item>
+        <md-menu-item value="duplicate">
+          <md-icon slot="leading">${unsafeSVG(contentCopy)}</md-icon>
+          Duplicate
+        </md-menu-item>
+        <md-menu-item value="delete">
+          <md-icon slot="leading">${unsafeSVG(deleteIcon)}</md-icon>
+          Delete
+        </md-menu-item>
+      </md-menu>
+    `;
+  },
+};
+
+// ── 9. md-menu-item href: navigation vs. action items ───────────────────────
 
 /**
  * Setting `href` on an `md-menu-item` renders its interactive element as

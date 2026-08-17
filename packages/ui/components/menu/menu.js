@@ -139,6 +139,15 @@ export class MdMenu extends LitElement {
     /** Same role as `_openPromise`, for the close path. @type {Promise<void>} */
     this._closePromise = Promise.resolve();
 
+    /**
+     * Explicit invoker requested via `show({ source })`/`toggle({ source })`,
+     * stashed here since `open`'s `updated()` handler (not `show()` itself)
+     * is what actually calls `_handleOpen()` → `_popover.show()`. Cleared
+     * once consumed.
+     * @type {HTMLElement | undefined}
+     */
+    this._pendingSource = undefined;
+
     /** @type {number} */
     this._segmentCount = 1;
 
@@ -307,11 +316,43 @@ export class MdMenu extends LitElement {
 
   // ── Public API ────────────────────────────────────────────────────────────
 
-  async show() {
+  /**
+   * @param {{ source?: HTMLElement }} [options]
+   *   `source` explicitly sets the popover's native invoker (see
+   *   `HTMLElement.showPopover({ source })`), overriding the anchor
+   *   auto-resolved from `anchorElement`/`for`. Establishing this
+   *   relationship makes the browser treat `source` as this menu's
+   *   ancestor for native popover stacking/light-dismiss purposes — useful
+   *   when opening a menu from something other than its own trigger (e.g.
+   *   a different button momentarily driving the same menu).
+   */
+  async show({ source } = {}) {
+    // Only stash `source` if this call will actually drive an open
+    // transition — otherwise nothing consumes it and it'd leak into the
+    // next real open (`open` already `true` means `updated()` won't fire).
+    if (!this.open) {
+      this._pendingSource = source;
+    }
     this._popover.clearPointAnchor();
     this.open = true;
     await this.updateComplete;
     await this._openPromise;
+  }
+
+  /**
+   * Opens the menu if closed, closes it if open — mirrors the native
+   * `HTMLElement.togglePopover(options)`.
+   * @param {{ source?: HTMLElement, force?: boolean }} [options]
+   *   `force: true` always opens, `force: false` always closes; omitted,
+   *   it flips the current state. `source` is forwarded to `show()`.
+   */
+  async toggle({ source, force } = {}) {
+    const shouldOpen = force ?? !this.open;
+    if (shouldOpen) {
+      await this.show({ source });
+    } else {
+      await this.close();
+    }
   }
 
   /** @param {{ returnFocus?: boolean }} [options] */
@@ -548,7 +589,9 @@ export class MdMenu extends LitElement {
 
   async _handleOpen() {
     this.dispatchEvent(new Event("opening"));
-    await this._popover.show();
+    const source = this._pendingSource;
+    this._pendingSource = undefined;
+    await this._popover.show({ source });
     if (this._popover.anchorEl instanceof HTMLElement) {
       this._popover.anchorEl.setAttribute("aria-expanded", "true");
     }

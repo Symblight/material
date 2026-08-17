@@ -160,6 +160,16 @@ This mode isn't meant to be hand-authored directly with `md-menu-item`: `role="o
 const menu = document.querySelector("md-menu");
 await menu.show(); // opens and focuses the first item
 await menu.close(); // closes and returns focus to the trigger
+
+// Open on behalf of a different element than the menu's own `for`/
+// `anchorElement` — sets the native popover invoker (see
+// `HTMLElement.showPopover({ source })`) for stacking/light-dismiss.
+await menu.show({ source: otherButton });
+
+// Toggle mirrors native `togglePopover(options)`.
+await menu.toggle(); // open if closed, close if open
+await menu.toggle({ source: otherButton });
+await menu.toggle({ force: true }); // always open
 ```
 
 ### CSS custom property overrides
@@ -203,14 +213,15 @@ await menu.close(); // closes and returns focus to the trigger
 
 ### Methods
 
-| Method                | Returns         | Description                                                                                                   |
-| --------------------- | --------------- | ------------------------------------------------------------------------------------------------------------- |
-| `show()`              | `Promise<void>` | Opens the menu and awaits the full open sequence (positioning + roving tabindex init).                        |
-| `close(options?)`     | `Promise<void>` | Closes the menu. `options.returnFocus` (default `true`) controls whether focus returns to the trigger/anchor. |
-| `openAtPoint(x, y)`   | `void`          | Opens the menu anchored to viewport coordinates `(x, y)` — the context-menu variant.                          |
-| `focusFirstItem()`    | `void`          | Sets roving tabindex to and focuses the first item (including disabled items).                                |
-| `focusLastItem()`     | `void`          | Sets roving tabindex to and focuses the last item (including disabled items).                                 |
-| `focusSelectedItem()` | `void`          | Focuses the item with `selected` set, falling back to the first item.                                         |
+| Method                | Returns         | Description                                                                                                                                                                   |
+| --------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `show(options?)`      | `Promise<void>` | Opens the menu and awaits the full open sequence (positioning + roving tabindex init). `options.source` sets the native popover invoker, overriding `for`/`anchorElement`.    |
+| `toggle(options?)`    | `Promise<void>` | Opens if closed, closes if open — mirrors `HTMLElement.togglePopover()`. `options.source` is forwarded to `show()`; `options.force` forces open (`true`) or closed (`false`). |
+| `close(options?)`     | `Promise<void>` | Closes the menu. `options.returnFocus` (default `true`) controls whether focus returns to the trigger/anchor.                                                                 |
+| `openAtPoint(x, y)`   | `void`          | Opens the menu anchored to viewport coordinates `(x, y)` — the context-menu variant.                                                                                          |
+| `focusFirstItem()`    | `void`          | Sets roving tabindex to and focuses the first item (including disabled items).                                                                                                |
+| `focusLastItem()`     | `void`          | Sets roving tabindex to and focuses the last item (including disabled items).                                                                                                 |
+| `focusSelectedItem()` | `void`          | Focuses the item with `selected` set, falling back to the first item.                                                                                                         |
 
 ### Slots
 

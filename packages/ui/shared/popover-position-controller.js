@@ -218,8 +218,12 @@ export class PopoverPositionController {
    * Shows the popover surface (if not already open), computes its position,
    * and starts `autoUpdate()`. Call whenever the host's own `open` state
    * becomes `true`.
+   * @param {{ source?: HTMLElement }} [options]
+   *   `source` explicitly sets the native popover invoker (see
+   *   `HTMLElement.showPopover({ source })`), taking priority over the
+   *   auto-resolved anchor override / `for`-resolved control.
    */
-  async show() {
+  async show({ source } = {}) {
     const surface = this.options.getSurfaceEl();
     if (!surface) return;
 
@@ -230,13 +234,19 @@ export class PopoverPositionController {
         // `source` preserves native popover ancestor-stacking for nested
         // popovers opened imperatively. Not supported everywhere — fall
         // back to plain showPopover() where the options-object form throws.
-        const source =
-          this.options.getAnchorOverride?.() ?? this._anchorEl ?? undefined;
+        const resolvedSource =
+          source ??
+          this.options.getAnchorOverride?.() ??
+          this._anchorEl ??
+          undefined;
         try {
           // `{ source }` isn't in TS's bundled DOM lib yet — cast around it.
           /** @type {(options?: { source?: Element }) => void} */ (
             surface.showPopover
-          ).call(surface, source ? { source } : undefined);
+          ).call(
+            surface,
+            resolvedSource ? { source: resolvedSource } : undefined,
+          );
         } catch {
           try {
             surface.showPopover();
