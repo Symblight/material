@@ -7,7 +7,7 @@ import { customElement } from "lit/decorators.js";
  * group.
  *
  * Each top-level `md-item-group` child of `md-menu` is rendered as its own
- * `md-card` segment, with real spacing and independently rounded corners
+ * `.md-menu__card` segment, with real spacing and independently rounded corners
  * between segments — the MD3 "vertical menu with gap" pattern. Gaps are
  * more expressive than dividers and make the relationship between items in
  * the same group clear at a glance. Purely a grouping/visual concern —

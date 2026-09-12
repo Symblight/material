@@ -403,7 +403,7 @@ Wraps a set of `md-menu-item` elements into a visually distinct card segment (MD
 ## Related Components
 
 - [`md-select`](../select/README.md) — built on `md-menu` in `menu-role="listbox"` mode
-- [`md-card`](../card/README.md) — used internally to render each menu segment surface
+- `md-shadow` — used internally for each menu segment's elevation
 - [`md-icon`](../icon/README.md) — suitable for the `leading`/`trailing` slots
 - [`md-ripple`](../ripple/README.md) — used internally by `md-menu-item`
 - [`md-list`](../list/README.md) — for non-popover, static item lists

@@ -1,0 +1,47 @@
+:host {
+  --md-tooltip-container-color: var(--md-sys-color-inverse-surface);
+  --md-tooltip-label-text-color: var(--md-sys-color-inverse-on-surface);
+  --md-tooltip-shape: var(--md-sys-shape-corner-extra-small, 0.25rem);
+
+  --md-tooltip-label-text-font: var(
+    --md-sys-typescale-body-small-font,
+    inherit
+  );
+  --md-tooltip-label-text-size: var(
+    --md-sys-typescale-body-small-size,
+    0.75rem
+  );
+  --md-tooltip-label-text-line-height: var(
+    --md-sys-typescale-body-small-line-height,
+    1rem
+  );
+  --md-tooltip-label-text-weight: var(
+    --md-sys-typescale-body-small-weight,
+    400
+  );
+  --md-tooltip-label-text-tracking: var(
+    --md-sys-typescale-body-small-tracking,
+    0.025rem
+  );
+
+  /* Non-interactive — a plain tooltip holds text only, never form controls. */
+  pointer-events: none;
+  max-inline-size: 15.625rem; /* 250dp, MD3 plain tooltip max width */
+}
+
+.md-tooltip__surface {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--md-tooltip-shape);
+  background-color: var(--md-tooltip-container-color);
+  color: var(--md-tooltip-label-text-color);
+  padding-inline: 0.5rem;
+  padding-block: 0.25rem;
+  font-family: var(--md-tooltip-label-text-font);
+  font-size: var(--md-tooltip-label-text-size);
+  line-height: var(--md-tooltip-label-text-line-height);
+  font-weight: var(--md-tooltip-label-text-weight);
+  letter-spacing: var(--md-tooltip-label-text-tracking);
+  white-space: normal;
+  overflow-wrap: break-word;
+}

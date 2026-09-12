@@ -51,29 +51,39 @@
 }
 
 .md-menu__card {
-  --md-card-container-color: var(--md-menu-surface-color);
-  --md-card-shape: var(--md-menu-shape);
-  display: block;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   inline-size: 100%;
   max-inline-size: var(--md-menu-max-width);
+  border-radius: var(--md-menu-shape);
+  background-color: var(--md-menu-surface-color);
+}
+
+/* Scoped to md-shadow itself, not the card wrapper — custom properties
+   inherit across the flat tree, so declaring this on the wrapper would leak
+   into ::slotted menu items (e.g. one containing its own md-shadow-using
+   element with no elevation level of its own to override it with). */
+.md-menu__card > md-shadow {
+  --md-elevation-level: 2;
 }
 
 :host([variant="vibrant"]) .md-menu__card {
-  --md-card-container-color: var(--md-menu-vibrant-surface-color);
+  background-color: var(--md-menu-vibrant-surface-color);
 }
 
 .md-menu__card:not(:only-of-type):first-of-type {
-  --md-card-shape: var(--md-menu-shape) var(--md-menu-shape)
+  border-radius: var(--md-menu-shape) var(--md-menu-shape)
     var(--md-menu-shape-inner) var(--md-menu-shape-inner);
 }
 
 .md-menu__card:not(:only-of-type):last-of-type {
-  --md-card-shape: var(--md-menu-shape-inner) var(--md-menu-shape-inner)
+  border-radius: var(--md-menu-shape-inner) var(--md-menu-shape-inner)
     var(--md-menu-shape) var(--md-menu-shape);
 }
 
 .md-menu__card:not(:only-of-type):not(:first-of-type):not(:last-of-type) {
-  --md-card-shape: var(--md-menu-shape-inner);
+  border-radius: var(--md-menu-shape-inner);
 }
 
 .md-menu__list {
@@ -83,6 +93,8 @@
 }
 
 .md-menu__segment {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   padding-block: 0.5rem;

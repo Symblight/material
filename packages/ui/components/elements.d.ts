@@ -32,6 +32,8 @@ import { MdMenu } from "./menu/menu.js";
 import { MdMenuItem } from "./menu/menu-item.js";
 import { MdMenuGroup } from "./menu/group.js";
 import { MdItemGroup } from "./menu/item-group.js";
+import { MdTooltip } from "./tooltip/tooltip.js";
+import { MdRichTooltip } from "./tooltip/rich-tooltip.js";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -69,5 +71,7 @@ declare global {
     "md-menu-item": MdMenuItem;
     "md-menu-group": MdMenuGroup;
     "md-item-group": MdItemGroup;
+    "md-tooltip": MdTooltip;
+    "md-rich-tooltip": MdRichTooltip;
   }
 }

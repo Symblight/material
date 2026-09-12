@@ -1,0 +1,79 @@
+/* Shared positioning/transition/:host reset for md-tooltip and
+   md-rich-tooltip — variant visuals (color, shape, padding) live in each
+   component's own CSS file. Mirrors md-menu.css's positioning skeleton. */
+
+:host {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  overflow: visible; /* allow md-shadow's box-shadow to escape the popover's default overflow:auto */
+  z-index: var(--md-tooltip-z-index, 1000);
+}
+
+:host([positioning="popover"]:not(:popover-open)) {
+  display: none;
+}
+
+:host(:not([positioning="popover"]):not([open])) {
+  display: none;
+}
+
+:host([positioning="absolute"]) {
+  position: absolute;
+}
+
+:host([positioning="document"]) {
+  position: absolute;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :host {
+    transform-origin: bottom; /* default: surface above its anchor */
+    transition:
+      opacity var(--md-sys-motion-duration-short2, 100ms)
+        var(--md-sys-motion-easing-standard, ease),
+      transform var(--md-sys-motion-duration-short4, 200ms)
+        var(--md-sys-motion-easing-standard, ease),
+      display var(--md-sys-motion-duration-short4, 200ms) allow-discrete,
+      overlay var(--md-sys-motion-duration-short4, 200ms) allow-discrete;
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  :host([data-placement^="bottom"]) {
+    transform-origin: top;
+  }
+
+  :host([positioning="popover"]:not(:popover-open)) {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  @starting-style {
+    :host([positioning="popover"]:popover-open) {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+  }
+
+  :host(:not([positioning="popover"]):not([open])) {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  @starting-style {
+    :host(:not([positioning="popover"])[open]) {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+}

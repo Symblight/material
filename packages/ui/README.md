@@ -57,6 +57,7 @@ import "@symblight/wc-material/text-field";
 | Skeleton            | `@symblight/wc-material/skeleton`          | `<md-skeleton>`                                                                   | [README](./components/skeleton/README.md)          |
 | Switch              | `@symblight/wc-material/switch`            | `<md-switch>`                                                                     | [README](./components/switch/README.md)            |
 | Text Field          | `@symblight/wc-material/text-field`        | `<md-text-field>`                                                                 | [README](./components/text-field/README.md)        |
+| Tooltip             | `@symblight/wc-material/tooltip`           | `<md-tooltip>`, `<md-rich-tooltip>`                                               | [README](./components/tooltip/README.md)           |
 
 ### Theme
 

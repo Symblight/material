@@ -1,0 +1,101 @@
+:host {
+  --md-rich-tooltip-container-color: var(--md-sys-color-surface-container);
+  --md-rich-tooltip-subhead-color: var(--md-sys-color-on-surface);
+  --md-rich-tooltip-supporting-text-color: var(
+    --md-sys-color-on-surface-variant
+  );
+  --md-rich-tooltip-shape: var(--md-sys-shape-corner-medium, 0.75rem);
+  --md-rich-tooltip-min-width: 12.5rem; /* 200dp */
+  --md-rich-tooltip-max-width: 20rem; /* 320dp */
+
+  --md-rich-tooltip-subhead-font: var(
+    --md-sys-typescale-title-small-font,
+    inherit
+  );
+  --md-rich-tooltip-subhead-size: var(
+    --md-sys-typescale-title-small-size,
+    0.875rem
+  );
+  --md-rich-tooltip-subhead-line-height: var(
+    --md-sys-typescale-title-small-line-height,
+    1.25rem
+  );
+  --md-rich-tooltip-subhead-weight: var(
+    --md-sys-typescale-title-small-weight,
+    500
+  );
+
+  --md-rich-tooltip-supporting-text-font: var(
+    --md-sys-typescale-body-medium-font,
+    inherit
+  );
+  --md-rich-tooltip-supporting-text-size: var(
+    --md-sys-typescale-body-medium-size,
+    0.875rem
+  );
+  --md-rich-tooltip-supporting-text-line-height: var(
+    --md-sys-typescale-body-medium-line-height,
+    1.25rem
+  );
+  --md-rich-tooltip-supporting-text-weight: var(
+    --md-sys-typescale-body-medium-weight,
+    400
+  );
+
+  pointer-events: auto;
+  min-inline-size: var(--md-rich-tooltip-min-width);
+  max-inline-size: var(--md-rich-tooltip-max-width);
+}
+
+.md-rich-tooltip__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-radius: var(--md-rich-tooltip-shape);
+  background-color: var(--md-rich-tooltip-container-color);
+  padding: 0.75rem 1rem;
+}
+
+.md-rich-tooltip__card > md-shadow {
+  --md-elevation-level: 2;
+}
+
+.md-rich-tooltip__subhead {
+  position: relative;
+  z-index: 1;
+  font-family: var(--md-rich-tooltip-subhead-font);
+  font-size: var(--md-rich-tooltip-subhead-size);
+  line-height: var(--md-rich-tooltip-subhead-line-height);
+  font-weight: var(--md-rich-tooltip-subhead-weight);
+  color: var(--md-rich-tooltip-subhead-color);
+}
+
+/* Collapse the subhead row's gap when no subhead content is slotted. */
+.md-rich-tooltip__subhead:not(:has(::slotted(*))) {
+  display: none;
+}
+
+.md-rich-tooltip__body {
+  position: relative;
+  z-index: 1;
+  font-family: var(--md-rich-tooltip-supporting-text-font);
+  font-size: var(--md-rich-tooltip-supporting-text-size);
+  line-height: var(--md-rich-tooltip-supporting-text-line-height);
+  font-weight: var(--md-rich-tooltip-supporting-text-weight);
+  color: var(--md-rich-tooltip-supporting-text-color);
+}
+
+.md-rich-tooltip__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-block-start: 0.25rem;
+}
+
+/* Collapse the actions row's gap/margin when no actions are slotted. */
+.md-rich-tooltip__actions:not(:has(::slotted(*))) {
+  display: none;
+}

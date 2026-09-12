@@ -56,7 +56,7 @@ import { HTMLForController } from "../components/html-for-controller/html-for-co
  * @param {Node} root
  * @returns {boolean}
  */
-function isElementInSubtree(node, root) {
+export function isElementInSubtree(node, root) {
   /** @type {Node | null} */
   let current = node;
   while (current) {

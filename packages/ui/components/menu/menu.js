@@ -4,7 +4,7 @@ import { MutationController } from "@lit-labs/observers/mutation-controller.js";
 
 import { PopoverPositionController } from "../../shared/popover-position-controller.js";
 
-import "../card/card.js";
+import "../shadow/shadow.js";
 import "./menu-item.js";
 import "./item-group.js";
 
@@ -25,8 +25,9 @@ const TYPEAHEAD_RESET_DELAY = 500;
  * @tag md-menu
  * @summary Material Design 3 menu.
  *
- * Anchors a `popover="manual"` surface (an `<md-card variant="elevated">`)
- * to a `for`-resolved trigger, or to arbitrary viewport coordinates via
+ * Anchors a `popover="manual"` surface (an elevated `.md-menu__card` div,
+ * styled in-house rather than via `<md-card>`) to a `for`-resolved trigger,
+ * or to arbitrary viewport coordinates via
  * `openAtPoint()` for the context-menu variant. `"manual"`, not `"auto"` —
  * dismiss is handled entirely by `PopoverPositionController`, not native
  * light-dismiss (see that controller's class doc for why).
@@ -871,15 +872,12 @@ export class MdMenu extends LitElement {
       >
         ${segments.map(
           (i) => html`
-            <md-card
-              variant="elevated"
-              class="md-menu__card"
-              exportparts="surface"
-            >
+            <div class="md-menu__card" part="surface">
+              <md-shadow></md-shadow>
               <div class="md-menu__segment">
                 <slot name="seg-${i}"></slot>
               </div>
-            </md-card>
+            </div>
           `,
         )}
       </div>

@@ -214,8 +214,8 @@ function fourthItemWithSubmenu() {
  * groups:
  *
  * - **Gap** (left) — wrapping each set of related items in its own
- *   `md-item-group` splits the surface into independently-rounded `md-card`
- *   segments with real spacing between them. Gaps are more expressive than
+ *   `md-item-group` splits the surface into independently-rounded
+ *   `.md-menu__card` segments with real spacing between them. Gaps are more expressive than
  *   dividers and make the relationship between items in the same group
  *   clear at a glance (MD3 "vertical menu with gap" pattern).
  * - **Divider** (right) — the same groups instead separated by an `md-hr`

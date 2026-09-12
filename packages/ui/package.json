@@ -1,7 +1,7 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.2.24",
+  "version": "0.3.2",
   "description": "Material Design 3 web components library built with Lit",
   "author": "Aleksei Tkachenko <leshtkachenko@gmail.com>",
   "license": "MIT",
@@ -144,6 +144,10 @@
     "./tab-panel": {
       "import": "./dist/tabs/tab-panel2.js",
       "types": "./dist/tabs/tab-panel.d.ts"
+    },
+    "./tooltip": {
+      "import": "./dist/tooltip/index.js",
+      "types": "./dist/tooltip/index.d.ts"
     },
     "./theme/theme.css": "./dist/theme.css"
   },

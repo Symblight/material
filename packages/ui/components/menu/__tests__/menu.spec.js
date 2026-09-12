@@ -27,13 +27,13 @@ describe("md-menu", () => {
       expect(el.getAttribute("popover")).to.equal("manual");
     });
 
-    it("renders a role=menu container inside md-card", async () => {
+    it("renders a role=menu container inside a .md-menu__card surface", async () => {
       const el = /** @type {MdMenu} */ (
         await fixture(html`<md-menu></md-menu>`)
       );
       const list = el.shadowRoot.querySelector('[role="menu"]');
       expect(list).to.exist;
-      expect(el.shadowRoot.querySelector("md-card")).to.exist;
+      expect(el.shadowRoot.querySelector(".md-menu__card")).to.exist;
     });
 
     it("defaults: placement=bottom-start, offset=4, flip=true, variant=standard, trigger=click", async () => {
