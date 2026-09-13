@@ -13,10 +13,10 @@
   background: var(--md-tabs-bg);
   overflow-x: auto;
   scrollbar-width: none;
-}
 
-.tabs::-webkit-scrollbar {
-  display: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .tabs__divider {

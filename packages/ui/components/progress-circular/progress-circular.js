@@ -29,7 +29,7 @@ export default class MdProgressCircular extends LitElement {
     this.value = undefined;
   }
 
-  get _indeterminate() {
+  get #indeterminate() {
     return this.value === undefined || this.value === null;
   }
 
@@ -43,7 +43,7 @@ export default class MdProgressCircular extends LitElement {
   }
 
   render() {
-    const indeterminate = this._indeterminate;
+    const indeterminate = this.#indeterminate;
     const clampedValue = Math.min(1, Math.max(0, this.value ?? 0));
     const dashArray = indeterminate
       ? nothing

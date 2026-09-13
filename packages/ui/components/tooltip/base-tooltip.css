@@ -11,6 +11,7 @@
   background: transparent;
   overflow: visible; /* allow md-shadow's box-shadow to escape the popover's default overflow:auto */
   z-index: var(--md-tooltip-z-index, 1000);
+  display: flex;
 }
 
 :host([positioning="popover"]:not(:popover-open)) {

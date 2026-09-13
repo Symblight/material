@@ -22,7 +22,7 @@
 }
 
 :host {
-  display: inline-block;
+  display: flex;
   position: relative;
   inline-size: fit-content;
   cursor: pointer;

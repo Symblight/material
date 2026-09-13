@@ -40,11 +40,31 @@
 
 /* ── Content wrapper — sits above the surface overlay ───────────────────── */
 
+/*
+ * `--md-elevation-level` is a plain inherited custom property, set on
+ * `:host` above so the card's own `md-shadow` (a sibling of this wrapper,
+ * not a descendant — unaffected by this reset) picks it up. Custom-property
+ * inheritance follows the flat tree, so without this reset it also leaks
+ * through the slots into whatever the consumer puts inside the card — e.g. a
+ * slotted `<md-button variant="text">`, which never sets its own elevation
+ * level (only elevated/filled/tonal variants do), would otherwise inherit
+ * the card's level and render a phantom shadow via its own internal
+ * `md-shadow`. Reset it here (an inheritance boundary), not via a
+ * `::slotted(*)` rule — a `::slotted()` declaration is a DIRECT rule on the
+ * slotted element itself, not an inherited one, and empirically outweighs
+ * that element's own `:host(...)` rule regardless of specificity math,
+ * which would incorrectly cancel an elevated/filled/tonal button's own
+ * elevation too. Resetting on this wrapper only affects what slotted
+ * content would otherwise *inherit*, so a slotted element's own directly
+ * declared `--md-elevation-level` (elevated/filled/tonal variants) still
+ * correctly wins over it.
+ */
 .md-card__content {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
+  --md-elevation-level: initial;
 }
 
 .md-card__media {

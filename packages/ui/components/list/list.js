@@ -21,41 +21,42 @@ export class MdList extends LitElement {
     return [styles];
   }
 
-  constructor() {
-    super();
+  /**
+   * Roving-tabindex Arrow Up/Down/Home/End handling — bound to a real
+   * `addEventListener("keydown", ...)` in `connectedCallback`, so this is a
+   * stable-identity arrow-function field rather than a `method() {}` +
+   * `.bind(this)` pair (needed for `removeEventListener` to match).
+   * @param {KeyboardEvent} event
+   */
+  #handleKeydown = (event) => {
+    const items = this.#interactiveItems;
+    if (!items.length) return;
 
-    this._handleKeydown = (/** @type {KeyboardEvent} */ event) => {
-      const items = this._interactiveItems;
-      if (!items.length) return;
+    const focused = items.find((item) => item.matches(":focus-within"));
+    const currentIndex = focused ? items.indexOf(focused) : -1;
 
-      const focused = items.find((item) => item.matches(":focus-within"));
-      const currentIndex = focused ? items.indexOf(focused) : -1;
-
-      if (event.key === "ArrowDown") {
-        event.preventDefault();
-        const nextIndex =
-          currentIndex < items.length - 1 ? currentIndex + 1 : 0;
-        this._focusItem(items, nextIndex);
-      } else if (event.key === "ArrowUp") {
-        event.preventDefault();
-        const prevIndex =
-          currentIndex > 0 ? currentIndex - 1 : items.length - 1;
-        this._focusItem(items, prevIndex);
-      } else if (event.key === "Home") {
-        event.preventDefault();
-        this._focusItem(items, 0);
-      } else if (event.key === "End") {
-        event.preventDefault();
-        this._focusItem(items, items.length - 1);
-      }
-    };
-  }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+      this.#focusItem(items, nextIndex);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+      this.#focusItem(items, prevIndex);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      this.#focusItem(items, 0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      this.#focusItem(items, items.length - 1);
+    }
+  };
 
   /**
    * Returns all slotted md-list-item elements.
    * @returns {MdListItem[]}
    */
-  get _listItems() {
+  get #listItems() {
     const slot = /** @type {HTMLSlotElement | null} */ (
       this.renderRoot?.querySelector("slot:not([name])")
     );
@@ -71,25 +72,25 @@ export class MdList extends LitElement {
    * Returns only interactive md-list-item elements (button or href).
    * @returns {MdListItem[]}
    */
-  get _interactiveItems() {
-    return this._listItems.filter((item) => item.button || item.href != null);
+  get #interactiveItems() {
+    return this.#listItems.filter((item) => item.button || item.href != null);
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this.addEventListener("keydown", this._handleKeydown);
+    this.addEventListener("keydown", this.#handleKeydown);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener("keydown", this._handleKeydown);
+    this.removeEventListener("keydown", this.#handleKeydown);
   }
 
   /**
    * @param {MdListItem[]} items
    * @param {number} index
    */
-  _focusItem(items, index) {
+  #focusItem(items, index) {
     // Update tabindex: only the focused item is in tab order
     items.forEach((item, i) => {
       item.setTabIndex(i === index ? 0 : -1);
@@ -97,9 +98,9 @@ export class MdList extends LitElement {
     items[index].focusInteractive();
   }
 
-  _onSlotChange() {
+  #onSlotChange() {
     // On initial slot population, set up roving tabindex
-    const items = this._interactiveItems;
+    const items = this.#interactiveItems;
     if (items.length === 0) return;
 
     // Check if any item already has tabindex=0; if not, assign first item
@@ -114,7 +115,7 @@ export class MdList extends LitElement {
   render() {
     return html`
       <ul part="list" class="md-list" role="list">
-        <slot @slotchange=${this._onSlotChange}></slot>
+        <slot @slotchange=${this.#onSlotChange}></slot>
       </ul>
     `;
   }

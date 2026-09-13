@@ -38,6 +38,16 @@ const TYPEAHEAD_RESET_DELAY = 500;
  * wiring, roving tabindex, typeahead, submenu chevrons, `select` dispatch.
  *
  * Slot: *(default)* — `md-menu-item`, `md-menu-group`, and `md-hr` children.
+ *
+ * Private-field policy: anything only ever touched from within this class's
+ * own body is a real `#private` field/method. `_enabledMenuItems` stays on
+ * the `_`-prefixed convention instead, because `menu.spec.js` reaches into
+ * it directly (`el._enabledMenuItems`) — `#private` members aren't visible
+ * outside the class at all, so privatizing it would break that test. The
+ * `_segmentCount` reactive property (declared in `static properties` below)
+ * also stays as-is — Lit's reactivity is wired to that literal property
+ * name, so turning it into a real private field would need a backing field
+ * plus an explicit `requestUpdate()` call, a bigger change than a rename.
  */
 @customElement("md-menu")
 export class MdMenu extends LitElement {
@@ -55,7 +65,7 @@ export class MdMenu extends LitElement {
      * window (`"fixed"`), the whole document via hoisting to `<body>`
      * (`"document"`), or the native Popover API top layer (`"popover"`,
      * default — falls back to `"fixed"` if unsupported). See
-     * `_resolvedPositioning`.
+     * `#resolvedPositioning`.
      */
     positioning: { type: String, reflect: true },
     flip: { type: Boolean, reflect: true },
@@ -82,6 +92,42 @@ export class MdMenu extends LitElement {
   static get styles() {
     return [styles];
   }
+
+  /**
+   * Tracks the in-flight `#handleOpen()` call so `show()` can await the
+   * full open sequence, not just the Lit update that kicks it off —
+   * otherwise a caller's `focusFirstItem()` right after `show()` could
+   * race `#initRovingTabindex()` and get silently overwritten.
+   * @type {Promise<void>}
+   */
+  #openPromise = Promise.resolve();
+
+  /** Same role as `#openPromise`, for the close path. @type {Promise<void>} */
+  #closePromise = Promise.resolve();
+
+  /**
+   * Explicit invoker requested via `show({ source })`/`toggle({ source })`,
+   * stashed here since `open`'s `updated()` handler (not `show()` itself)
+   * is what actually calls `#handleOpen()` → `#popover.show()`. Cleared
+   * once consumed.
+   * @type {HTMLElement | undefined}
+   */
+  #pendingSource;
+
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  #hoverTimer;
+
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  #typeaheadTimer;
+
+  /** @type {string} */
+  #typeaheadBuffer = "";
+
+  /** @type {PopoverPositionController} */
+  #popover;
+
+  /** @type {MutationController} */
+  #childrenObserver;
 
   constructor() {
     super();
@@ -128,40 +174,10 @@ export class MdMenu extends LitElement {
     /** @type {HTMLElement | undefined} */
     this.anchorElement = undefined;
 
-    /**
-     * Tracks the in-flight `_handleOpen()` call so `show()` can await the
-     * full open sequence, not just the Lit update that kicks it off —
-     * otherwise a caller's `focusFirstItem()` right after `show()` could
-     * race `_initRovingTabindex()` and get silently overwritten.
-     * @type {Promise<void>}
-     */
-    this._openPromise = Promise.resolve();
-
-    /** Same role as `_openPromise`, for the close path. @type {Promise<void>} */
-    this._closePromise = Promise.resolve();
-
-    /**
-     * Explicit invoker requested via `show({ source })`/`toggle({ source })`,
-     * stashed here since `open`'s `updated()` handler (not `show()` itself)
-     * is what actually calls `_handleOpen()` → `_popover.show()`. Cleared
-     * once consumed.
-     * @type {HTMLElement | undefined}
-     */
-    this._pendingSource = undefined;
-
     /** @type {number} */
     this._segmentCount = 1;
 
-    /** @type {ReturnType<typeof setTimeout> | undefined} */
-    this._hoverTimer = undefined;
-
-    /** @type {ReturnType<typeof setTimeout> | undefined} */
-    this._typeaheadTimer = undefined;
-
-    /** @type {string} */
-    this._typeaheadBuffer = "";
-
-    this._popover = new PopoverPositionController(this, {
+    this.#popover = new PopoverPositionController(this, {
       // The host itself is the popover surface — see render()/menu.css.
       getSurfaceEl: () => this,
       getPlacement: () => this.placement,
@@ -171,36 +187,26 @@ export class MdMenu extends LitElement {
       }),
       getFlip: () => this.flip,
       getStrategy: () =>
-        this._resolvedPositioning === "fixed" ||
-        this._resolvedPositioning === "popover"
+        this.#resolvedPositioning === "fixed" ||
+        this.#resolvedPositioning === "popover"
           ? "fixed"
           : "absolute",
-      getUseNativePopover: () => this._resolvedPositioning === "popover",
+      getUseNativePopover: () => this.#resolvedPositioning === "popover",
       getMatchAnchorWidth: () => this.matchAnchorWidth,
       getAnchorOverride: () => this.anchorElement ?? null,
-      onAnchorChange: (next, prev) => this._onAnchorChange(next, prev),
+      onAnchorChange: (next, prev) => this.#onAnchorChange(next, prev),
       onOpenChange: (isOpen) => {
         if (this.open === isOpen) return;
         this.open = isOpen;
       },
     });
 
-    this._onTriggerClick = this._onTriggerClick.bind(this);
-    this._onTriggerContextMenu = this._onTriggerContextMenu.bind(this);
-    this._onTriggerPointerEnter = this._onTriggerPointerEnter.bind(this);
-    this._onTriggerPointerLeave = this._onTriggerPointerLeave.bind(this);
-    this._onItemSelect = this._onItemSelect.bind(this);
-
-    this._handleKeydown = (/** @type {KeyboardEvent} */ event) => {
-      this._onKeydown(event);
-    };
-
     // Recomputes segments when consumers mutate menu content after first render.
-    this._childrenObserver = new MutationController(this, {
+    this.#childrenObserver = new MutationController(this, {
       config: { childList: true },
     });
-    this._childrenObserver.callback = () => {
-      this._syncSegments();
+    this.#childrenObserver.callback = () => {
+      this.#syncSegments();
     };
   }
 
@@ -210,7 +216,7 @@ export class MdMenu extends LitElement {
    * the surface is actually positioned/shown reads this instead.
    * @returns {"absolute" | "fixed" | "document" | "popover"}
    */
-  get _resolvedPositioning() {
+  get #resolvedPositioning() {
     if (
       this.positioning === "popover" &&
       typeof HTMLElement.prototype.showPopover !== "function"
@@ -222,12 +228,12 @@ export class MdMenu extends LitElement {
 
   /**
    * Syncs the `popover` attribute and `"document"`-mode DOM hoisting to
-   * `_resolvedPositioning`. Called on connect and whenever `positioning`
+   * `#resolvedPositioning`. Called on connect and whenever `positioning`
    * changes. Always `"manual"`, never `"auto"` — dismissal is handled by
    * `PopoverPositionController` regardless of positioning mode.
    */
-  _syncPositioningMode() {
-    if (this._resolvedPositioning === "popover") {
+  #syncPositioningMode() {
+    if (this.#resolvedPositioning === "popover") {
       this.setAttribute("popover", "manual");
     } else {
       this.removeAttribute("popover");
@@ -237,7 +243,7 @@ export class MdMenu extends LitElement {
     // closer positioned ancestor. Safe from connectedCallback — moving an
     // already-connected node doesn't re-trigger it.
     if (
-      this._resolvedPositioning === "document" &&
+      this.#resolvedPositioning === "document" &&
       this.parentNode !== document.body
     ) {
       document.body.appendChild(this);
@@ -264,11 +270,11 @@ export class MdMenu extends LitElement {
 
   /**
    * Direct light-DOM children, read off the host directly since children
-   * are routed to `seg-${n}` named slots (see `_syncSegments()`), not one
+   * are routed to `seg-${n}` named slots (see `#syncSegments()`), not one
    * default slot `assignedElements()` could read.
    * @returns {Element[]}
    */
-  get _slottedChildren() {
+  get #slottedChildren() {
     return Array.from(this.children);
   }
 
@@ -283,7 +289,7 @@ export class MdMenu extends LitElement {
    * DOM child in that case is the `<slot>` itself.
    * @returns {MdMenuItem[]}
    */
-  get _menuItems() {
+  get #menuItems() {
     /** @type {MdMenuItem[]} */
     const items = [];
     /** @param {Element[]} nodes */
@@ -306,13 +312,17 @@ export class MdMenu extends LitElement {
         }
       }
     };
-    collect(this._slottedChildren);
+    collect(this.#slottedChildren);
     return items;
   }
 
-  /** @returns {MdMenuItem[]} */
+  /**
+   * Stays on the `_`-prefixed convention (not `#private`) — `menu.spec.js`
+   * reaches into this directly. See the class doc comment.
+   * @returns {MdMenuItem[]}
+   */
   get _enabledMenuItems() {
-    return this._menuItems.filter((item) => !item.disabled);
+    return this.#menuItems.filter((item) => !item.disabled);
   }
 
   // ── Public API ────────────────────────────────────────────────────────────
@@ -332,12 +342,12 @@ export class MdMenu extends LitElement {
     // transition — otherwise nothing consumes it and it'd leak into the
     // next real open (`open` already `true` means `updated()` won't fire).
     if (!this.open) {
-      this._pendingSource = source;
+      this.#pendingSource = source;
     }
-    this._popover.clearPointAnchor();
+    this.#popover.clearPointAnchor();
     this.open = true;
     await this.updateComplete;
-    await this._openPromise;
+    await this.#openPromise;
   }
 
   /**
@@ -362,16 +372,16 @@ export class MdMenu extends LitElement {
     this.open = false;
     await this.updateComplete;
     // Focus returns immediately — matching native popover light-dismiss —
-    // rather than waiting on `_closePromise` below, so keyboard users
+    // rather than waiting on `#closePromise` below, so keyboard users
     // aren't stuck waiting out the close animation.
     if (returnFocus) {
       if (this.parentItem) {
         this.parentItem.focusInteractive();
-      } else if (this._popover.anchorEl instanceof HTMLElement) {
-        this._popover.anchorEl.focus();
+      } else if (this.#popover.anchorEl instanceof HTMLElement) {
+        this.#popover.anchorEl.focus();
       }
     }
-    await this._closePromise;
+    await this.#closePromise;
   }
 
   /**
@@ -381,7 +391,7 @@ export class MdMenu extends LitElement {
    * @param {number} y
    */
   openAtPoint(x, y) {
-    this._popover.setPointAnchor(x, y);
+    this.#popover.setPointAnchor(x, y);
     this.open = true;
   }
 
@@ -391,7 +401,7 @@ export class MdMenu extends LitElement {
    * activated," so they still take part in the roving-tabindex sequence.
    */
   focusFirstItem() {
-    const items = this._menuItems;
+    const items = this.#menuItems;
     if (!items.length) return;
     items.forEach((item, i) => item.setTabIndex(i === 0 ? 0 : -1));
     items[0].focusInteractive();
@@ -399,7 +409,7 @@ export class MdMenu extends LitElement {
 
   /** Sets tabindex=0 on the last item (including disabled) and focuses it. */
   focusLastItem() {
-    const items = this._menuItems;
+    const items = this.#menuItems;
     if (!items.length) return;
     const last = items.length - 1;
     items.forEach((item, i) => item.setTabIndex(i === last ? 0 : -1));
@@ -413,7 +423,7 @@ export class MdMenu extends LitElement {
    * selected.
    */
   focusSelectedItem() {
-    const items = this._menuItems;
+    const items = this.#menuItems;
     if (!items.length) return;
     const target = items.find((item) => item.selected) ?? items[0];
     items.forEach((item) => item.setTabIndex(item === target ? 0 : -1));
@@ -421,7 +431,7 @@ export class MdMenu extends LitElement {
   }
 
   /** Routes to `focusSelectedItem()` or `focusFirstItem()` per `focusOnOpen`. */
-  _focusOnOpen() {
+  #focusOnOpen() {
     if (this.focusOnOpen === "selected") {
       this.focusSelectedItem();
     } else {
@@ -440,20 +450,20 @@ export class MdMenu extends LitElement {
       this.placement = "right-start";
     }
 
-    this._syncPositioningMode();
+    this.#syncPositioningMode();
 
-    this.addEventListener("keydown", this._handleKeydown);
-    this.addEventListener("select", this._onItemSelect);
-    this._syncSegments();
+    this.addEventListener("keydown", this.#handleKeydown);
+    this.addEventListener("select", this.#onItemSelect);
+    this.#syncSegments();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener("keydown", this._handleKeydown);
-    this.removeEventListener("select", this._onItemSelect);
-    this._detachTriggerListeners(this._popover.anchorEl);
-    clearTimeout(this._hoverTimer);
-    clearTimeout(this._typeaheadTimer);
+    this.removeEventListener("keydown", this.#handleKeydown);
+    this.removeEventListener("select", this.#onItemSelect);
+    this.#detachTriggerListeners(this.#popover.anchorEl);
+    clearTimeout(this.#hoverTimer);
+    clearTimeout(this.#typeaheadTimer);
   }
 
   /** @param {import("lit").PropertyValues} changed */
@@ -467,20 +477,20 @@ export class MdMenu extends LitElement {
       );
     }
 
-    if (changed.has("trigger") && this._popover.anchorEl) {
-      this._detachTriggerListeners(this._popover.anchorEl);
-      this._attachTriggerListeners(this._popover.anchorEl);
+    if (changed.has("trigger") && this.#popover.anchorEl) {
+      this.#detachTriggerListeners(this.#popover.anchorEl);
+      this.#attachTriggerListeners(this.#popover.anchorEl);
     }
 
     if (changed.has("positioning") && !this.open) {
-      this._syncPositioningMode();
+      this.#syncPositioningMode();
     }
 
     if (changed.has("open")) {
       if (this.open) {
-        this._openPromise = this._handleOpen();
+        this.#openPromise = this.#handleOpen();
       } else {
-        this._closePromise = this._handleClose();
+        this.#closePromise = this.#handleClose();
       }
     }
   }
@@ -501,26 +511,26 @@ export class MdMenu extends LitElement {
    * @param {HTMLElement | null} next
    * @param {HTMLElement | null} prev
    */
-  _onAnchorChange(next, prev) {
-    this._detachTriggerListeners(prev);
-    this._attachTriggerListeners(next);
+  #onAnchorChange(next, prev) {
+    this.#detachTriggerListeners(prev);
+    this.#attachTriggerListeners(next);
   }
 
   /** @param {HTMLElement | null} control */
-  _attachTriggerListeners(control) {
+  #attachTriggerListeners(control) {
     if (!(control instanceof HTMLElement)) return;
     control.setAttribute("aria-haspopup", "menu");
     control.setAttribute("aria-expanded", this.open ? "true" : "false");
-    this._syncAccessibleName(control);
+    this.#syncAccessibleName(control);
 
     if (this.trigger === "click") {
-      control.addEventListener("click", this._onTriggerClick);
+      control.addEventListener("click", this.#onTriggerClick);
     } else if (this.trigger === "hover") {
-      control.addEventListener("click", this._onTriggerClick);
-      control.addEventListener("pointerenter", this._onTriggerPointerEnter);
-      control.addEventListener("pointerleave", this._onTriggerPointerLeave);
+      control.addEventListener("click", this.#onTriggerClick);
+      control.addEventListener("pointerenter", this.#onTriggerPointerEnter);
+      control.addEventListener("pointerleave", this.#onTriggerPointerLeave);
     } else if (this.trigger === "contextmenu") {
-      control.addEventListener("contextmenu", this._onTriggerContextMenu);
+      control.addEventListener("contextmenu", this.#onTriggerContextMenu);
     }
   }
 
@@ -532,85 +542,98 @@ export class MdMenu extends LitElement {
    * out of a shadow root to a light-DOM element otherwise.
    * @param {HTMLElement} control
    */
-  _syncAccessibleName(control) {
+  #syncAccessibleName(control) {
     this.setAttribute("aria-labelledby", control.id);
   }
 
   /** @param {HTMLElement | null} control */
-  _detachTriggerListeners(control) {
+  #detachTriggerListeners(control) {
     if (!(control instanceof HTMLElement)) return;
     control.removeAttribute("aria-haspopup");
     control.removeAttribute("aria-expanded");
     this.removeAttribute("aria-labelledby");
-    control.removeEventListener("click", this._onTriggerClick);
-    control.removeEventListener("pointerenter", this._onTriggerPointerEnter);
-    control.removeEventListener("pointerleave", this._onTriggerPointerLeave);
-    control.removeEventListener("contextmenu", this._onTriggerContextMenu);
+    control.removeEventListener("click", this.#onTriggerClick);
+    control.removeEventListener("pointerenter", this.#onTriggerPointerEnter);
+    control.removeEventListener("pointerleave", this.#onTriggerPointerLeave);
+    control.removeEventListener("contextmenu", this.#onTriggerContextMenu);
   }
 
+  // ── Private event handlers ───────────────────────────────────────────────
+  //
+  // Declared as arrow-function fields (not `method() {}` + constructor
+  // `.bind(this)`) so each has a stable, auto-bound identity from
+  // construction — required for add/removeEventListener to match, and
+  // because a `#private` *method* can't be `.bind()`-reassigned and can't be
+  // handed to `addEventListener` by bare reference (both throw). See
+  // `components/tooltip/base-tooltip.js`'s identical rationale.
+
   /** @param {MouseEvent} event */
-  _onTriggerClick(event) {
+  #onTriggerClick = (event) => {
     event.stopPropagation();
     // The dismiss listener excludes clicks on the anchor itself (see
-    // `PopoverPositionController._onDocumentClick`), so this is the only
+    // `PopoverPositionController`'s `#onDocumentClick`), so this is the only
     // code path that toggles `open` for a trigger click.
-    this._popover.clearPointAnchor();
+    this.#popover.clearPointAnchor();
     if (this.open) {
       this.close();
       return;
     }
     this.open = true;
-    this.updateComplete.then(() => this._focusOnOpen());
-  }
+    this.updateComplete.then(() => this.#focusOnOpen());
+  };
 
   /** @param {MouseEvent} event */
-  _onTriggerContextMenu(event) {
+  #onTriggerContextMenu = (event) => {
     event.preventDefault();
     event.stopPropagation();
     this.openAtPoint(event.clientX, event.clientY);
-    this.updateComplete.then(() => this._focusOnOpen());
-  }
+    this.updateComplete.then(() => this.#focusOnOpen());
+  };
 
-  _onTriggerPointerEnter() {
-    clearTimeout(this._hoverTimer);
-    this._hoverTimer = setTimeout(() => {
-      this._popover.clearPointAnchor();
+  #onTriggerPointerEnter = () => {
+    clearTimeout(this.#hoverTimer);
+    this.#hoverTimer = setTimeout(() => {
+      this.#popover.clearPointAnchor();
       this.open = true;
     }, HOVER_OPEN_DELAY);
-  }
+  };
 
-  _onTriggerPointerLeave() {
-    clearTimeout(this._hoverTimer);
-    this._hoverTimer = setTimeout(() => {
+  #onTriggerPointerLeave = () => {
+    clearTimeout(this.#hoverTimer);
+    this.#hoverTimer = setTimeout(() => {
       this.close({ returnFocus: false });
     }, HOVER_CLOSE_DELAY);
-  }
+  };
+
+  #handleKeydown = (/** @type {KeyboardEvent} */ event) => {
+    this.#onKeydown(event);
+  };
 
   // ── Popover open / close orchestration ──────────────────────────────────
 
-  async _handleOpen() {
+  async #handleOpen() {
     this.dispatchEvent(new Event("opening"));
-    const source = this._pendingSource;
-    this._pendingSource = undefined;
-    await this._popover.show({ source });
-    if (this._popover.anchorEl instanceof HTMLElement) {
-      this._popover.anchorEl.setAttribute("aria-expanded", "true");
+    const source = this.#pendingSource;
+    this.#pendingSource = undefined;
+    await this.#popover.show({ source });
+    if (this.#popover.anchorEl instanceof HTMLElement) {
+      this.#popover.anchorEl.setAttribute("aria-expanded", "true");
     }
-    this._initRovingTabindex();
-    this._waitForMotion().then(() => this.dispatchEvent(new Event("opened")));
+    this.#initRovingTabindex();
+    this.#waitForMotion().then(() => this.dispatchEvent(new Event("opened")));
   }
 
-  async _handleClose() {
+  async #handleClose() {
     this.dispatchEvent(new Event("closing"));
-    this._popover.hide();
-    if (this._popover.anchorEl instanceof HTMLElement) {
-      this._popover.anchorEl.setAttribute("aria-expanded", "false");
+    this.#popover.hide();
+    if (this.#popover.anchorEl instanceof HTMLElement) {
+      this.#popover.anchorEl.setAttribute("aria-expanded", "false");
     }
-    this._closeDescendantSubmenus();
-    this._typeaheadBuffer = "";
-    clearTimeout(this._typeaheadTimer);
+    this.#closeDescendantSubmenus();
+    this.#typeaheadBuffer = "";
+    clearTimeout(this.#typeaheadTimer);
 
-    this._waitForMotion().then(() => this.dispatchEvent(new Event("closed")));
+    this.#waitForMotion().then(() => this.dispatchEvent(new Event("closed")));
   }
 
   /**
@@ -620,7 +643,7 @@ export class MdMenu extends LitElement {
    * `transitionend`/`transitioncancel` are the real completion signal.
    * @returns {Promise<void>}
    */
-  async _waitForMotion() {
+  async #waitForMotion() {
     const started = await Promise.race([
       new Promise((resolve) =>
         this.addEventListener("transitionrun", () => resolve(true), {
@@ -641,8 +664,8 @@ export class MdMenu extends LitElement {
   }
 
   /** Closes any still-open submenus. Defensive fallback for §7 — see menu.spec.js. */
-  _closeDescendantSubmenus() {
-    for (const item of this._menuItems) {
+  #closeDescendantSubmenus() {
+    for (const item of this.#menuItems) {
       const submenu = item.submenuEl;
       if (submenu?.open) {
         submenu.close({ returnFocus: false });
@@ -650,10 +673,10 @@ export class MdMenu extends LitElement {
     }
   }
 
-  _initRovingTabindex() {
+  #initRovingTabindex() {
     // Disabled items stay in the sequence (see focusFirstItem()) — only
     // activation is blocked, not focusability.
-    const items = this._menuItems;
+    const items = this.#menuItems;
     if (!items.length) return;
     const alreadyTabbable = items.filter((item) => item.getTabIndex() === 0);
     let target = alreadyTabbable[0] ?? items[0];
@@ -666,7 +689,7 @@ export class MdMenu extends LitElement {
   // ── select event re-dispatch ─────────────────────────────────────────────
 
   /** @param {Event} event */
-  _onItemSelect(event) {
+  #onItemSelect = (event) => {
     if (event.target === this) return;
 
     const detail =
@@ -684,16 +707,16 @@ export class MdMenu extends LitElement {
     if (!detail.item?.keepOpen) {
       this.close({ returnFocus: !this.parentItem });
     }
-  }
+  };
 
   // ── Keyboard navigation ──────────────────────────────────────────────────
 
   /** @param {KeyboardEvent} event */
-  _onKeydown(event) {
+  #onKeydown(event) {
     // Includes disabled items: ArrowDown/Up/Home/End/typeahead should still
     // land on and announce them (APG — focusable, just not activatable),
     // not skip them as if they didn't exist.
-    const items = this._menuItems;
+    const items = this.#menuItems;
     const focused = items.find((item) => item.matches(":focus-within"));
     const currentIndex = focused ? items.indexOf(focused) : -1;
 
@@ -703,8 +726,8 @@ export class MdMenu extends LitElement {
         event.preventDefault();
         event.stopPropagation();
         const next = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
-        this._focusItem(items, next);
-        this._resetTypeahead();
+        this.#focusItem(items, next);
+        this.#resetTypeahead();
         return;
       }
       case "ArrowUp": {
@@ -712,22 +735,22 @@ export class MdMenu extends LitElement {
         event.preventDefault();
         event.stopPropagation();
         const prev = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
-        this._focusItem(items, prev);
-        this._resetTypeahead();
+        this.#focusItem(items, prev);
+        this.#resetTypeahead();
         return;
       }
       case "Home": {
         if (!items.length) return;
         event.preventDefault();
         event.stopPropagation();
-        this._focusItem(items, 0);
+        this.#focusItem(items, 0);
         return;
       }
       case "End": {
         if (!items.length) return;
         event.preventDefault();
         event.stopPropagation();
-        this._focusItem(items, items.length - 1);
+        this.#focusItem(items, items.length - 1);
         return;
       }
       case "ArrowRight": {
@@ -772,7 +795,7 @@ export class MdMenu extends LitElement {
           !event.metaKey
         ) {
           event.stopPropagation();
-          this._handleTypeahead(event.key, items);
+          this.#handleTypeahead(event.key, items);
         }
       }
     }
@@ -782,37 +805,37 @@ export class MdMenu extends LitElement {
    * @param {MdMenuItem[]} items
    * @param {number} index
    */
-  _focusItem(items, index) {
+  #focusItem(items, index) {
     items.forEach((item, i) => item.setTabIndex(i === index ? 0 : -1));
     items[index].focusInteractive();
   }
 
-  _resetTypeahead() {
-    this._typeaheadBuffer = "";
-    clearTimeout(this._typeaheadTimer);
+  #resetTypeahead() {
+    this.#typeaheadBuffer = "";
+    clearTimeout(this.#typeaheadTimer);
   }
 
   /**
    * @param {string} char
    * @param {MdMenuItem[]} items
    */
-  _handleTypeahead(char, items) {
-    clearTimeout(this._typeaheadTimer);
+  #handleTypeahead(char, items) {
+    clearTimeout(this.#typeaheadTimer);
     const lowerChar = char.toLowerCase();
 
     // Repeating the same character cycles through matches one step per
     // keypress (e.g. "S","S","S" -> Settings, Share, Sign out), matching
     // native <select>. Any other character extends a prefix search instead.
     const isRepeatCycle =
-      this._typeaheadBuffer.length > 0 &&
-      [...this._typeaheadBuffer].every((c) => c === lowerChar);
+      this.#typeaheadBuffer.length > 0 &&
+      [...this.#typeaheadBuffer].every((c) => c === lowerChar);
 
-    this._typeaheadBuffer += lowerChar;
-    this._typeaheadTimer = setTimeout(() => {
-      this._typeaheadBuffer = "";
+    this.#typeaheadBuffer += lowerChar;
+    this.#typeaheadTimer = setTimeout(() => {
+      this.#typeaheadBuffer = "";
     }, TYPEAHEAD_RESET_DELAY);
 
-    const searchTerm = isRepeatCycle ? lowerChar : this._typeaheadBuffer;
+    const searchTerm = isRepeatCycle ? lowerChar : this.#typeaheadBuffer;
     const currentIndex = items.findIndex((item) =>
       item.matches(":focus-within"),
     );
@@ -827,13 +850,13 @@ export class MdMenu extends LitElement {
       item.label.toLowerCase().startsWith(searchTerm),
     );
     if (match) {
-      this._focusItem(items, items.indexOf(match));
+      this.#focusItem(items, items.indexOf(match));
     }
   }
 
   // ── Segments (md-item-group-separated groups) ───────────────────────────
 
-  _syncSegments() {
+  #syncSegments() {
     /** @type {Element[][]} */
     const groups = [[]];
     for (const child of Array.from(this.children)) {
@@ -858,7 +881,7 @@ export class MdMenu extends LitElement {
     this._segmentCount = Math.max(nonEmptyGroups.length, 1);
 
     if (this.open) {
-      this.updateComplete.then(() => this._initRovingTabindex());
+      this.updateComplete.then(() => this.#initRovingTabindex());
     }
   }
 

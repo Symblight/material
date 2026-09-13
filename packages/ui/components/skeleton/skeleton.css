@@ -14,6 +14,10 @@
   border-radius: var(--md-skeleton-radius);
   background-color: var(--md-skeleton-color);
   animation: md-skeleton-pulse 1.5s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 }
 
 :host([variant="circular"]) {
@@ -32,11 +36,5 @@
 
   50% {
     opacity: 0.4;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :host {
-    animation: none;
   }
 }

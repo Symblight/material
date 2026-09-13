@@ -1,8 +1,8 @@
 :host([variant="filled"]) {
   --md-card-container-color: var(--md-sys-color-surface-container-highest);
   --md-elevation-level: 0;
-}
 
-:host([variant="filled"]) md-shadow {
-  display: none;
+  & md-shadow {
+    display: none;
+  }
 }

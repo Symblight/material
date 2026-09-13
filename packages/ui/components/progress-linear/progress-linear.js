@@ -26,7 +26,7 @@ export default class MdProgressLinear extends LitElement {
     this.value = undefined;
   }
 
-  get _indeterminate() {
+  get #indeterminate() {
     return this.value === undefined || this.value === null;
   }
 
@@ -40,7 +40,7 @@ export default class MdProgressLinear extends LitElement {
   }
 
   render() {
-    if (this._indeterminate) {
+    if (this.#indeterminate) {
       return html`
         <div class="progress-linear">
           <div part="track" class="progress-linear__track"></div>

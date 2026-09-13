@@ -37,14 +37,14 @@ export default class IconButton extends BaseButton {
     return [filledStyles, standardStyles, outlinedStyles, tonalStyles, styles];
   }
 
+  /**
+   * The variant style of the button.
+   * @type {IconButtonVariant}
+   */
+  #variant = "standard";
+
   constructor() {
     super();
-
-    /**
-     * The variant style of the button.
-     * @type {IconButtonVariant}
-     */
-    this._variant = "standard";
 
     /** @type {boolean} */
     this.selected = false;
@@ -58,7 +58,7 @@ export default class IconButton extends BaseButton {
 
   /** @returns {IconButtonVariant} */
   get variant() {
-    return this._variant;
+    return this.#variant;
   }
 
   /** @param {IconButtonVariant} variant */
@@ -68,10 +68,10 @@ export default class IconButton extends BaseButton {
     this.requestUpdate("variant", this.variant);
 
     if (!VALID_VARIANTS.includes(variant)) {
-      this._variant = "standard";
+      this.#variant = "standard";
       return;
     }
-    this._variant = variant;
+    this.#variant = variant;
 
     this.setAttribute("variant", this.variant);
   }

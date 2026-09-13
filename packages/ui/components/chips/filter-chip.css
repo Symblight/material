@@ -9,6 +9,11 @@
     var(--md-sys-color-on-surface-variant) 8%,
     transparent
   );
+
+  /* Hover state for unselected */
+  & .chip:hover:not(.chip_disabled) {
+    background-color: var(--md-chip-filter-hover-color);
+  }
 }
 
 :host([selected]) {
@@ -17,19 +22,14 @@
     var(--md-sys-color-secondary-container) 92%,
     var(--md-sys-color-on-secondary-container) 8%
   );
+
+  /* Hover state for selected */
+  & .chip:hover:not(.chip_disabled) {
+    background-color: var(--md-chip-filter-selected-hover-color);
+  }
 }
 
 /* Tighten start padding when checkmark or leading icon is present */
 :where(.chip_selected) {
   padding-inline-start: 0.5rem;
-}
-
-/* Hover state for unselected */
-:host([variant="outlined"]:not([selected])) .chip:hover:not(.chip_disabled) {
-  background-color: var(--md-chip-filter-hover-color);
-}
-
-/* Hover state for selected */
-:host([selected]) .chip:hover:not(.chip_disabled) {
-  background-color: var(--md-chip-filter-selected-hover-color);
 }

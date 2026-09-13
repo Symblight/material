@@ -89,15 +89,52 @@ export function isElementInSubtree(node, root) {
  * `toggle` changes back to the host, point-anchoring via a virtual element,
  * and dismissal — click-outside/focus-out are always handled by this
  * controller itself, never native `popover="auto"` light-dismiss (see
- * `_attachLightDismiss()` for why).
+ * `#attachLightDismiss()` for why).
  *
  * Has no knowledge of consumer-specific concepts (menu roving
  * tabindex/typeahead, tooltip hover-delay, etc.), so it can back both
  * `<md-menu>` and a future `<md-tooltip>` on the same positioning core.
  *
+ * Private-field policy: this class is not subclassed anywhere and its only
+ * external consumer (`md-menu`) only ever touches the genuinely public API
+ * (`show`/`hide`/`updatePosition`/`startAutoUpdate`/`stopAutoUpdate`/
+ * `setPointAnchor`/`clearPointAnchor`/`anchorEl`/`referenceEl`/
+ * `hostDisconnected`), so every other member is a real `#private` field or
+ * method.
+ *
  * @implements {ReactiveController}
  */
 export class PopoverPositionController {
+  /** @type {HTMLElement | null} */
+  #anchorEl = null;
+
+  /** @type {{ getBoundingClientRect: () => DOMRect } | null} */
+  #virtualEl = null;
+
+  /** @type {(() => void) | undefined} */
+  #cleanupAutoUpdate;
+
+  /** @type {HTMLElement | undefined} */
+  #toggleTarget;
+
+  /**
+   * Whether the light-dismiss listeners are currently attached — tracked
+   * explicitly since, unlike the toggle listener, they aren't tied to a
+   * specific target element to compare against.
+   * @type {boolean}
+   */
+  #lightDismissAttached = false;
+
+  /**
+   * Composed path of the most recent `window` `pointerdown`, cached for
+   * `#onSurfaceFocusOut` to consult when the focus-out's `relatedTarget`
+   * is `null` (e.g. click on a non-focusable element). Cleared on detach
+   * and on every keydown so a stale pointer interaction can't leak into a
+   * later keyboard-driven focus change.
+   * @type {EventTarget[]}
+   */
+  #pointerPath = [];
+
   /**
    * @param {ReactiveControllerHost & HTMLElement} host
    * @param {PopoverPositionControllerOptions} options
@@ -108,44 +145,10 @@ export class PopoverPositionController {
     /** @type {PopoverPositionControllerOptions} */
     this.options = options;
 
-    /** @type {HTMLElement | null} */
-    this._anchorEl = null;
-
-    /** @type {{ getBoundingClientRect: () => DOMRect } | null} */
-    this._virtualEl = null;
-
-    /** @type {(() => void) | undefined} */
-    this._cleanupAutoUpdate = undefined;
-
-    /** @type {HTMLElement | undefined} */
-    this._toggleTarget = undefined;
-
-    /**
-     * Whether the light-dismiss listeners are currently attached — tracked
-     * explicitly since, unlike the toggle listener, they aren't tied to a
-     * specific target element to compare against.
-     * @type {boolean}
-     */
-    this._lightDismissAttached = false;
-
-    /**
-     * Composed path of the most recent `window` `pointerdown`, cached for
-     * `_onSurfaceFocusOut` to consult when the focus-out's `relatedTarget`
-     * is `null` (e.g. click on a non-focusable element). Cleared on detach
-     * and on every keydown so a stale pointer interaction can't leak into a
-     * later keyboard-driven focus change.
-     * @type {EventTarget[]}
-     */
-    this._pointerPath = [];
-
-    this._onToggle = this._onToggle.bind(this);
-    this._onWindowPointerDown = this._onWindowPointerDown.bind(this);
-    this._onDocumentClick = this._onDocumentClick.bind(this);
-    this._onSurfaceFocusOut = this._onSurfaceFocusOut.bind(this);
-    this._onSurfaceKeydown = this._onSurfaceKeydown.bind(this);
-
-    this._forController = new HTMLForController(host, (prev, next) => {
-      this._anchorEl = next;
+    // Not stored — it self-registers via `host.addController(this)` in its
+    // own constructor, and nothing here ever reads the instance back.
+    new HTMLForController(host, (prev, next) => {
+      this.#anchorEl = next;
       this.options.onAnchorChange?.(next, prev);
     });
 
@@ -154,18 +157,18 @@ export class PopoverPositionController {
 
   hostDisconnected() {
     this.stopAutoUpdate();
-    this._detachToggleListener();
-    this._detachLightDismiss();
+    this.#detachToggleListener();
+    this.#detachLightDismiss();
   }
 
   /** @returns {boolean} */
-  get _useNativePopover() {
+  get #useNativePopover() {
     return this.options.getUseNativePopover?.() ?? true;
   }
 
   /** The `for`-resolved control element, if any. */
   get anchorEl() {
-    return this._anchorEl;
+    return this.#anchorEl;
   }
 
   /**
@@ -177,9 +180,9 @@ export class PopoverPositionController {
    */
   get referenceEl() {
     return (
-      this._virtualEl ??
+      this.#virtualEl ??
       this.options.getAnchorOverride?.() ??
-      this._anchorEl ??
+      this.#anchorEl ??
       null
     );
   }
@@ -191,7 +194,7 @@ export class PopoverPositionController {
    * @param {number} y
    */
   setPointAnchor(x, y) {
-    this._virtualEl = {
+    this.#virtualEl = {
       getBoundingClientRect: () =>
         /** @type {DOMRect} */ ({
           x,
@@ -211,7 +214,7 @@ export class PopoverPositionController {
 
   /** Reverts to anchoring off the resolved element (anchor override or `for` control). */
   clearPointAnchor() {
-    this._virtualEl = null;
+    this.#virtualEl = null;
   }
 
   /**
@@ -227,8 +230,8 @@ export class PopoverPositionController {
     const surface = this.options.getSurfaceEl();
     if (!surface) return;
 
-    if (this._useNativePopover) {
-      this._attachToggleListener(surface);
+    if (this.#useNativePopover) {
+      this.#attachToggleListener(surface);
 
       if (!surface.matches(":popover-open")) {
         // `source` preserves native popover ancestor-stacking for nested
@@ -237,7 +240,7 @@ export class PopoverPositionController {
         const resolvedSource =
           source ??
           this.options.getAnchorOverride?.() ??
-          this._anchorEl ??
+          this.#anchorEl ??
           undefined;
         try {
           // `{ source }` isn't in TS's bundled DOM lib yet — cast around it.
@@ -257,9 +260,9 @@ export class PopoverPositionController {
       }
     }
 
-    // Dismiss is always self-managed (see `_attachLightDismiss()`) whether
+    // Dismiss is always self-managed (see `#attachLightDismiss()`) whether
     // or not the surface is also a native popover.
-    this._attachLightDismiss();
+    this.#attachLightDismiss();
 
     this.startAutoUpdate();
     await this.updatePosition();
@@ -271,14 +274,14 @@ export class PopoverPositionController {
    */
   hide() {
     const surface = this.options.getSurfaceEl();
-    if (this._useNativePopover && surface?.matches(":popover-open")) {
+    if (this.#useNativePopover && surface?.matches(":popover-open")) {
       try {
         surface.hidePopover();
       } catch {
         /* already closed */
       }
     }
-    this._detachLightDismiss();
+    this.#detachLightDismiss();
     this.stopAutoUpdate();
   }
 
@@ -322,33 +325,27 @@ export class PopoverPositionController {
     const reference = this.referenceEl;
     const surface = this.options.getSurfaceEl();
     if (!reference || !surface) return;
-    this._cleanupAutoUpdate = autoUpdate(reference, surface, () =>
+    this.#cleanupAutoUpdate = autoUpdate(reference, surface, () =>
       this.updatePosition(),
     );
   }
 
   stopAutoUpdate() {
-    this._cleanupAutoUpdate?.();
-    this._cleanupAutoUpdate = undefined;
+    this.#cleanupAutoUpdate?.();
+    this.#cleanupAutoUpdate = undefined;
   }
 
   /** @param {HTMLElement} surface */
-  _attachToggleListener(surface) {
-    if (this._toggleTarget === surface) return;
-    this._detachToggleListener();
-    surface.addEventListener("toggle", this._onToggle);
-    this._toggleTarget = surface;
+  #attachToggleListener(surface) {
+    if (this.#toggleTarget === surface) return;
+    this.#detachToggleListener();
+    surface.addEventListener("toggle", this.#onToggle);
+    this.#toggleTarget = surface;
   }
 
-  _detachToggleListener() {
-    this._toggleTarget?.removeEventListener("toggle", this._onToggle);
-    this._toggleTarget = undefined;
-  }
-
-  /** @param {Event} event */
-  _onToggle(event) {
-    const isOpen = /** @type {ToggleEvent} */ (event).newState === "open";
-    this.options.onOpenChange(isOpen);
+  #detachToggleListener() {
+    this.#toggleTarget?.removeEventListener("toggle", this.#onToggle);
+    this.#toggleTarget = undefined;
   }
 
   /**
@@ -360,49 +357,67 @@ export class PopoverPositionController {
    * triggers it, and Safari on iOS doesn't bubble `click` on `window` for
    * non-"clickable" targets — hence listening on `document`, not `window`.
    *
-   * Four listeners: `_onWindowPointerDown` caches the pointerdown path for
-   * `_onSurfaceFocusOut` to consult; `_onDocumentClick` is the actual
+   * Four listeners: `#onWindowPointerDown` caches the pointerdown path for
+   * `#onSurfaceFocusOut` to consult; `#onDocumentClick` is the actual
    * click-outside-closes check (capture-phase, so `stopPropagation()`
-   * elsewhere can't hide it); `_onSurfaceFocusOut` closes on any focus-out
-   * of the surface+anchor subtrees; `_onSurfaceKeydown` clears the cached
+   * elsewhere can't hide it); `#onSurfaceFocusOut` closes on any focus-out
+   * of the surface+anchor subtrees; `#onSurfaceKeydown` clears the cached
    * pointer path so it can't leak into a later keyboard-driven focus change.
    */
-  _attachLightDismiss() {
-    if (this._lightDismissAttached) return;
-    window.addEventListener("pointerdown", this._onWindowPointerDown, {
+  #attachLightDismiss() {
+    if (this.#lightDismissAttached) return;
+    window.addEventListener("pointerdown", this.#onWindowPointerDown, {
       capture: true,
     });
-    document.addEventListener("click", this._onDocumentClick, {
+    document.addEventListener("click", this.#onDocumentClick, {
       capture: true,
     });
     const surface = this.options.getSurfaceEl();
-    surface?.addEventListener("focusout", this._onSurfaceFocusOut);
-    surface?.addEventListener("keydown", this._onSurfaceKeydown);
-    this._lightDismissAttached = true;
+    surface?.addEventListener("focusout", this.#onSurfaceFocusOut);
+    surface?.addEventListener("keydown", this.#onSurfaceKeydown);
+    this.#lightDismissAttached = true;
   }
 
-  _detachLightDismiss() {
-    if (!this._lightDismissAttached) return;
-    window.removeEventListener("pointerdown", this._onWindowPointerDown, {
+  #detachLightDismiss() {
+    if (!this.#lightDismissAttached) return;
+    window.removeEventListener("pointerdown", this.#onWindowPointerDown, {
       capture: true,
     });
-    document.removeEventListener("click", this._onDocumentClick, {
+    document.removeEventListener("click", this.#onDocumentClick, {
       capture: true,
     });
     const surface = this.options.getSurfaceEl();
-    surface?.removeEventListener("focusout", this._onSurfaceFocusOut);
-    surface?.removeEventListener("keydown", this._onSurfaceKeydown);
-    this._lightDismissAttached = false;
-    this._pointerPath = [];
+    surface?.removeEventListener("focusout", this.#onSurfaceFocusOut);
+    surface?.removeEventListener("keydown", this.#onSurfaceKeydown);
+    this.#lightDismissAttached = false;
+    this.#pointerPath = [];
   }
+
+  // ── Private event handlers ───────────────────────────────────────────────
+  //
+  // Declared as arrow-function fields (not `method() {}` + constructor
+  // `.bind(this)`) so each has a stable, auto-bound identity from
+  // construction — required for add/removeEventListener to match, and for
+  // `#private` methods specifically: a private *method* reassigned via
+  // `.bind()` would throw ("private method is not writable"), and passing a
+  // private method by bare reference to addEventListener would throw at
+  // call time too (DOM dispatch calls it with `this` set to the event
+  // target, which fails the private-member brand check). An arrow-function
+  // field sidesteps both — it closes over the correct `this` lexically.
+
+  /** @param {Event} event */
+  #onToggle = (event) => {
+    const isOpen = /** @type {ToggleEvent} */ (event).newState === "open";
+    this.options.onOpenChange(isOpen);
+  };
 
   /** @param {PointerEvent} event */
-  _onWindowPointerDown(event) {
-    this._pointerPath = event.composedPath();
-  }
+  #onWindowPointerDown = (event) => {
+    this.#pointerPath = event.composedPath();
+  };
 
   /** @param {MouseEvent} event */
-  _onDocumentClick(event) {
+  #onDocumentClick = (event) => {
     const surface = this.options.getSurfaceEl();
     if (!surface) return;
     const path = event.composedPath();
@@ -410,12 +425,12 @@ export class PopoverPositionController {
     const reference = this.referenceEl;
     if (reference instanceof HTMLElement && path.includes(reference)) return;
     this.options.onOpenChange(false);
-  }
+  };
 
   /**
    * @param {FocusEvent} event
    */
-  _onSurfaceFocusOut(event) {
+  #onSurfaceFocusOut = (event) => {
     const surface = this.options.getSurfaceEl();
     if (!surface) return;
 
@@ -424,7 +439,7 @@ export class PopoverPositionController {
 
     // Pointerdown targeted the anchor itself (e.g. clicking an
     // already-focused trigger to close it) — that's a toggle, not a dismiss.
-    if (anchorEl && this._pointerPath.includes(anchorEl)) return;
+    if (anchorEl && this.#pointerPath.includes(anchorEl)) return;
 
     const related = /** @type {Node | null} */ (event.relatedTarget);
     if (related) {
@@ -432,27 +447,27 @@ export class PopoverPositionController {
       // into the anchor's subtree as part of the same pointer interaction.
       if (
         isElementInSubtree(related, surface) ||
-        (this._pointerPath.length !== 0 &&
+        (this.#pointerPath.length !== 0 &&
           anchorEl &&
           isElementInSubtree(related, anchorEl))
       ) {
         return;
       }
-    } else if (this._pointerPath.includes(surface)) {
+    } else if (this.#pointerPath.includes(surface)) {
       // No relatedTarget — fall back to the cached pointer path: a click
       // inside the surface (e.g. a non-focusable divider) isn't a dismiss.
       return;
     }
 
     this.options.onOpenChange(false);
-  }
+  };
 
   /**
    * The pointer interaction (if any) is done — clear the cached path so it
    * doesn't influence a later, unrelated keyboard-driven focus change (e.g.
    * click the anchor, then Shift+Tab).
    */
-  _onSurfaceKeydown() {
-    this._pointerPath = [];
-  }
+  #onSurfaceKeydown = () => {
+    this.#pointerPath = [];
+  };
 }

@@ -78,6 +78,9 @@ export class TextField extends FormControlMixin(LitElement) {
 
   static formControlValidators = [requiredValidator];
 
+  /** @type {TextFieldVariant} */
+  #variant = "filled";
+
   constructor() {
     super();
 
@@ -86,9 +89,6 @@ export class TextField extends FormControlMixin(LitElement) {
 
     /** @type {HTMLElement | null} */
     this.customInputElement = null;
-
-    /** @type {TextFieldVariant} */
-    this._variant = "filled";
 
     this.name = "";
     this.label = "";
@@ -117,7 +117,7 @@ export class TextField extends FormControlMixin(LitElement) {
   }
 
   get variant() {
-    return this._variant;
+    return this.#variant;
   }
 
   /** @param {TextFieldVariant} variant */
@@ -127,10 +127,10 @@ export class TextField extends FormControlMixin(LitElement) {
     this.requestUpdate("variant", this.variant);
 
     if (!VALID_VARIANTS.includes(variant)) {
-      this._variant = "filled";
+      this.#variant = "filled";
       return;
     }
-    this._variant = variant;
+    this.#variant = variant;
 
     this.setAttribute("variant", this.variant);
   }

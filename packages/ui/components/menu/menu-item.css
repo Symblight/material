@@ -69,6 +69,7 @@
   margin-inline: 0.5rem;
   border-radius: var(--md-sys-shape-corner-small, 0.5rem);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 /* ── Row ─────────────────────────────────────────────────────────────────── */

@@ -37,11 +37,8 @@ export class MdBadge extends LitElement {
     this.max = 999;
   }
 
-  /**
-   * @private
-   * @returns {string}
-   */
-  get _label() {
+  /** @returns {string} */
+  get #label() {
     if (this.value === "" || this.value == null) return "";
     const num = Number(this.value);
     if (!Number.isNaN(num) && num > this.max) {
@@ -50,16 +47,13 @@ export class MdBadge extends LitElement {
     return String(this.value);
   }
 
-  /**
-   * @private
-   * @returns {boolean}
-   */
-  get _isSmall() {
-    return this._label === "";
+  /** @returns {boolean} */
+  get #isSmall() {
+    return this.#label === "";
   }
 
   render() {
-    const label = this._label;
+    const label = this.#label;
     return html`
       <div
         role="status"
@@ -67,8 +61,8 @@ export class MdBadge extends LitElement {
         aria-label=${label || "notification"}
         class=${classMap({
           badge: true,
-          badge_small: this._isSmall,
-          badge_large: !this._isSmall,
+          badge_small: this.#isSmall,
+          badge_large: !this.#isSmall,
         })}
       >
         ${label}

@@ -69,11 +69,11 @@
   line-height: var(--md-rich-tooltip-subhead-line-height);
   font-weight: var(--md-rich-tooltip-subhead-weight);
   color: var(--md-rich-tooltip-subhead-color);
-}
 
-/* Collapse the subhead row's gap when no subhead content is slotted. */
-.md-rich-tooltip__subhead:not(:has(::slotted(*))) {
-  display: none;
+  /* Collapse the subhead row's gap when no subhead content is slotted. */
+  &:not(:has(::slotted(*))) {
+    display: none;
+  }
 }
 
 .md-rich-tooltip__body {
@@ -93,9 +93,9 @@
   justify-content: flex-end;
   gap: 0.5rem;
   margin-block-start: 0.25rem;
-}
 
-/* Collapse the actions row's gap/margin when no actions are slotted. */
-.md-rich-tooltip__actions:not(:has(::slotted(*))) {
-  display: none;
+  /* Collapse the actions row's gap/margin when no actions are slotted. */
+  &:not(:has(::slotted(*))) {
+    display: none;
+  }
 }

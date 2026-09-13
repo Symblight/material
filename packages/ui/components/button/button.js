@@ -32,26 +32,22 @@ export const VALID_VARIANTS = [
  */
 @customElement("md-button")
 export default class Button extends BaseButton {
-  constructor() {
-    super();
-
-    /**
-     * The variant style of the button.
-     * @type {ButtonVariant}
-     */
-    this._variant = "filled";
-  }
+  /**
+   * The variant style of the button.
+   * @type {ButtonVariant}
+   */
+  #variant = "filled";
 
   /** @param {ButtonVariant} value */
   set variant(value) {
-    this._variant = VALID_VARIANTS.includes(value) ? value : "filled";
-    this.setAttribute("variant", this._variant);
-    this.requestUpdate("variant", this._variant);
+    this.#variant = VALID_VARIANTS.includes(value) ? value : "filled";
+    this.setAttribute("variant", this.#variant);
+    this.requestUpdate("variant", this.#variant);
   }
 
   /** @returns {ButtonVariant} */
   get variant() {
-    return this._variant;
+    return this.#variant;
   }
 
   /** @returns {import("lit").CSSResultGroup} */

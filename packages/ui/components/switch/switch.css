@@ -253,16 +253,18 @@
 .switch__icon svg {
   fill: var(--md-switch-unselected-icon-color);
   transition: fill 67ms linear;
+
+  .switch__handle_selected & {
+    fill: var(--md-switch-selected-icon-color);
+  }
 }
 
-.switch__handle_selected .switch__icon svg {
-  fill: var(--md-switch-selected-icon-color);
-}
+:host([disabled]) {
+  & .switch__icon svg {
+    fill: var(--md-switch-disabled-icon-color);
+  }
 
-:host([disabled]) .switch__icon svg {
-  fill: var(--md-switch-disabled-icon-color);
-}
-
-:host([disabled]) .switch__handle_selected .switch__icon svg {
-  fill: var(--md-switch-disabled-selected-icon-color);
+  & .switch__handle_selected .switch__icon svg {
+    fill: var(--md-switch-disabled-selected-icon-color);
+  }
 }

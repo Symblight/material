@@ -60,39 +60,44 @@ export class MdSegmentedButtonGroup extends LitElement {
 
     /** @type {boolean} */
     this.disabled = false;
-
-    this._handleKeydown = (/** @type {KeyboardEvent} */ event) => {
-      const items = this._enabledSegments;
-      if (!items.length) return;
-
-      const focused = items.find((item) => item.matches(":focus-within"));
-      const currentIndex = focused ? items.indexOf(focused) : -1;
-
-      if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-        event.preventDefault();
-        const nextIndex =
-          currentIndex < items.length - 1 ? currentIndex + 1 : 0;
-        this._focusSegment(items, nextIndex);
-      } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-        event.preventDefault();
-        const prevIndex =
-          currentIndex > 0 ? currentIndex - 1 : items.length - 1;
-        this._focusSegment(items, prevIndex);
-      } else if (event.key === "Home") {
-        event.preventDefault();
-        this._focusSegment(items, 0);
-      } else if (event.key === "End") {
-        event.preventDefault();
-        this._focusSegment(items, items.length - 1);
-      }
-    };
   }
+
+  /**
+   * Arrow-key roving tabindex across enabled segments — bound to a real
+   * `addEventListener("keydown", ...)` in `connectedCallback`, so this is a
+   * stable-identity arrow-function field rather than a `method() {}` +
+   * `.bind(this)` pair (needed for `removeEventListener` to match).
+   * @param {KeyboardEvent} event
+   */
+  #handleKeydown = (event) => {
+    const items = this.#enabledSegments;
+    if (!items.length) return;
+
+    const focused = items.find((item) => item.matches(":focus-within"));
+    const currentIndex = focused ? items.indexOf(focused) : -1;
+
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+      this.#focusSegment(items, nextIndex);
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+      this.#focusSegment(items, prevIndex);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      this.#focusSegment(items, 0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      this.#focusSegment(items, items.length - 1);
+    }
+  };
 
   /**
    * Returns all slotted md-segmented-button elements.
    * @returns {MdSegmentedButton[]}
    */
-  get _segments() {
+  get #segments() {
     const slot = /** @type {HTMLSlotElement | null} */ (
       this.renderRoot?.querySelector("slot:not([name])")
     );
@@ -109,25 +114,25 @@ export class MdSegmentedButtonGroup extends LitElement {
    * navigation is allowed to land on.
    * @returns {MdSegmentedButton[]}
    */
-  get _enabledSegments() {
-    return this._segments.filter((segment) => !segment.disabled);
+  get #enabledSegments() {
+    return this.#segments.filter((segment) => !segment.disabled);
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this.addEventListener("keydown", this._handleKeydown);
+    this.addEventListener("keydown", this.#handleKeydown);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener("keydown", this._handleKeydown);
+    this.removeEventListener("keydown", this.#handleKeydown);
   }
 
   /**
    * Pushes `multiselect` / `disabled` down onto every segment.
    */
-  _syncSegmentProps() {
-    for (const segment of this._segments) {
+  #syncSegmentProps() {
+    for (const segment of this.#segments) {
       segment.multiselect = this.multiselect;
       // One-way cascade: group disabled forces segments disabled. Re-enabling
       // the group does not attempt to restore prior per-segment disabled state.
@@ -140,8 +145,8 @@ export class MdSegmentedButtonGroup extends LitElement {
   /**
    * Applies the current `value` / `values` to every segment's `selected`.
    */
-  _syncSelection() {
-    const segments = this._segments;
+  #syncSelection() {
+    const segments = this.#segments;
     if (this.multiselect) {
       for (const segment of segments) {
         segment.selected = this.values.includes(segment.value);
@@ -157,8 +162,8 @@ export class MdSegmentedButtonGroup extends LitElement {
    * @param {MdSegmentedButton[]} items
    * @param {number} index
    */
-  _focusSegment(items, index) {
-    const all = this._segments;
+  #focusSegment(items, index) {
+    const all = this.#segments;
     all.forEach((segment) => {
       segment.setTabIndex(segment === items[index] ? 0 : -1);
     });
@@ -166,7 +171,7 @@ export class MdSegmentedButtonGroup extends LitElement {
   }
 
   /** @param {CustomEvent} e */
-  _handleSegmentActivate(e) {
+  #handleSegmentActivate(e) {
     const segment = /** @type {MdSegmentedButton | undefined} */ (
       e.detail?.segment
     );
@@ -180,8 +185,8 @@ export class MdSegmentedButtonGroup extends LitElement {
         values.add(segment.value);
       }
       this.values = [...values];
-      this._syncSelection();
-      this._focusSegment(this._segments, this._segments.indexOf(segment));
+      this.#syncSelection();
+      this.#focusSegment(this.#segments, this.#segments.indexOf(segment));
 
       this.dispatchEvent(
         new CustomEvent("change", {
@@ -196,8 +201,8 @@ export class MdSegmentedButtonGroup extends LitElement {
     if (this.value === segment.value) return;
 
     this.value = segment.value;
-    this._syncSelection();
-    this._focusSegment(this._segments, this._segments.indexOf(segment));
+    this.#syncSelection();
+    this.#focusSegment(this.#segments, this.#segments.indexOf(segment));
 
     this.dispatchEvent(
       new CustomEvent("change", {
@@ -208,11 +213,11 @@ export class MdSegmentedButtonGroup extends LitElement {
     );
   }
 
-  _onSlotChange() {
-    this._syncSegmentProps();
-    this._syncSelection();
+  #onSlotChange() {
+    this.#syncSegmentProps();
+    this.#syncSelection();
 
-    const segments = this._segments;
+    const segments = this.#segments;
     if (!segments.length) return;
 
     // Each segment's own default tabindex is "0" (set in its own template,
@@ -224,7 +229,7 @@ export class MdSegmentedButtonGroup extends LitElement {
     // alone, rather than the initial "every segment defaults to 0" state.
     const tabStops = segments.filter((segment) => segment.getTabIndex() === 0);
     if (tabStops.length !== 1) {
-      const [first] = this._enabledSegments;
+      const [first] = this.#enabledSegments;
       segments.forEach((segment) => {
         segment.setTabIndex(segment === first ? 0 : -1);
       });
@@ -237,14 +242,14 @@ export class MdSegmentedButtonGroup extends LitElement {
       changedProperties.has("disabled") ||
       changedProperties.has("multiselect")
     ) {
-      this._syncSegmentProps();
+      this.#syncSegmentProps();
     }
     if (
       changedProperties.has("value") ||
       changedProperties.has("values") ||
       changedProperties.has("multiselect")
     ) {
-      this._syncSelection();
+      this.#syncSelection();
     }
   }
 
@@ -255,9 +260,9 @@ export class MdSegmentedButtonGroup extends LitElement {
         class="segmented-button-group"
         role=${this.multiselect ? "group" : "radiogroup"}
         aria-label=${this.label ? this.label : nothing}
-        @segment-activate=${this._handleSegmentActivate}
+        @segment-activate=${this.#handleSegmentActivate}
       >
-        <slot @slotchange=${this._onSlotChange}></slot>
+        <slot @slotchange=${this.#onSlotChange}></slot>
       </div>
     `;
   }

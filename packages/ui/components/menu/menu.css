@@ -17,6 +17,7 @@
   );
 
   --md-menu-divider-color: var(--md-sys-color-outline-variant);
+  display: flex;
   position: fixed;
   inset: auto;
   margin: 0;
@@ -72,24 +73,27 @@
   background-color: var(--md-menu-vibrant-surface-color);
 }
 
-.md-menu__card:not(:only-of-type):first-of-type {
-  border-radius: var(--md-menu-shape) var(--md-menu-shape)
-    var(--md-menu-shape-inner) var(--md-menu-shape-inner);
-}
+.md-menu__card:not(:only-of-type) {
+  &:first-of-type {
+    border-radius: var(--md-menu-shape) var(--md-menu-shape)
+      var(--md-menu-shape-inner) var(--md-menu-shape-inner);
+  }
 
-.md-menu__card:not(:only-of-type):last-of-type {
-  border-radius: var(--md-menu-shape-inner) var(--md-menu-shape-inner)
-    var(--md-menu-shape) var(--md-menu-shape);
-}
+  &:last-of-type {
+    border-radius: var(--md-menu-shape-inner) var(--md-menu-shape-inner)
+      var(--md-menu-shape) var(--md-menu-shape);
+  }
 
-.md-menu__card:not(:only-of-type):not(:first-of-type):not(:last-of-type) {
-  border-radius: var(--md-menu-shape-inner);
+  &:not(:first-of-type):not(:last-of-type) {
+    border-radius: var(--md-menu-shape-inner);
+  }
 }
 
 .md-menu__list {
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
+  flex: 1 1 auto;
 }
 
 .md-menu__segment {

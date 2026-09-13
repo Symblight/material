@@ -23,6 +23,13 @@ import outlinedStyles from "./outlined-card.css?inline";
  */
 @customElement("md-card")
 export class MdCard extends LitElement {
+  /**
+   * Tracks all elements currently slotted into the card so we can attach and
+   * remove pointer-enter/leave listeners as slot content changes.
+   * @type {Set<Element>}
+   */
+  #slottedChildren = new Set();
+
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {
     /** Visual style of the card. Controls background colour, shadow, and border. */
@@ -63,13 +70,6 @@ export class MdCard extends LitElement {
 
     /** @type {string | undefined} */
     this.href = undefined;
-
-    /**
-     * Tracks all elements currently slotted into the card so we can attach and
-     * remove pointer-enter/leave listeners as slot content changes.
-     * @type {Set<Element>}
-     */
-    this._slottedChildren = new Set();
   }
 
   /** @returns {import("../ripple/ripple.js").default | undefined} */
@@ -122,11 +122,11 @@ export class MdCard extends LitElement {
     this.removeEventListener("pointerdown", this);
     this.removeEventListener("pointerup", this);
     // Clean up any lingering slotted-child listeners.
-    for (const child of this._slottedChildren) {
+    for (const child of this.#slottedChildren) {
       child.removeEventListener("pointerenter", this);
       child.removeEventListener("pointerleave", this);
     }
-    this._slottedChildren.clear();
+    this.#slottedChildren.clear();
   }
 
   /**
@@ -136,25 +136,25 @@ export class MdCard extends LitElement {
    * to the host element, so the host-level listener would never see it.
    * @param {Event} event
    */
-  _onSlotChange(event) {
+  #onSlotChange(event) {
     const slot = /** @type {HTMLSlotElement} */ (event.target);
     const assigned = slot.assignedElements({ flatten: true });
 
     // Remove listeners from elements that are no longer slotted.
-    for (const child of this._slottedChildren) {
+    for (const child of this.#slottedChildren) {
       if (!assigned.includes(child)) {
         child.removeEventListener("pointerenter", this);
         child.removeEventListener("pointerleave", this);
-        this._slottedChildren.delete(child);
+        this.#slottedChildren.delete(child);
       }
     }
 
     // Add listeners to newly slotted elements.
     for (const child of assigned) {
-      if (!this._slottedChildren.has(child)) {
+      if (!this.#slottedChildren.has(child)) {
         child.addEventListener("pointerenter", this);
         child.addEventListener("pointerleave", this);
-        this._slottedChildren.add(child);
+        this.#slottedChildren.add(child);
       }
     }
   }
@@ -163,11 +163,11 @@ export class MdCard extends LitElement {
     return html`
       <div part="content" class="md-card__content">
         <div part="media" class="md-card__media">
-          <slot name="media" @slotchange=${this._onSlotChange}></slot>
+          <slot name="media" @slotchange=${this.#onSlotChange}></slot>
         </div>
-        <slot name="header" @slotchange=${this._onSlotChange}></slot>
-        <slot @slotchange=${this._onSlotChange}></slot>
-        <slot name="actions" @slotchange=${this._onSlotChange}></slot>
+        <slot name="header" @slotchange=${this.#onSlotChange}></slot>
+        <slot @slotchange=${this.#onSlotChange}></slot>
+        <slot name="actions" @slotchange=${this.#onSlotChange}></slot>
       </div>
     `;
   }

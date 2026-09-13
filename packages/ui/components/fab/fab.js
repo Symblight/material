@@ -48,20 +48,20 @@ export default class FAB extends BaseButton {
     ];
   }
 
+  /**
+   * The variant style of the button.
+   * @type {FABButtonVariant}
+   */
+  #variant = "surface";
+
+  /**
+   * The variant size of the button.
+   * @type {FABButtonSize}
+   */
+  #size = "m";
+
   constructor() {
     super();
-
-    /**
-     * The variant style of the button.
-     * @type {FABButtonVariant}
-     */
-    this._variant = "surface";
-
-    /**
-     * The variant size of the button.
-     * @type {FABButtonSize}
-     */
-    this._size = "m";
 
     /** @type {string} */
     this.label = "";
@@ -72,7 +72,7 @@ export default class FAB extends BaseButton {
 
   /** @returns {FABButtonVariant} */
   get variant() {
-    return this._variant;
+    return this.#variant;
   }
 
   /** @param {FABButtonVariant} variant */
@@ -80,7 +80,7 @@ export default class FAB extends BaseButton {
     if (variant === this.variant) return;
 
     if (!VALID_VARIANTS.includes(variant)) {
-      this._variant = "surface";
+      this.#variant = "surface";
       return;
     }
     this.setAttribute("variant", variant);
@@ -88,7 +88,7 @@ export default class FAB extends BaseButton {
 
   /** @returns {FABButtonSize} */
   get size() {
-    return this._size;
+    return this.#size;
   }
 
   /** @param {FABButtonSize} size */
@@ -96,7 +96,7 @@ export default class FAB extends BaseButton {
     if (size === this.size) return;
 
     if (!VALID_SIZES.includes(size)) {
-      this._size = "m";
+      this.#size = "m";
       return;
     }
     this.setAttribute("size", size);
