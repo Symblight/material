@@ -5,7 +5,7 @@ import { LitElement } from "lit";
 import {
   PopoverPositionController,
   isElementInSubtree,
-} from "../../shared/popover-position-controller.js";
+} from "../shared/popover-position-controller.js";
 
 /** @typedef {Placement} TooltipPlacement */
 /** @typedef {"absolute" | "fixed" | "document" | "popover"} TooltipPositioning */
@@ -30,7 +30,7 @@ const LONG_PRESS_MOVE_TOLERANCE = 10;
  *
  * Positioning, `for`-attribute anchor resolution, and show/hide/dismiss are
  * delegated to `PopoverPositionController` — the same primitive `md-menu`
- * uses (see `shared/popover-position-controller.js`) — so this class only
+ * uses (see `components/shared/popover-position-controller.js`) — so this class only
  * owns tooltip-specific concerns: hover/focus show+hide delays,
  * Escape-to-dismiss, and `role="tooltip"`/`aria-describedby` wiring.
  *

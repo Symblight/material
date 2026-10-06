@@ -10,7 +10,7 @@ import styles from "./select.css?inline";
 import {
   FormAssociateMixin,
   internals,
-} from "../../shared/form-associate-mixin.js";
+} from "../shared/form-associate-mixin.js";
 
 /** @import { TextField, TextFieldVariant } from "../text-field/text-field.js" */
 

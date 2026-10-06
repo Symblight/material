@@ -5,7 +5,7 @@ import { classMap } from "lit/directives/class-map.js";
 import {
   FormAssociateMixin,
   internals,
-} from "../../shared/form-associate-mixin.js";
+} from "../shared/form-associate-mixin.js";
 
 import styles from "./switch.css?inline";
 

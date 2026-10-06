@@ -11,6 +11,35 @@ import "../icon/icon.js";
  */
 
 /**
+ * Instance API added by {@link ListboxItemMixin}. Declared explicitly so
+ * declaration emit doesn't have to name the mixin's anonymous class (which
+ * leaks `LitElement`'s protected members).
+ * @typedef {{
+ *   value: string;
+ *   href: string | undefined;
+ *   disabled: boolean;
+ *   selected: boolean;
+ *   _hasLeading: boolean;
+ *   _hasSupportingText: boolean;
+ *   _hasTrailingBadge: boolean;
+ *   _hasTrailing: boolean;
+ *   get _interactiveEl(): HTMLButtonElement | undefined;
+ *   get _ariaRole(): string;
+ *   get _ariaSelected(): string | typeof nothing;
+ *   get _ariaHaspopup(): string | typeof nothing;
+ *   get _ariaExpanded(): string | typeof nothing;
+ *   _renderTrailingExtra(): import("lit").TemplateResult<1> | typeof nothing;
+ *   _onInteractivePointerLeave(): void;
+ *   getTabIndex(): number;
+ *   setTabIndex(value: number): void;
+ *   focusInteractive(): void;
+ *   _onClick(event: MouseEvent): void;
+ *   _renderLeadingZone(): import("lit").TemplateResult<1>;
+ *   _renderInteractive(): import("lit").TemplateResult<1>;
+ * }} ListboxItemInterface
+ */
+
+/**
  * Shared interactive-row behavior for `md-menu-item` and `md-option`: the
  * `<button>`/`<a href>` render, `md-ripple`, leading/trailing/supporting-text
  * slots, the roving-tabindex API `md-menu` calls, and click/keydown
@@ -23,6 +52,7 @@ import "../icon/icon.js";
  * `md-menu-item`-style no-ops, since `md-option` diverges on all of them.
  * @template {Constructor<LitElement>} T
  * @param {T} superClass
+ * @returns {T & Constructor<ListboxItemInterface> & { properties: import("lit").PropertyDeclarations }}
  */
 export const ListboxItemMixin = (superClass) => {
   class ListboxItem extends superClass {
@@ -167,7 +197,7 @@ export const ListboxItemMixin = (superClass) => {
      * an `href` item while it activates a `<button>`-based one.
      * @param {KeyboardEvent} event
      */
-    _onInteractiveKeydown(event) {
+    #onInteractiveKeydown(event) {
       if (event.key !== " ") return;
       event.preventDefault();
       /** @type {HTMLElement | undefined} */ (this._interactiveEl)?.click();
@@ -177,7 +207,7 @@ export const ListboxItemMixin = (superClass) => {
      * @param {Event} event
      * @param {(v: boolean) => void} setter
      */
-    _onSlotChange(event, setter) {
+    #onSlotChange(event, setter) {
       const slot = /** @type {HTMLSlotElement} */ (event.target);
       setter(slot.assignedNodes({ flatten: true }).length > 0);
     }
@@ -195,13 +225,13 @@ export const ListboxItemMixin = (superClass) => {
           <slot
             name="leading"
             @slotchange=${(/** @type {Event} */ e) =>
-              this._onSlotChange(e, (v) => (this._hasLeading = v))}
+              this.#onSlotChange(e, (v) => (this._hasLeading = v))}
           ></slot>
         </span>
       `;
     }
 
-    _renderTextZone() {
+    #renderTextZone() {
       return html`
         <span class="md-menu-item__text">
           <span part="label" class="md-menu-item__label"><slot></slot></span>
@@ -214,7 +244,7 @@ export const ListboxItemMixin = (superClass) => {
               <slot
                 name="supporting-text"
                 @slotchange=${(/** @type {Event} */ e) =>
-                  this._onSlotChange(e, (v) => (this._hasSupportingText = v))}
+                  this.#onSlotChange(e, (v) => (this._hasSupportingText = v))}
               ></slot>
             </span>
           </span>
@@ -222,7 +252,7 @@ export const ListboxItemMixin = (superClass) => {
       `;
     }
 
-    _renderTrailingZone() {
+    #renderTrailingZone() {
       return html`
         <span
           part="trailing-badge"
@@ -233,7 +263,7 @@ export const ListboxItemMixin = (superClass) => {
           <slot
             name="trailing-badge"
             @slotchange=${(/** @type {Event} */ e) =>
-              this._onSlotChange(e, (v) => (this._hasTrailingBadge = v))}
+              this.#onSlotChange(e, (v) => (this._hasTrailingBadge = v))}
           ></slot>
         </span>
         <span
@@ -245,7 +275,7 @@ export const ListboxItemMixin = (superClass) => {
           <slot
             name="trailing"
             @slotchange=${(/** @type {Event} */ e) =>
-              this._onSlotChange(e, (v) => (this._hasTrailing = v))}
+              this.#onSlotChange(e, (v) => (this._hasTrailing = v))}
           ></slot>
         </span>
         ${this._renderTrailingExtra()}
@@ -254,8 +284,8 @@ export const ListboxItemMixin = (superClass) => {
 
     _renderInteractive() {
       const content = html`<md-ripple for="menu-item"></md-ripple>
-        ${this._renderLeadingZone()} ${this._renderTextZone()}
-        ${this._renderTrailingZone()}`;
+        ${this._renderLeadingZone()} ${this.#renderTextZone()}
+        ${this.#renderTrailingZone()}`;
 
       if (this.href) {
         // `disabled` has no effect on `<a>` — mirror md-card/md-button's
@@ -274,7 +304,7 @@ export const ListboxItemMixin = (superClass) => {
             aria-haspopup=${this._ariaHaspopup}
             aria-expanded=${this._ariaExpanded}
             @click=${this._onClick}
-            @keydown=${this._onInteractiveKeydown}
+            @keydown=${this.#onInteractiveKeydown}
             @pointerleave=${this._onInteractivePointerLeave}
           >
             ${content}

@@ -2,7 +2,7 @@ import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { MutationController } from "@lit-labs/observers/mutation-controller.js";
 
-import { PopoverPositionController } from "../../shared/popover-position-controller.js";
+import { PopoverPositionController } from "../shared/popover-position-controller.js";
 
 import "../shadow/shadow.js";
 import "./menu-item.js";

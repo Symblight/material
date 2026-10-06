@@ -9,6 +9,29 @@ export const internals = Symbol("internals");
 const privateInternals = Symbol("privateInternals");
 
 /**
+ * Public instance API added by {@link FormAssociateMixin}. Declared
+ * explicitly so declaration emit doesn't have to name the mixin's anonymous
+ * class (which leaks `LitElement`'s protected members and `privateInternals`).
+ * @typedef {{
+ *   readonly [internals]: ElementInternals;
+ *   requiredValidationMessage: string;
+ *   formAssociatedCallback(): void;
+ *   resetFormControl(): void;
+ *   formResetCallback(): void;
+ *   formDisabledCallback(disabled: boolean): void;
+ *   formStateRestoreCallback(state: unknown, mode: unknown): void;
+ *   checkValidity(): boolean;
+ *   reportValidity(): boolean;
+ *   get willValidate(): boolean;
+ *   get validity(): ValidityState;
+ *   get validationMessage(): string;
+ *   get validationTarget(): HTMLElement | null | undefined;
+ *   isValueMissing(): boolean;
+ *   updateValidity(): void;
+ * }} FormAssociateInterface
+ */
+
+/**
  * Shared `ElementInternals` plumbing for form-associated custom elements:
  * lazy internals, `form`/`labels`/`validity` proxies, `<fieldset disabled>`
  * propagation, and a `required`-aware `updateValidity()`.
@@ -21,6 +44,7 @@ const privateInternals = Symbol("privateInternals");
  * `updateValidity()` directly.
  * @template {Constructor<LitElement>} T
  * @param {T} superClass
+ * @returns {T & Constructor<FormAssociateInterface> & { formAssociated: boolean }}
  */
 export const FormAssociateMixin = (superClass) => {
   class FormAssociate extends superClass {

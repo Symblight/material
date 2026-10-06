@@ -7,7 +7,7 @@ import { live } from "lit/directives/live.js";
 import { when } from "lit/directives/when.js";
 import { FormControlMixin, requiredValidator } from "@open-wc/form-control";
 
-import { generateUniqueKey } from "../../shared/gen-id.js";
+import { generateUniqueKey } from "../shared/gen-id.js";
 
 import "../icon/icon.js";
 

@@ -102,6 +102,7 @@ export default class FAB extends BaseButton {
     this.setAttribute("size", size);
   }
 
+  /** @returns {import("lit/directive.js").DirectiveResult<typeof import("lit/directives/class-map.js").ClassMapDirective>} */
   get classes() {
     return classMap({
       button_disabled: this.disabled,

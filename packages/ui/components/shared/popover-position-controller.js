@@ -10,7 +10,7 @@ import {
   autoUpdate,
 } from "@floating-ui/dom";
 
-import { HTMLForController } from "../components/html-for-controller/html-for-controller.js";
+import { HTMLForController } from "../html-for-controller/html-for-controller.js";
 
 /**
  * @typedef {object} PopoverPositionControllerOptions

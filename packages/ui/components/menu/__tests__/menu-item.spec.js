@@ -85,7 +85,7 @@ describe("md-menu-item", () => {
 
     it("Space activates an href item, matching native <button> Enter/Space activation", async () => {
       // Native <a> only fires `click` on Enter, not Space — without
-      // _onInteractiveKeydown, Space would silently do nothing here while
+      // #onInteractiveKeydown, Space would silently do nothing here while
       // activating a <button>-based item. `href="#"` avoids a real page
       // navigation (unlike an absolute path) so the test stays on-page.
       const el = /** @type {MdMenuItem} */ (

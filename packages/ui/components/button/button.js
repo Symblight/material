@@ -63,6 +63,7 @@ export default class Button extends BaseButton {
     ];
   }
 
+  /** @returns {import("lit/directive.js").DirectiveResult<typeof import("lit/directives/class-map.js").ClassMapDirective>} */
   get classes() {
     return classMap({
       button_disabled: this.disabled,

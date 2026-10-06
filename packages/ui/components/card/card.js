@@ -79,6 +79,7 @@ export class MdCard extends LitElement {
     );
   }
 
+  /** @returns {import("lit/directive.js").DirectiveResult<typeof import("lit/directives/class-map.js").ClassMapDirective>} */
   get classes() {
     return classMap({
       "md-card__surface": true,

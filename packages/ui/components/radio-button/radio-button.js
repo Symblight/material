@@ -6,7 +6,7 @@ import { RadioSelectionController } from "./radio-selection.js";
 import {
   FormAssociateMixin,
   internals,
-} from "../../shared/form-associate-mixin.js";
+} from "../shared/form-associate-mixin.js";
 
 import "../ripple/ripple.js";
 

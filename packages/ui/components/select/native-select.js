@@ -3,7 +3,7 @@ import { customElement } from "lit/decorators.js";
 import { MutationController } from "@lit-labs/observers/mutation-controller.js";
 
 import { BaseSelect } from "./base-select.js";
-import { internals } from "../../shared/form-associate-mixin.js";
+import { internals } from "../shared/form-associate-mixin.js";
 
 /**
  * @tag md-native-select

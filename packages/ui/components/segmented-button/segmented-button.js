@@ -64,6 +64,7 @@ export class MdSegmentedButton extends BaseButton {
     this.multiselect = false;
   }
 
+  /** @returns {import("lit/directive.js").DirectiveResult<typeof import("lit/directives/class-map.js").ClassMapDirective>} */
   get classes() {
     return classMap({
       "segmented-button_disabled": this.disabled,

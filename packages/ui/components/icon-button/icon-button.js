@@ -85,6 +85,7 @@ export default class IconButton extends BaseButton {
     }
   }
 
+  /** @returns {import("lit/directive.js").DirectiveResult<typeof import("lit/directives/class-map.js").ClassMapDirective>} */
   get classes() {
     return classMap({
       "icon-button_disabled": this.disabled,

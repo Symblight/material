@@ -1,7 +1,7 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.3.9",
+  "version": "0.4.0",
   "description": "Material Design 3 web components library built with Lit",
   "author": "Aleksei Tkachenko <leshtkachenko@gmail.com>",
   "license": "MIT",
@@ -18,6 +18,7 @@
   ],
   "main": "dist/index.js",
   "module": "dist/index.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -54,100 +55,104 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./avatar": {
-      "import": "./dist/avatar/avatar2.js",
-      "types": "./dist/avatar/avatar.d.ts"
+      "types": "./dist/avatar/avatar.d.ts",
+      "import": "./dist/avatar/avatar2.js"
     },
     "./badge": {
-      "import": "./dist/badge/badge2.js",
-      "types": "./dist/badge/badge.d.ts"
+      "types": "./dist/badge/badge.d.ts",
+      "import": "./dist/badge/badge2.js"
     },
     "./card": {
-      "import": "./dist/card/card2.js",
-      "types": "./dist/card/card.d.ts"
+      "types": "./dist/card/card.d.ts",
+      "import": "./dist/card/card2.js"
     },
     "./button": {
-      "import": "./dist/button/button2.js",
-      "types": "./dist/button/button.d.ts"
+      "types": "./dist/button/button.d.ts",
+      "import": "./dist/button/button2.js"
     },
     "./checkbox": {
-      "import": "./dist/checkbox/checkbox2.js",
-      "types": "./dist/checkbox/checkbox.d.ts"
+      "types": "./dist/checkbox/checkbox.d.ts",
+      "import": "./dist/checkbox/checkbox2.js"
     },
     "./chips": {
-      "import": "./dist/chips/index.js",
-      "types": "./dist/chips/index.d.ts"
+      "types": "./dist/chips/index.d.ts",
+      "import": "./dist/chips/index.js"
     },
     "./dialog": {
-      "import": "./dist/dialog/dialog2.js",
-      "types": "./dist/dialog/dialog.d.ts"
+      "types": "./dist/dialog/dialog.d.ts",
+      "import": "./dist/dialog/dialog2.js"
     },
     "./fab": {
-      "import": "./dist/fab/fab2.js",
-      "types": "./dist/fab/fab.d.ts"
+      "types": "./dist/fab/fab.d.ts",
+      "import": "./dist/fab/fab2.js"
     },
     "./icon": {
-      "import": "./dist/icon/icon2.js",
-      "types": "./dist/icon/icon.d.ts"
+      "types": "./dist/icon/icon.d.ts",
+      "import": "./dist/icon/icon2.js"
     },
     "./icon-button": {
-      "import": "./dist/icon-button/icon-button2.js",
-      "types": "./dist/icon-button/icon-button.d.ts"
+      "types": "./dist/icon-button/icon-button.d.ts",
+      "import": "./dist/icon-button/icon-button2.js"
     },
     "./list": {
-      "import": "./dist/list/index.js",
-      "types": "./dist/list/index.d.ts"
+      "types": "./dist/list/index.d.ts",
+      "import": "./dist/list/index.js"
     },
     "./menu": {
-      "import": "./dist/menu/index.js",
-      "types": "./dist/menu/index.d.ts"
+      "types": "./dist/menu/index.d.ts",
+      "import": "./dist/menu/index.js"
     },
     "./progress-circular": {
-      "import": "./dist/progress-circular/progress-circular2.js",
-      "types": "./dist/progress-circular/progress-circular.d.ts"
+      "types": "./dist/progress-circular/progress-circular.d.ts",
+      "import": "./dist/progress-circular/progress-circular2.js"
     },
     "./progress-linear": {
-      "import": "./dist/progress-linear/progress-linear2.js",
-      "types": "./dist/progress-linear/progress-linear.d.ts"
+      "types": "./dist/progress-linear/progress-linear.d.ts",
+      "import": "./dist/progress-linear/progress-linear2.js"
     },
     "./radio-button": {
-      "import": "./dist/radio-button/radio-button2.js",
-      "types": "./dist/radio-button/radio-button.d.ts"
+      "types": "./dist/radio-button/radio-button.d.ts",
+      "import": "./dist/radio-button/radio-button2.js"
     },
     "./select": {
-      "import": "./dist/select/index.js",
-      "types": "./dist/select/index.d.ts"
+      "types": "./dist/select/index.d.ts",
+      "import": "./dist/select/index.js"
     },
     "./skeleton": {
-      "import": "./dist/skeleton/skeleton2.js",
-      "types": "./dist/skeleton/skeleton.d.ts"
+      "types": "./dist/skeleton/skeleton.d.ts",
+      "import": "./dist/skeleton/skeleton2.js"
     },
     "./text-field": {
-      "import": "./dist/text-field/text-field2.js",
-      "types": "./dist/text-field/text-field.d.ts"
+      "types": "./dist/text-field/text-field.d.ts",
+      "import": "./dist/text-field/text-field2.js"
     },
     "./switch": {
-      "import": "./dist/switch/switch2.js",
-      "types": "./dist/switch/switch.d.ts"
+      "types": "./dist/switch/switch.d.ts",
+      "import": "./dist/switch/switch2.js"
     },
     "./tabs": {
-      "import": "./dist/tabs/index.js",
-      "types": "./dist/tabs/index.d.ts"
+      "types": "./dist/tabs/index.d.ts",
+      "import": "./dist/tabs/index.js"
     },
     "./tab": {
-      "import": "./dist/tabs/tab2.js",
-      "types": "./dist/tabs/tab.d.ts"
+      "types": "./dist/tabs/tab.d.ts",
+      "import": "./dist/tabs/tab2.js"
     },
     "./tab-panel": {
-      "import": "./dist/tabs/tab-panel2.js",
-      "types": "./dist/tabs/tab-panel.d.ts"
+      "types": "./dist/tabs/tab-panel.d.ts",
+      "import": "./dist/tabs/tab-panel2.js"
     },
     "./tooltip": {
-      "import": "./dist/tooltip/index.js",
-      "types": "./dist/tooltip/index.d.ts"
+      "types": "./dist/tooltip/index.d.ts",
+      "import": "./dist/tooltip/index.js"
+    },
+    "./segmented-button": {
+      "import": "./dist/segmented-button/index.js",
+      "types": "./dist/segmented-button/index.d.ts"
     },
     "./theme/theme.css": "./dist/theme.css"
   },

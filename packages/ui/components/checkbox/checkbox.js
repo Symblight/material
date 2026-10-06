@@ -10,7 +10,7 @@ import "../ripple/ripple.js";
 import {
   FormAssociateMixin,
   internals,
-} from "../../shared/form-associate-mixin.js";
+} from "../shared/form-associate-mixin.js";
 
 import styles from "./checkbox.css?inline";
 
