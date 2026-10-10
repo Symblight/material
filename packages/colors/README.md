@@ -16,7 +16,8 @@ npm install @symblight/md-colors
 |---|---|---|---|
 | Node / bundler | `dist/index.js` | ESM | `generateTokens`, `generateCSSFile` |
 | Browser (bundler) | `dist/client.esm.js` | ESM | Vite, Storybook — named import |
-| Browser (script) | `dist/client.js` | IIFE | Plain `<script>` tag |
+| Browser (CJS) | `dist/client.cjs` | CJS | `require("@symblight/md-colors/client")` |
+| Browser (script) | `dist/client.js` | IIFE | Plain `<script>` tag — `window.MdColors` |
 | CLI | `dist/cli.js` | ESM | Terminal usage via `md-colors` |
 
 ---
@@ -29,7 +30,11 @@ import { generateTokens, generateCSSFile } from "@symblight/md-colors";
 
 ### `generateTokens(config)`
 
-Returns a token map — use it to apply tokens however you like.
+Returns a token map — use it to apply tokens however you like. All 49 MD3
+color roles are resolved from one tonal-spot scheme (the M3 default), including
+`surface-container`, `surface-tint` and the `*-fixed` / `*-fixed-dim` /
+`on-*-fixed` / `on-*-fixed-variant` roles. Missing config fields fall back to
+their defaults; an invalid `sourceColor` or `scheme` throws a `TypeError`.
 
 ```js
 const tokens = generateTokens({ sourceColor: "#6750A4", scheme: "dark" });
@@ -43,10 +48,11 @@ const tokens = generateTokens({ sourceColor: "#6750A4", scheme: "dark" });
 
 ### `generateCSSFile(config)`
 
-Writes a `colors.css` file with `:root`-scoped tokens.
+Writes a `colors.css` file with `:root`-scoped tokens. Returns a promise that
+resolves with the absolute output path and rejects if the write fails.
 
 ```js
-generateCSSFile({
+await generateCSSFile({
   sourceColor: "#6750A4",
   scheme: "dark",
   output: "./theme/colors.css",
@@ -98,7 +104,7 @@ Or with the self-contained IIFE build:
 ```html
 <script src="node_modules/@symblight/md-colors/dist/client.js"></script>
 <script>
-  // client.js exposes nothing on window — use it as an ES module instead (see above)
+  MdColors.generateTheme({ sourceColor: "#6750A4", scheme: "dark" });
 </script>
 ```
 
@@ -106,7 +112,7 @@ Or with the self-contained IIFE build:
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `options.sourceColor` | `string` | — | Seed color as a hex string |
+| `options.sourceColor` | `string` | `"#1D5D78"` | Seed color as a hex string |
 | `options.scheme` | `"light" \| "dark"` | `"light"` | Color scheme variant |
 
 Sets every `--md-sys-color-*` variable on `document.documentElement` via `style.setProperty`.
@@ -131,6 +137,8 @@ md-colors --sourceColor="#6750A4" --scheme=light --output=./colors.css
 | `--sourceColor` | `-c` | `#1D5D78` | Seed color as a hex string |
 | `--scheme` | `-s` | `light` | `light` or `dark` |
 | `--output` | `-o` | `./colors.css` | Output file path |
+
+Exits with code 1 on an invalid color, invalid scheme or failed write.
 
 ---
 

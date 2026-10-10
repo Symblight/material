@@ -14,72 +14,64 @@ describe("generateCSSFile", () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it("writes a CSS file to the given output path", (done) => {
+  it("writes a CSS file to the given output path", async () => {
     const output = path.join(tmpDir, "colors.css");
-    generateCSSFile({ sourceColor: "#6750A4", scheme: "light", output });
+    await generateCSSFile({ sourceColor: "#6750A4", scheme: "light", output });
 
-    setTimeout(() => {
-      expect(fs.existsSync(output)).toBe(true);
-      done();
-    }, 100);
+    expect(fs.existsSync(output)).toBe(true);
   });
 
-  it("output contains :root block", (done) => {
+  it("output contains :root block", async () => {
     const output = path.join(tmpDir, "colors.css");
-    generateCSSFile({ sourceColor: "#6750A4", scheme: "light", output });
+    await generateCSSFile({ sourceColor: "#6750A4", scheme: "light", output });
 
-    setTimeout(() => {
-      const content = fs.readFileSync(output, "utf8");
-      expect(content).toMatch(/:root\s*\{/);
-      done();
-    }, 100);
+    const content = fs.readFileSync(output, "utf8");
+    expect(content).toMatch(/:root\s*\{/);
   });
 
-  it("output contains --md-sys-color-* variables", (done) => {
+  it("output contains --md-sys-color-* variables", async () => {
     const output = path.join(tmpDir, "colors.css");
-    generateCSSFile({ sourceColor: "#6750A4", scheme: "light", output });
+    await generateCSSFile({ sourceColor: "#6750A4", scheme: "light", output });
 
-    setTimeout(() => {
-      const content = fs.readFileSync(output, "utf8");
-      expect(content).toMatch(/--md-sys-color-primary:/);
-      expect(content).toMatch(/--md-sys-color-surface:/);
-      done();
-    }, 100);
+    const content = fs.readFileSync(output, "utf8");
+    expect(content).toMatch(/--md-sys-color-primary:/);
+    expect(content).toMatch(/--md-sys-color-surface:/);
   });
 
-  it("values are oklch color strings", (done) => {
+  it("values are oklch color strings", async () => {
     const output = path.join(tmpDir, "colors.css");
-    generateCSSFile({ sourceColor: "#6750A4", scheme: "light", output });
+    await generateCSSFile({ sourceColor: "#6750A4", scheme: "light", output });
 
-    setTimeout(() => {
-      const content = fs.readFileSync(output, "utf8");
-      expect(content).toMatch(/oklch\(/);
-      done();
-    }, 100);
+    const content = fs.readFileSync(output, "utf8");
+    expect(content).toMatch(/oklch\(/);
   });
 
-  it("dark scheme produces different output than light", (done) => {
+  it("dark scheme produces different output than light", async () => {
     const lightOutput = path.join(tmpDir, "light.css");
     const darkOutput = path.join(tmpDir, "dark.css");
 
-    generateCSSFile({ sourceColor: "#6750A4", scheme: "light", output: lightOutput });
-    generateCSSFile({ sourceColor: "#6750A4", scheme: "dark", output: darkOutput });
+    await generateCSSFile({ sourceColor: "#6750A4", scheme: "light", output: lightOutput });
+    await generateCSSFile({ sourceColor: "#6750A4", scheme: "dark", output: darkOutput });
 
-    setTimeout(() => {
-      const light = fs.readFileSync(lightOutput, "utf8");
-      const dark = fs.readFileSync(darkOutput, "utf8");
-      expect(light).not.toBe(dark);
-      done();
-    }, 100);
+    const light = fs.readFileSync(lightOutput, "utf8");
+    const dark = fs.readFileSync(darkOutput, "utf8");
+    expect(light).not.toBe(dark);
   });
 
-  it("uses default sourceColor and scheme when called with no args", (done) => {
+  it("uses default sourceColor and scheme when called with no args", async () => {
     const output = path.join(tmpDir, "default.css");
-    generateCSSFile({ output });
+    await generateCSSFile({ output });
 
-    setTimeout(() => {
-      expect(fs.existsSync(output)).toBe(true);
-      done();
-    }, 100);
+    expect(fs.existsSync(output)).toBe(true);
+  });
+
+  it("resolves with the absolute output path", async () => {
+    const output = path.join(tmpDir, "colors.css");
+    await expect(generateCSSFile({ output })).resolves.toBe(path.resolve(output));
+  });
+
+  it("rejects when the file cannot be written", async () => {
+    const output = path.join(tmpDir, "missing-dir", "colors.css");
+    await expect(generateCSSFile({ output })).rejects.toThrow();
   });
 });

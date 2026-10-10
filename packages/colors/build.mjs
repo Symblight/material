@@ -11,11 +11,13 @@ await esbuild.build({
   sourcemap: true,
 });
 
-// Browser client — IIFE for plain <script> tags (self-contained, minified)
+// Browser client — IIFE for plain <script> tags (self-contained, minified),
+// exposed as `window.MdColors`
 await esbuild.build({
   entryPoints: ["client.mjs"],
   bundle: true,
   format: "iife",
+  globalName: "MdColors",
   platform: "browser",
   outfile: "dist/client.js",
   minify: true,
@@ -32,7 +34,17 @@ await esbuild.build({
   sourcemap: true,
 });
 
-// CLI — Node ESM bundle with shebang
+// Browser client — CJS for require() (self-contained)
+await esbuild.build({
+  entryPoints: ["client.mjs"],
+  bundle: true,
+  format: "cjs",
+  platform: "browser",
+  outfile: "dist/client.cjs",
+  sourcemap: true,
+});
+
+// CLI — Node ESM bundle; esbuild keeps the shebang from cli.mjs
 await esbuild.build({
   entryPoints: ["cli.mjs"],
   bundle: true,
@@ -40,7 +52,6 @@ await esbuild.build({
   platform: "node",
   external: ["@material/material-color-utilities", "culori"],
   outfile: "dist/cli.js",
-  banner: { js: "#!/usr/bin/env node" },
 });
 
-console.log("Build complete → dist/index.js, dist/client.js, dist/client.esm.js, dist/cli.js");
+console.log("Build complete → dist/index.js, dist/client.js, dist/client.esm.js, dist/client.cjs, dist/cli.js");

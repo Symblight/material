@@ -1,3 +1,4 @@
+import { converter } from "culori";
 import { generateTokens, setSchemeProperties } from "../tokens.mjs";
 
 const SOURCE_COLOR = "#6750A4";
@@ -91,5 +92,57 @@ describe("generateTokens", () => {
   it("uses defaults when called with no arguments", () => {
     const tokens = generateTokens();
     expect(Object.keys(tokens).length).toBeGreaterThan(0);
+  });
+
+  it("fills in missing config fields with defaults", () => {
+    expect(generateTokens({ scheme: "dark" })).toEqual(
+      generateTokens({ sourceColor: "#1D5D78", scheme: "dark" })
+    );
+    expect(generateTokens({ sourceColor: SOURCE_COLOR })).toEqual(
+      generateTokens({ sourceColor: SOURCE_COLOR, scheme: "light" })
+    );
+  });
+
+  it("throws a TypeError for an invalid source color", () => {
+    expect(() => generateTokens({ sourceColor: "purple" })).toThrow(TypeError);
+  });
+
+  it("throws a TypeError for an invalid scheme", () => {
+    expect(() => generateTokens({ scheme: "sepia" })).toThrow(TypeError);
+  });
+
+  it("includes every MD3 color role", () => {
+    const keys = Object.keys(generateTokens({ sourceColor: SOURCE_COLOR }));
+    const roles = [
+      "surface-container",
+      "surface-tint",
+      ...["primary", "secondary", "tertiary"].flatMap((c) => [
+        `${c}-fixed`,
+        `${c}-fixed-dim`,
+        `on-${c}-fixed`,
+        `on-${c}-fixed-variant`,
+      ]),
+    ];
+    for (const role of roles) {
+      expect(keys).toContain(`--md-sys-color-${role}`);
+    }
+    expect(keys).toHaveLength(49);
+  });
+
+  it.each(["light", "dark"])("keeps surface tones in spec order (%s)", (scheme) => {
+    const tokens = generateTokens({ sourceColor: SOURCE_COLOR, scheme });
+    const lightness = (role) => converter("oklch")(tokens[`--md-sys-color-${role}`]).l;
+
+    expect(lightness("surface-dim")).toBeLessThanOrEqual(lightness("surface"));
+    expect(lightness("surface")).toBeLessThanOrEqual(lightness("surface-bright"));
+
+    // Containers step away from the background: darker in light, lighter in dark.
+    const containers = ["lowest", "low", "", "high", "highest"].map((level) =>
+      lightness(level ? `surface-container-${level}` : "surface-container")
+    );
+    for (let i = 1; i < containers.length; i++) {
+      if (scheme === "light") expect(containers[i]).toBeLessThan(containers[i - 1]);
+      else expect(containers[i]).toBeGreaterThan(containers[i - 1]);
+    }
   });
 });
