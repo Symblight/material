@@ -43,8 +43,24 @@ import "@symblight/wc-material/progress-linear";
 | `--md-progress-linear-active-indicator-color` | `var(--md-sys-color-primary)`             | Color of the active (progress) bar                |
 | `--md-progress-linear-track-color`            | `var(--md-sys-color-secondary-container)` | Color of the background track                     |
 | `--md-progress-linear-stop-indicator-color`   | `var(--md-sys-color-primary)`             | Color of the Expressive stop-dot at the trail end |
+| `--md-progress-linear-stop-indicator-size`    | `4px`                                     | Diameter of the stop-dot                          |
 
 > Include the MD3 theme CSS (`@symblight/wc-material/theme/theme.css`) to have color tokens resolve correctly.
+
+## Accessibility
+
+The element has `role="progressbar"` (via `ElementInternals`). In determinate mode it exposes `aria-valuenow` (the clamped value), `aria-valuemin="0"` and `aria-valuemax="1"`; in indeterminate mode these are omitted. A `value` that is not a finite number is treated as indeterminate.
+
+Always give it an accessible name:
+
+```html
+<md-progress-linear
+  aria-label="Uploading file"
+  value="0.4"
+></md-progress-linear>
+```
+
+Right-to-left layouts are supported (the bar fills from the inline start). Under `prefers-reduced-motion: reduce` the value transition is disabled and the indeterminate animation slows down; in forced-colors mode the bar uses system colors.
 
 ## Examples
 

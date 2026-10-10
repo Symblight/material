@@ -26,21 +26,34 @@ export default class MdProgressLinear extends LitElement {
     this.value = undefined;
   }
 
-  get #indeterminate() {
-    return this.value === undefined || this.value === null;
+  #internals = this.attachInternals();
+
+  /** Clamped value, or `null` when indeterminate (unset or not a finite number). */
+  get #progress() {
+    const value = Number(this.value ?? NaN);
+    return Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : null;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.#internals.role = "progressbar";
   }
 
   /** @param {import("lit").PropertyValues} changes */
-  firstUpdated(changes) {
-    super.firstUpdated(changes);
+  willUpdate(changes) {
+    super.willUpdate(changes);
 
-    if (!this.hasAttribute("aria-hidden")) {
-      this.setAttribute("aria-hidden", "true");
-    }
+    const progress = this.#progress;
+    const indeterminate = progress === null;
+    this.#internals.ariaValueMin = indeterminate ? null : "0";
+    this.#internals.ariaValueMax = indeterminate ? null : "1";
+    this.#internals.ariaValueNow = indeterminate ? null : String(progress);
   }
 
   render() {
-    if (this.#indeterminate) {
+    const progress = this.#progress;
+
+    if (progress === null) {
       return html`
         <div class="progress-linear">
           <div part="track" class="progress-linear__track"></div>
@@ -56,13 +69,8 @@ export default class MdProgressLinear extends LitElement {
       `;
     }
 
-    const clampedValue = Math.min(1, Math.max(0, this.value ?? 0));
-
     return html`
-      <div
-        class="progress-linear"
-        style="--_progress-linear-value:${clampedValue}"
-      >
+      <div class="progress-linear" style="--_progress-linear-value:${progress}">
         <div part="track" class="progress-linear__track"></div>
         <div
           part="stop-indicator"

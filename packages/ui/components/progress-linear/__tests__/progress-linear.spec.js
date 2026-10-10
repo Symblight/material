@@ -1,7 +1,6 @@
 import { expect, fixture, html } from "@open-wc/testing";
 
-import "../progress-linear.js";
-/** @import MdProgressLinear from "../progress-linear.js" */
+import MdProgressLinear from "../progress-linear.js";
 
 describe("md-progress-linear", () => {
   describe("rendering — indeterminate (default)", () => {
@@ -102,21 +101,141 @@ describe("md-progress-linear", () => {
     });
   });
 
-  describe("accessibility", () => {
-    it("sets aria-hidden=true on the host after first render", async () => {
+  describe("invalid values", () => {
+    it("treats a non-numeric value attribute as indeterminate", async () => {
+      const el = /** @type {MdProgressLinear} */ (
+        await fixture(
+          html`<md-progress-linear value="abc"></md-progress-linear>`,
+        )
+      );
+      expect(el.shadowRoot.querySelector(".progress-linear__bar_primary")).to
+        .exist;
+      expect(el.shadowRoot.querySelector(".progress-linear__active-indicator"))
+        .to.not.exist;
+    });
+
+    it("switches back to indeterminate when the attribute is removed", async () => {
+      const el = /** @type {MdProgressLinear} */ (
+        await fixture(
+          html`<md-progress-linear value="0.3"></md-progress-linear>`,
+        )
+      );
+      el.removeAttribute("value");
+      await el.updateComplete;
+      expect(el.shadowRoot.querySelector(".progress-linear__bar_primary")).to
+        .exist;
+    });
+  });
+
+  describe("styles", () => {
+    it("renders the stop indicator as a 4px circle", async () => {
+      const el = /** @type {MdProgressLinear} */ (
+        await fixture(
+          html`<md-progress-linear
+            .value=${0.5}
+            style="--md-progress-linear-track-height: 8px"
+          ></md-progress-linear>`,
+        )
+      );
+      const stop = el.shadowRoot.querySelector(
+        ".progress-linear__stop-indicator",
+      );
+      const rect = stop.getBoundingClientRect();
+      expect(rect.width).to.equal(4);
+      expect(rect.height).to.equal(4);
+      expect(getComputedStyle(stop).borderRadius).to.equal("50%");
+    });
+
+    it("holds the secondary bar at its first keyframe during the delay", async () => {
       const el = /** @type {MdProgressLinear} */ (
         await fixture(html`<md-progress-linear></md-progress-linear>`)
       );
-      expect(el.getAttribute("aria-hidden")).to.equal("true");
+      const bar = el.shadowRoot.querySelector(
+        ".progress-linear__bar_secondary",
+      );
+      expect(getComputedStyle(bar).animationFillMode).to.equal("backwards");
     });
 
-    it("does not override an existing aria-hidden attribute", async () => {
+    it("anchors the active indicator to the inline start in RTL", async () => {
       const el = /** @type {MdProgressLinear} */ (
         await fixture(
-          html`<md-progress-linear aria-hidden="false"></md-progress-linear>`,
+          html`<md-progress-linear
+            dir="rtl"
+            .value=${0.25}
+            style="width: 200px"
+          ></md-progress-linear>`,
         )
       );
-      expect(el.getAttribute("aria-hidden")).to.equal("false");
+      const host = el.getBoundingClientRect();
+      const active = el.shadowRoot
+        .querySelector(".progress-linear__active-indicator")
+        .getBoundingClientRect();
+      const stop = el.shadowRoot
+        .querySelector(".progress-linear__stop-indicator")
+        .getBoundingClientRect();
+      expect(active.right).to.equal(host.right);
+      expect(stop.left).to.equal(host.left);
+    });
+  });
+
+  describe("accessibility", () => {
+    /** @type {WeakMap<HTMLElement, ElementInternals>} */
+    const internalsByElement = new WeakMap();
+    const { attachInternals } = HTMLElement.prototype;
+    MdProgressLinear.prototype.attachInternals = function () {
+      const internals = attachInternals.call(this);
+      internalsByElement.set(this, internals);
+      return internals;
+    };
+
+    it("has role progressbar and is not aria-hidden", async () => {
+      const el = /** @type {MdProgressLinear} */ (
+        await fixture(html`<md-progress-linear></md-progress-linear>`)
+      );
+      expect(el.hasAttribute("aria-hidden")).to.be.false;
+      expect(internalsByElement.get(el).role).to.equal("progressbar");
+    });
+
+    it("exposes value, min and max when determinate", async () => {
+      const el = /** @type {MdProgressLinear} */ (
+        await fixture(
+          html`<md-progress-linear .value=${0.4}></md-progress-linear>`,
+        )
+      );
+      const internals = internalsByElement.get(el);
+      expect(internals.ariaValueNow).to.equal("0.4");
+      expect(internals.ariaValueMin).to.equal("0");
+      expect(internals.ariaValueMax).to.equal("1");
+    });
+
+    it("exposes the clamped value", async () => {
+      const el = /** @type {MdProgressLinear} */ (
+        await fixture(
+          html`<md-progress-linear .value=${1.5}></md-progress-linear>`,
+        )
+      );
+      expect(internalsByElement.get(el).ariaValueNow).to.equal("1");
+    });
+
+    it("omits value, min and max when indeterminate", async () => {
+      const el = /** @type {MdProgressLinear} */ (
+        await fixture(html`<md-progress-linear></md-progress-linear>`)
+      );
+      const internals = internalsByElement.get(el);
+      expect(internals.ariaValueNow).to.be.null;
+      expect(internals.ariaValueMin).to.be.null;
+      expect(internals.ariaValueMax).to.be.null;
+    });
+
+    it("clears the value when switched back to indeterminate", async () => {
+      const el = /** @type {MdProgressLinear} */ (
+        await fixture(
+          html`<md-progress-linear value="0.5"></md-progress-linear>`,
+        )
+      );
+      el.removeAttribute("value");
+      await el.updateComplete;
+      expect(internalsByElement.get(el).ariaValueNow).to.be.null;
     });
   });
 });

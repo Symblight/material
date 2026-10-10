@@ -85,6 +85,10 @@
   --md-outlined-text-field-shape: 0.25rem;
 }
 
+:host([multiline]) {
+  min-inline-size: var(--md-text-field-multiline-min-width, 13.125rem);
+}
+
 :host([readonly]) {
   cursor: pointer;
 }
@@ -122,10 +126,6 @@
   --md-text-field-border-color: var(--md-text-field-disabled-foreground-color);
 }
 
-.text-field_multiline {
-  height: auto;
-}
-
 .text-field__label {
   font-size: var(--md-text-field-label-size);
   font-weight: var(--md-text-field-font-weight);
@@ -151,7 +151,9 @@
   padding-block-start: var(--_field-top-space);
   padding-inline-start: var(--_field-left-space);
   padding-inline-end: var(--_field-right-space);
-  width: 100%;
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
 }
 
 .text-field__wrapper {
@@ -161,6 +163,14 @@
 
 .text-field__affix {
   white-space: nowrap;
+}
+
+.text-field_multiline .text-field__wrapper {
+  align-items: flex-start;
+}
+
+.text-field_multiline .text-field__affix {
+  line-height: var(--md-text-field-line-height);
 }
 
 /* || CONTROL */
@@ -197,15 +207,17 @@
 }
 
 .text-field__textarea {
-  display: inline-flex;
-  appearance: textfield;
-  text-indent: 0px;
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  field-sizing: content;
+  min-height: 4lh;
+  max-height: 10lh;
+  overflow-y: auto;
   outline: none;
-  min-width: auto;
-  min-height: 6rem;
-  resize: both;
-  width: fit-content;
-  padding: 0px;
+  resize: vertical;
+  padding: 0;
 }
 
 /* || ICONS */
@@ -214,6 +226,11 @@
   align-items: center;
   justify-content: center;
   font-size: var(--md-text-field-icon-size);
+}
+
+.text-field_multiline .text-field__icon {
+  align-items: flex-start;
+  padding-block-start: var(--md-text-field-top-space);
 }
 
 .text-field__trailing {

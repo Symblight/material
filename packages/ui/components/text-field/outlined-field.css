@@ -44,6 +44,12 @@
   font-size: var(--md-text-field-label-size-populated);
 }
 
+.text-field_multiline
+  .text-field__outlined-label:not(.text-field__outlined-label_populated) {
+  height: auto;
+  transform: translate(1rem, var(--md-text-field-top-space));
+}
+
 .text-field__outlined-indicator_focused {
   border-width: 0.188rem;
   --md-outlined-text-field-border-color: var(--md-text-field-primary-color);
