@@ -1,7 +1,7 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Material Design 3 web components library built with Lit",
   "author": "Aleksei Tkachenko <leshtkachenko@gmail.com>",
   "license": "MIT",
@@ -149,6 +149,10 @@
     "./tooltip": {
       "types": "./dist/tooltip/index.d.ts",
       "import": "./dist/tooltip/index.js"
+    },
+    "./snackbar": {
+      "types": "./dist/snackbar/index.d.ts",
+      "import": "./dist/snackbar/index.js"
     },
     "./segmented-button": {
       "import": "./dist/segmented-button/index.js",

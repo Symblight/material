@@ -1,0 +1,111 @@
+:host {
+  --md-snackbar-container-color: var(--md-sys-color-inverse-surface);
+  --md-snackbar-supporting-text-color: var(--md-sys-color-inverse-on-surface);
+  --md-snackbar-action-color: var(--md-sys-color-inverse-primary);
+  --md-snackbar-icon-color: var(--md-sys-color-inverse-on-surface);
+  --md-snackbar-shape: var(--md-sys-shape-corner-extra-small, 0.25rem);
+  --md-snackbar-min-inline-size: 21.5rem; /* 344dp */
+  --md-snackbar-max-inline-size: 42rem; /* 672dp */
+
+  --md-snackbar-text-font: var(--md-sys-typescale-body-medium-font, inherit);
+  --md-snackbar-text-size: var(--md-sys-typescale-body-medium-size, 0.875rem);
+  --md-snackbar-text-line-height: var(
+    --md-sys-typescale-body-medium-line-height,
+    1.25rem
+  );
+  --md-snackbar-text-weight: var(--md-sys-typescale-body-medium-weight, 400);
+  --md-snackbar-text-tracking: var(
+    --md-sys-typescale-body-medium-tracking,
+    0.016rem
+  );
+
+  --md-elevation-level: 3;
+
+  display: block;
+  min-inline-size: var(--md-snackbar-min-inline-size);
+  max-inline-size: var(--md-snackbar-max-inline-size);
+  box-sizing: border-box;
+}
+
+.md-snackbar {
+  --md-elevation-level: inherit;
+
+  position: relative;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  grid-template-areas: "text action close";
+  align-items: center;
+  min-block-size: 3rem;
+  padding-block: 0.875rem;
+  padding-inline: 1rem;
+  border-radius: var(--md-snackbar-shape);
+  background-color: var(--md-snackbar-container-color);
+  color: var(--md-snackbar-supporting-text-color);
+  font-family: var(--md-snackbar-text-font);
+  font-size: var(--md-snackbar-text-size);
+  line-height: var(--md-snackbar-text-line-height);
+  font-weight: var(--md-snackbar-text-weight);
+  letter-spacing: var(--md-snackbar-text-tracking);
+}
+
+.md-snackbar--multiline {
+  min-block-size: 4.25rem;
+}
+
+.md-snackbar--has-action,
+.md-snackbar--has-close {
+  padding-inline-end: 0.5rem;
+}
+
+.md-snackbar--stacked {
+  grid-template-areas:
+    "text close"
+    "action action";
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  padding-block-end: 0.5rem;
+}
+
+.md-snackbar__text {
+  grid-area: text;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.md-snackbar__action {
+  grid-area: action;
+  display: flex;
+  align-items: center;
+  padding-inline-start: 0.5rem;
+}
+
+.md-snackbar__action[hidden] {
+  display: none;
+}
+
+:where(.md-snackbar--stacked) .md-snackbar__action {
+  justify-self: end;
+}
+
+.md-snackbar__action ::slotted(*) {
+  --md-button-foreground-color: var(--md-snackbar-action-color);
+  --md-button-pressed-state-color: color-mix(
+    in oklch,
+    var(--md-snackbar-action-color) 12%,
+    transparent
+  );
+  color: var(--md-snackbar-action-color);
+}
+
+.md-snackbar__close {
+  grid-area: close;
+  --md-icon-button-foreground-color: var(--md-snackbar-icon-color);
+  --md-icon-button-pressed-state-color: color-mix(
+    in oklch,
+    var(--md-snackbar-icon-color) 12%,
+    transparent
+  );
+  margin-block: -0.5rem;
+  margin-inline-start: 0.25rem;
+}

@@ -31,6 +31,7 @@ This is `@symblight/wc-material` — a Material Design 3 web components library 
 - CSS files are imported with the `?inline` query (`import styles from "./button.css?inline"`) — `rollup-plugin-postcss-lit` transforms them into Lit `CSSResult` objects
 - Multiple CSS files per component are merged in `static get styles()` (e.g. button has per-variant CSS files: `filled-button.css`, `outlined-button.css`, etc.)
 - Storybook stories live in `components/<name>/stories/`; tests in `components/<name>/__tests__/`
+- Private fields and methods use native `#name`, never `_name`. This includes internal render state (e.g. "slot has content" flags): store it in a `#field` and call `this.requestUpdate()` when it changes, instead of declaring a `_name: { state: true }` reactive property
 
 ### Base classes and shared primitives
 
