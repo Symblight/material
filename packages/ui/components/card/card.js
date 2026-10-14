@@ -23,13 +23,6 @@ import outlinedStyles from "./outlined-card.css?inline";
  */
 @customElement("md-card")
 export class MdCard extends LitElement {
-  /**
-   * Tracks all elements currently slotted into the card so we can attach and
-   * remove pointer-enter/leave listeners as slot content changes.
-   * @type {Set<Element>}
-   */
-  #slottedChildren = new Set();
-
   /** @type {import("lit").PropertyDeclarations} */
   static properties = {
     /** Visual style of the card. Controls background colour, shadow, and border. */
@@ -72,13 +65,6 @@ export class MdCard extends LitElement {
     this.href = undefined;
   }
 
-  /** @returns {import("../ripple/ripple.js").default | undefined} */
-  get rippleEl() {
-    return /** @type {import("../ripple/ripple.js").default | undefined} */ (
-      this.renderRoot?.querySelector("md-ripple") ?? undefined
-    );
-  }
-
   /** @returns {import("lit/directive.js").DirectiveResult<typeof import("lit/directives/class-map.js").ClassMapDirective>} */
   get classes() {
     return classMap({
@@ -88,87 +74,15 @@ export class MdCard extends LitElement {
     });
   }
 
-  /**
-   * Unified pointer event handler.
-   *
-   * Handles events coming from:
-   *  - the host element itself (pointerenter/leave/down/up bubbled from the
-   *    host boundary for real pointer movement)
-   *  - each slotted child element (pointerenter/leave attached directly because
-   *    these events are non-bubbling and do not reach the host when only the
-   *    child is entered)
-   * @param {Event} event
-   */
-  handleEvent(event) {
-    if (!this.interactive || this.disabled) return;
-    const ripple = this.rippleEl;
-    if (!ripple) return;
-    ripple.handleEvent(event);
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    // pointerenter/leave must be on the host to catch events at the card boundary.
-    // pointerdown/up bubble so host-level capture is sufficient.
-    this.addEventListener("pointerenter", this);
-    this.addEventListener("pointerleave", this);
-    this.addEventListener("pointerdown", this);
-    this.addEventListener("pointerup", this);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener("pointerenter", this);
-    this.removeEventListener("pointerleave", this);
-    this.removeEventListener("pointerdown", this);
-    this.removeEventListener("pointerup", this);
-    // Clean up any lingering slotted-child listeners.
-    for (const child of this.#slottedChildren) {
-      child.removeEventListener("pointerenter", this);
-      child.removeEventListener("pointerleave", this);
-    }
-    this.#slottedChildren.clear();
-  }
-
-  /**
-   * Called whenever the content of any slot changes.  We attach pointerenter
-   * and pointerleave directly to each slotted element because those events are
-   * non-bubbling: a `pointerenter` fired on a slotted child does not propagate
-   * to the host element, so the host-level listener would never see it.
-   * @param {Event} event
-   */
-  #onSlotChange(event) {
-    const slot = /** @type {HTMLSlotElement} */ (event.target);
-    const assigned = slot.assignedElements({ flatten: true });
-
-    // Remove listeners from elements that are no longer slotted.
-    for (const child of this.#slottedChildren) {
-      if (!assigned.includes(child)) {
-        child.removeEventListener("pointerenter", this);
-        child.removeEventListener("pointerleave", this);
-        this.#slottedChildren.delete(child);
-      }
-    }
-
-    // Add listeners to newly slotted elements.
-    for (const child of assigned) {
-      if (!this.#slottedChildren.has(child)) {
-        child.addEventListener("pointerenter", this);
-        child.addEventListener("pointerleave", this);
-        this.#slottedChildren.add(child);
-      }
-    }
-  }
-
   renderSlots() {
     return html`
       <div part="content" class="md-card__content">
         <div part="media" class="md-card__media">
-          <slot name="media" @slotchange=${this.#onSlotChange}></slot>
+          <slot name="media"></slot>
         </div>
-        <slot name="header" @slotchange=${this.#onSlotChange}></slot>
-        <slot @slotchange=${this.#onSlotChange}></slot>
-        <slot name="actions" @slotchange=${this.#onSlotChange}></slot>
+        <slot name="header"></slot>
+        <slot></slot>
+        <slot name="actions"></slot>
       </div>
     `;
   }
@@ -204,7 +118,9 @@ export class MdCard extends LitElement {
       <md-shadow></md-shadow>
       ${when(
         this.interactive && !this.disabled,
-        () => html`<md-ripple for="card-surface"></md-ripple>`,
+        // No `for`: a ripple directly in the shadow root attaches to the
+        // host, which sees pointer events from slotted content too.
+        () => html`<md-ripple></md-ripple>`,
       )}
       ${this.renderSurface()} ${this.renderSlots()}
     `;

@@ -17,9 +17,13 @@ export class HTMLForController {
   /**
    * @param {ReactiveControllerHost} host
    * @param {(prev: HTMLElement | null, next: HTMLElement | null) => void} onControlChange
+   * @param {{ fallback?: () => HTMLElement | null }} [options]
+   *   `fallback` resolves the control when the host has no `for` attribute.
+   *   Without it, the host's root node is used.
    */
-  constructor(host, onControlChange) {
+  constructor(host, onControlChange, { fallback } = {}) {
     this.onControlChange = onControlChange;
+    this.fallback = fallback;
     (this.host = host).addController(this);
   }
 
@@ -34,6 +38,8 @@ export class HTMLForController {
         ).getRootNode()
       );
       this.setCurrentControl(root.getElementById(forAttribute));
+    } else if (this.fallback) {
+      this.setCurrentControl(this.fallback());
     } else {
       const target = /** @type {HTMLElement} */ (
         /** @type {unknown} */ (this.host)

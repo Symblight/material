@@ -361,8 +361,23 @@ describe("md-snackbar", () => {
       expect(cs.color).to.equal("rgb(200, 210, 220)");
       expect(cs.borderTopLeftRadius).to.equal("4px");
       expect(
-        getComputedStyle(el).getPropertyValue("--md-elevation-level").trim(),
+        el.shadowRoot.querySelector("md-shadow")?.getAttribute("level"),
       ).to.equal("3");
+    });
+
+    it("does not leak its elevation into slotted content", async () => {
+      const el = /** @type {MdSnackbar} */ (
+        await fixture(html`
+          <md-snackbar>
+            x
+            <span slot="action" id="action">Undo</span>
+          </md-snackbar>
+        `)
+      );
+      const action = /** @type {HTMLElement} */ (el.querySelector("#action"));
+      expect(
+        getComputedStyle(action).getPropertyValue("--md-elevation-level"),
+      ).to.equal("");
     });
 
     it("typography maps to body-medium (14px/20px)", async () => {

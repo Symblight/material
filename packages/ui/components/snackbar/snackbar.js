@@ -43,7 +43,6 @@ import styles from "./snackbar.css?inline";
  * @cssprop --md-snackbar-text-line-height - Supporting text line height.
  * @cssprop --md-snackbar-text-weight - Supporting text font weight.
  * @cssprop --md-snackbar-text-tracking - Supporting text letter spacing.
- * @cssprop --md-elevation-level - Container elevation (default 3).
  */
 @customElement("md-snackbar")
 export class MdSnackbar extends LitElement {
@@ -115,7 +114,7 @@ export class MdSnackbar extends LitElement {
         role="status"
         aria-live="polite"
       >
-        <md-shadow></md-shadow>
+        <md-shadow level="3"></md-shadow>
         <div part="text" class="md-snackbar__text"><slot></slot></div>
         <div
           part="action"

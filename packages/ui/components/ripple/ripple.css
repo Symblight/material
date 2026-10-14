@@ -29,10 +29,13 @@
   content: "";
   position: absolute;
   opacity: 0;
-  inset: 0;
 }
 
+/* No `inset` here: the animation positions and sizes ::after via
+   top/left/width/height, and a competing right/bottom would win in RTL. */
 .surface::after {
+  top: 0;
+  left: 0;
   background: radial-gradient(
     closest-side,
     var(--md-ripple-pressed-color) max(100% - 4.375rem, 65%),
@@ -46,7 +49,7 @@
   opacity: var(--md-ripple-hover-opacity, 0.08);
 }
 
-.surface_pressed:after {
+.surface_pressed::after {
   opacity: var(--md-ripple-pressed-opacity, 0.12);
   transition-duration: 105ms;
 }

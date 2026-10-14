@@ -61,14 +61,6 @@
   background-color: var(--md-menu-surface-color);
 }
 
-/* Scoped to md-shadow itself, not the card wrapper — custom properties
-   inherit across the flat tree, so declaring this on the wrapper would leak
-   into ::slotted menu items (e.g. one containing its own md-shadow-using
-   element with no elevation level of its own to override it with). */
-.md-menu__card > md-shadow {
-  --md-elevation-level: 2;
-}
-
 :host([variant="vibrant"]) .md-menu__card {
   background-color: var(--md-menu-vibrant-surface-color);
 }

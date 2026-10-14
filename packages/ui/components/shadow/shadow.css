@@ -1,5 +1,27 @@
+/* Decorative only: never intercept pointer input aimed at sibling content. */
 :host {
-  --md-shadow-color: #000;
+  pointer-events: none;
+  /* Reset so a same-named value can never inherit in from outside. */
+  --_shadow-level-attr: initial;
+}
+
+:host([level="0"]) {
+  --_shadow-level-attr: 0;
+}
+:host([level="1"]) {
+  --_shadow-level-attr: 1;
+}
+:host([level="2"]) {
+  --_shadow-level-attr: 2;
+}
+:host([level="3"]) {
+  --_shadow-level-attr: 3;
+}
+:host([level="4"]) {
+  --_shadow-level-attr: 4;
+}
+:host([level="5"]) {
+  --_shadow-level-attr: 5;
 }
 
 :host,
@@ -9,17 +31,24 @@
   border-radius: inherit;
   inset: 0;
   position: absolute;
-  transition-duration: inherit;
-  transition-property: inherit;
-  transition-timing-function: inherit;
-  transition-duration: 280ms;
 }
 
 .shadow::before,
 .shadow::after {
   content: "";
-  --_shadow-level: var(--md-elevation-level);
-  --_shadow-color: var(--md-shadow-color);
+  --_shadow-level: var(--_shadow-level-attr, var(--md-elevation-level));
+  /* No default on :host, so --md-shadow-color set on an ancestor inherits. */
+  --_shadow-color: var(--md-shadow-color, var(--md-sys-color-shadow, #000));
+  transition-property: box-shadow;
+  transition-duration: 280ms;
+  transition-timing-function: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shadow::before,
+  .shadow::after {
+    transition-duration: 0s;
+  }
 }
 
 .shadow::before {

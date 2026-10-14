@@ -19,8 +19,6 @@
     0.016rem
   );
 
-  --md-elevation-level: 3;
-
   display: block;
   min-inline-size: var(--md-snackbar-min-inline-size);
   max-inline-size: var(--md-snackbar-max-inline-size);
@@ -28,8 +26,6 @@
 }
 
 .md-snackbar {
-  --md-elevation-level: inherit;
-
   position: relative;
   box-sizing: border-box;
   display: grid;

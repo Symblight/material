@@ -51,13 +51,34 @@ import "@symblight/wc-material/text-field";
 | Menu                | `@symblight/wc-material/menu`              | `<md-menu>`, `<md-menu-item>`, `<md-menu-group>`, `<md-item-group>`               | [README](./components/menu/README.md)              |
 | Progress (circular) | `@symblight/wc-material/progress-circular` | `<md-progress-circular>`                                                          | [README](./components/progress-circular/README.md) |
 | Progress (linear)   | `@symblight/wc-material/progress-linear`   | `<md-progress-linear>`                                                            | [README](./components/progress-linear/README.md)   |
-| Radio Button        | `@symblight/wc-material/radio-button`      | `<md-radio-button>`                                                               | [README](./components/radio-button/README.md)      |
-| Segmented Button    | `@symblight/wc-material`                   | `<md-segmented-button-group>`, `<md-segmented-button>`                            | [README](./components/segmented-button/README.md)  |
+| Radio Button        | `@symblight/wc-material/radio-button`      | `<md-radio>`                                                                      | [README](./components/radio-button/README.md)      |
+| Ripple              | `@symblight/wc-material/ripple`            | `<md-ripple>`                                                                     | [Primitives](#primitives)                          |
+| Segmented Button    | `@symblight/wc-material/segmented-button`  | `<md-segmented-button-group>`, `<md-segmented-button>`                            | [README](./components/segmented-button/README.md)  |
 | Select              | `@symblight/wc-material/select`            | `<md-select>`                                                                     | [README](./components/select/README.md)            |
+| Shadow              | `@symblight/wc-material/shadow`            | `<md-shadow>`                                                                     | [Primitives](#primitives)                          |
 | Skeleton            | `@symblight/wc-material/skeleton`          | `<md-skeleton>`                                                                   | [README](./components/skeleton/README.md)          |
+| Snackbar            | `@symblight/wc-material/snackbar`          | `<md-snackbar>`                                                                   | [README](./components/snackbar/README.md)          |
 | Switch              | `@symblight/wc-material/switch`            | `<md-switch>`                                                                     | [README](./components/switch/README.md)            |
+| Tabs                | `@symblight/wc-material/tabs`              | `<md-tabs>`, `<md-tab>`, `<md-tab-panel>`                                         | —                                                  |
 | Text Field          | `@symblight/wc-material/text-field`        | `<md-text-field>`                                                                 | [README](./components/text-field/README.md)        |
 | Tooltip             | `@symblight/wc-material/tooltip`           | `<md-tooltip>`, `<md-rich-tooltip>`                                               | [README](./components/tooltip/README.md)           |
+
+`@symblight/wc-material/tab` and `@symblight/wc-material/tab-panel` load a single tab element on its own.
+
+### Primitives
+
+`md-ripple` and `md-shadow` are the building blocks the components above use internally. They are exported for building your own interactive surfaces.
+
+```html
+<div class="my-surface" style="position: relative; border-radius: 12px">
+  <md-shadow level="2"></md-shadow>
+  <md-ripple></md-ripple>
+  Content
+</div>
+```
+
+- **`md-ripple`** fills its positioned container and shows MD3 hover and press state layers. It attaches to the element named by `for` (an id in the same root), or to its parent element when `for` is omitted (the shadow host when it sits directly in a shadow root). It ignores events while the control is `disabled`. Colors and opacities: `--md-ripple-hover-color`, `--md-ripple-pressed-color`, `--md-ripple-hover-opacity`, `--md-ripple-pressed-opacity`.
+- **`md-shadow`** paints the MD3 elevation shadow for its positioned container and never intercepts pointer input. Set the elevation with `level="0"`–`"5"`, or let it inherit `--md-elevation-level`; `level` wins when both are present. Color: `--md-shadow-color`, falling back to `--md-sys-color-shadow`.
 
 ### Theme
 

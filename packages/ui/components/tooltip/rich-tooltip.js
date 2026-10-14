@@ -71,7 +71,7 @@ export class MdRichTooltip extends BaseTooltip {
   render() {
     return html`
       <div class="md-rich-tooltip__card" part="surface">
-        <md-shadow></md-shadow>
+        <md-shadow level="2"></md-shadow>
         <div class="md-rich-tooltip__subhead" part="subhead">
           <slot name="subhead"></slot>
         </div>

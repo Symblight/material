@@ -261,21 +261,20 @@ Only the close icon button dispatches `close`. Clicks on a slotted action are or
 
 ### CSS Custom Properties
 
-| Property                              | Default                                                    | Description                              |
-| ------------------------------------- | ---------------------------------------------------------- | ---------------------------------------- |
-| `--md-snackbar-container-color`       | `var(--md-sys-color-inverse-surface)`                      | Container background color               |
-| `--md-snackbar-supporting-text-color` | `var(--md-sys-color-inverse-on-surface)`                   | Supporting text color                    |
-| `--md-snackbar-action-color`          | `var(--md-sys-color-inverse-primary)`                      | Slotted action label color               |
-| `--md-snackbar-icon-color`            | `var(--md-sys-color-inverse-on-surface)`                   | Close icon color                         |
-| `--md-snackbar-shape`                 | `var(--md-sys-shape-corner-extra-small, 0.25rem)`          | Container corner radius                  |
-| `--md-snackbar-min-inline-size`       | `21.5rem` (344dp)                                          | Minimum width                            |
-| `--md-snackbar-max-inline-size`       | `42rem` (672dp)                                            | Maximum width                            |
-| `--md-snackbar-text-font`             | `var(--md-sys-typescale-body-medium-font, inherit)`        | Supporting text font family              |
-| `--md-snackbar-text-size`             | `var(--md-sys-typescale-body-medium-size, 0.875rem)`       | Supporting text font size                |
-| `--md-snackbar-text-line-height`      | `var(--md-sys-typescale-body-medium-line-height, 1.25rem)` | Supporting text line height              |
-| `--md-snackbar-text-weight`           | `var(--md-sys-typescale-body-medium-weight, 400)`          | Supporting text font weight              |
-| `--md-snackbar-text-tracking`         | `var(--md-sys-typescale-body-medium-tracking, 0.016rem)`   | Supporting text letter spacing           |
-| `--md-elevation-level`                | `3`                                                        | Shadow elevation level (via `md-shadow`) |
+| Property                              | Default                                                    | Description                    |
+| ------------------------------------- | ---------------------------------------------------------- | ------------------------------ |
+| `--md-snackbar-container-color`       | `var(--md-sys-color-inverse-surface)`                      | Container background color     |
+| `--md-snackbar-supporting-text-color` | `var(--md-sys-color-inverse-on-surface)`                   | Supporting text color          |
+| `--md-snackbar-action-color`          | `var(--md-sys-color-inverse-primary)`                      | Slotted action label color     |
+| `--md-snackbar-icon-color`            | `var(--md-sys-color-inverse-on-surface)`                   | Close icon color               |
+| `--md-snackbar-shape`                 | `var(--md-sys-shape-corner-extra-small, 0.25rem)`          | Container corner radius        |
+| `--md-snackbar-min-inline-size`       | `21.5rem` (344dp)                                          | Minimum width                  |
+| `--md-snackbar-max-inline-size`       | `42rem` (672dp)                                            | Maximum width                  |
+| `--md-snackbar-text-font`             | `var(--md-sys-typescale-body-medium-font, inherit)`        | Supporting text font family    |
+| `--md-snackbar-text-size`             | `var(--md-sys-typescale-body-medium-size, 0.875rem)`       | Supporting text font size      |
+| `--md-snackbar-text-line-height`      | `var(--md-sys-typescale-body-medium-line-height, 1.25rem)` | Supporting text line height    |
+| `--md-snackbar-text-weight`           | `var(--md-sys-typescale-body-medium-weight, 400)`          | Supporting text font weight    |
+| `--md-snackbar-text-tracking`         | `var(--md-sys-typescale-body-medium-tracking, 0.016rem)`   | Supporting text letter spacing |
 
 ---
 
