@@ -896,7 +896,7 @@ export class MdMenu extends LitElement {
         ${segments.map(
           (i) => html`
             <div class="md-menu__card" part="surface">
-              <md-shadow></md-shadow>
+              <md-shadow level="2"></md-shadow>
               <div class="md-menu__segment">
                 <slot name="seg-${i}"></slot>
               </div>

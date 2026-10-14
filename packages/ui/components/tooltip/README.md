@@ -204,23 +204,22 @@ The `subhead` and `actions` rows are hidden entirely (no reserved space) when no
 
 ### CSS Custom Properties
 
-| Property                                        | Default                                                    | Description                              |
-| ----------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------- |
-| `--md-rich-tooltip-container-color`             | `var(--md-sys-color-surface-container)`                    | Card background color                    |
-| `--md-rich-tooltip-subhead-color`               | `var(--md-sys-color-on-surface)`                           | Subhead text color                       |
-| `--md-rich-tooltip-supporting-text-color`       | `var(--md-sys-color-on-surface-variant)`                   | Body text color                          |
-| `--md-rich-tooltip-shape`                       | `var(--md-sys-shape-corner-medium, 0.75rem)`               | Corner radius                            |
-| `--md-rich-tooltip-min-width`                   | `12.5rem` (200dp)                                          | Minimum inline size of the surface       |
-| `--md-rich-tooltip-max-width`                   | `20rem` (320dp)                                            | Maximum inline size of the surface       |
-| `--md-rich-tooltip-subhead-font`                | `var(--md-sys-typescale-title-small-font, inherit)`        | Subhead font family                      |
-| `--md-rich-tooltip-subhead-size`                | `var(--md-sys-typescale-title-small-size, 0.875rem)`       | Subhead font size                        |
-| `--md-rich-tooltip-subhead-line-height`         | `var(--md-sys-typescale-title-small-line-height, 1.25rem)` | Subhead line height                      |
-| `--md-rich-tooltip-subhead-weight`              | `var(--md-sys-typescale-title-small-weight, 500)`          | Subhead font weight                      |
-| `--md-rich-tooltip-supporting-text-font`        | `var(--md-sys-typescale-body-medium-font, inherit)`        | Body font family                         |
-| `--md-rich-tooltip-supporting-text-size`        | `var(--md-sys-typescale-body-medium-size, 0.875rem)`       | Body font size                           |
-| `--md-rich-tooltip-supporting-text-line-height` | `var(--md-sys-typescale-body-medium-line-height, 1.25rem)` | Body line height                         |
-| `--md-rich-tooltip-supporting-text-weight`      | `var(--md-sys-typescale-body-medium-weight, 400)`          | Body font weight                         |
-| `--md-elevation-level`                          | `2` (set on `.md-rich-tooltip__card`)                      | Shadow elevation level (via `md-shadow`) |
+| Property                                        | Default                                                    | Description                        |
+| ----------------------------------------------- | ---------------------------------------------------------- | ---------------------------------- |
+| `--md-rich-tooltip-container-color`             | `var(--md-sys-color-surface-container)`                    | Card background color              |
+| `--md-rich-tooltip-subhead-color`               | `var(--md-sys-color-on-surface)`                           | Subhead text color                 |
+| `--md-rich-tooltip-supporting-text-color`       | `var(--md-sys-color-on-surface-variant)`                   | Body text color                    |
+| `--md-rich-tooltip-shape`                       | `var(--md-sys-shape-corner-medium, 0.75rem)`               | Corner radius                      |
+| `--md-rich-tooltip-min-width`                   | `12.5rem` (200dp)                                          | Minimum inline size of the surface |
+| `--md-rich-tooltip-max-width`                   | `20rem` (320dp)                                            | Maximum inline size of the surface |
+| `--md-rich-tooltip-subhead-font`                | `var(--md-sys-typescale-title-small-font, inherit)`        | Subhead font family                |
+| `--md-rich-tooltip-subhead-size`                | `var(--md-sys-typescale-title-small-size, 0.875rem)`       | Subhead font size                  |
+| `--md-rich-tooltip-subhead-line-height`         | `var(--md-sys-typescale-title-small-line-height, 1.25rem)` | Subhead line height                |
+| `--md-rich-tooltip-subhead-weight`              | `var(--md-sys-typescale-title-small-weight, 500)`          | Subhead font weight                |
+| `--md-rich-tooltip-supporting-text-font`        | `var(--md-sys-typescale-body-medium-font, inherit)`        | Body font family                   |
+| `--md-rich-tooltip-supporting-text-size`        | `var(--md-sys-typescale-body-medium-size, 0.875rem)`       | Body font size                     |
+| `--md-rich-tooltip-supporting-text-line-height` | `var(--md-sys-typescale-body-medium-line-height, 1.25rem)` | Body line height                   |
+| `--md-rich-tooltip-supporting-text-weight`      | `var(--md-sys-typescale-body-medium-weight, 400)`          | Body font weight                   |
 
 `--md-tooltip-z-index` (from `base-tooltip.css`, shared with `md-tooltip`) also applies to `md-rich-tooltip`'s stacking order for `fixed`/`absolute`/`document` positioning.
 

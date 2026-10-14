@@ -1,7 +1,7 @@
 {
   "name": "@symblight/wc-material",
   "private": false,
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Material Design 3 web components library built with Lit",
   "author": "Aleksei Tkachenko <leshtkachenko@gmail.com>",
   "license": "MIT",
@@ -43,6 +43,7 @@
     "**/*.scss",
     "**/*.css",
     "**/*.css.map",
+    "CHANGELOG.md",
     "!web-test-runner.config.js",
     "!eslint.config.js",
     "!.storybook/**",
@@ -157,6 +158,14 @@
     "./segmented-button": {
       "import": "./dist/segmented-button/index.js",
       "types": "./dist/segmented-button/index.d.ts"
+    },
+    "./ripple": {
+      "types": "./dist/ripple/ripple.d.ts",
+      "import": "./dist/ripple/ripple2.js"
+    },
+    "./shadow": {
+      "types": "./dist/shadow/shadow.d.ts",
+      "import": "./dist/shadow/shadow2.js"
     },
     "./theme/theme.css": "./dist/theme.css"
   },

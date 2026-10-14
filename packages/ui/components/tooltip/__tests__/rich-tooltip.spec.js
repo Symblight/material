@@ -38,7 +38,9 @@ describe("md-rich-tooltip", () => {
         await fixture(html`<md-rich-tooltip>Body</md-rich-tooltip>`)
       );
       expect(el.shadowRoot.querySelector(".md-rich-tooltip__card")).to.exist;
-      expect(el.shadowRoot.querySelector("md-shadow")).to.exist;
+      expect(
+        el.shadowRoot.querySelector("md-shadow")?.getAttribute("level"),
+      ).to.equal("2");
       expect(el.shadowRoot.querySelector('slot[name="subhead"]')).to.exist;
       expect(el.shadowRoot.querySelector("slot:not([name])")).to.exist;
       expect(el.shadowRoot.querySelector('slot[name="actions"]')).to.exist;

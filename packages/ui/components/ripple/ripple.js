@@ -6,54 +6,76 @@ import { HTMLForController } from "../html-for-controller/html-for-controller.js
 
 import styles from "./ripple.css?inline";
 
+const POINTER_EVENTS = /** @type {const} */ ([
+  "pointerdown",
+  "pointerup",
+  "pointercancel",
+  "pointerenter",
+  "pointerleave",
+]);
+
 /**
  * @tag md-ripple
  * @summary Material Ripple web component
+ *
+ * Attaches to the element referenced by `for` (resolved in the same root).
+ * Without `for`, it attaches to its parent element, or to the shadow host
+ * when it sits directly in a shadow root.
  */
 @customElement("md-ripple")
 export default class MdRipple extends LitElement {
-  /** @type {import("lit").PropertyDeclarations} */
-  static properties = {
-    pressed: { state: true },
-    hovered: { state: true },
-    rippleAnimation: { state: true },
-  };
-
   /** @returns {import("lit").CSSResultGroup} */
   static get styles() {
     return [styles];
   }
 
+  #pressed = false;
+
+  #hovered = false;
+
+  /** @type {Animation | undefined} */
+  #rippleAnimation;
+
   constructor() {
     super();
 
-    this.myController = new HTMLForController(
-      this,
-      this.onControlChange.bind(this),
-    );
-
-    /** @type {boolean} */
-    this.pressed = false;
-
-    /** @type {boolean} */
-    this.hovered = false;
-
-    /** @type {Animation | undefined} */
-    this.rippleAnimation = undefined;
+    new HTMLForController(this, this.#onControlChange, {
+      fallback: () => this.#defaultControl(),
+    });
   }
 
-  /** @returns {HTMLDivElement | undefined} */
-  get mdSurfaceEl() {
-    return this.renderRoot?.querySelector("div") ?? undefined;
+  /** @returns {HTMLDivElement | null} */
+  get #surface() {
+    return this.renderRoot?.querySelector("div") ?? null;
   }
 
-  /**
-   * @private
-   * @param {MouseEvent} event
-   */
-  createRipple(event) {
-    this.pressed = true;
-    this.rippleAnimation?.cancel();
+  /** @returns {HTMLElement | null} */
+  #defaultControl() {
+    if (this.parentElement) return this.parentElement;
+    const root = this.getRootNode();
+    return root instanceof ShadowRoot
+      ? /** @type {HTMLElement} */ (root.host)
+      : null;
+  }
+
+  /** @param {boolean} value */
+  #setPressed(value) {
+    if (this.#pressed === value) return;
+    this.#pressed = value;
+    this.requestUpdate();
+  }
+
+  /** @param {boolean} value */
+  #setHovered(value) {
+    if (this.#hovered === value) return;
+    this.#hovered = value;
+    this.requestUpdate();
+  }
+
+  /** @param {PointerEvent} event */
+  #createRipple(event) {
+    this.#setPressed(true);
+    this.#rippleAnimation?.cancel();
     const rect = this.getBoundingClientRect();
     const size = Math.max(rect.width, rect.height);
     const INITIAL_ORIGIN_SCALE = 0.2;
@@ -63,7 +85,6 @@ export default class MdRipple extends LitElement {
     const maxRadius = hypotenuse + 10;
     const rippleScale = `${(maxRadius + softEdgeSize) / initialSize}`;
     const rippleSize = `${initialSize}px`;
-    const rippleSize2 = `${initialSize}px`;
     // Calculate the translation offsets to center the ripple at the click position
     const translateX = event.clientX - rect.left - initialSize / 2;
     const translateY = event.clientY - rect.top - initialSize / 2;
@@ -77,12 +98,12 @@ export default class MdRipple extends LitElement {
       x: translateX,
       y: translateY,
     };
-    this.rippleAnimation = this.mdSurfaceEl?.animate(
+    this.#rippleAnimation = this.#surface?.animate(
       {
         top: [0, 0],
         left: [0, 0],
-        height: [rippleSize, rippleSize2],
-        width: [rippleSize, rippleSize2],
+        height: [rippleSize, rippleSize],
+        width: [rippleSize, rippleSize],
         transform: [
           `translate(${startPoint.x}px, ${startPoint.y}px) scale(1)`,
           `translate(${endPoint.x}px, ${endPoint.y}px) scale(${rippleScale})`,
@@ -97,59 +118,57 @@ export default class MdRipple extends LitElement {
     );
   }
 
-  endRipple = () => {
-    this.pressed = false;
-  };
-
   render() {
     return html`
       <div
         class="surface ${classMap({
-          ["surface_pressed"]: this.pressed,
-          ["surface_hovered"]: this.hovered,
+          ["surface_pressed"]: this.#pressed,
+          ["surface_hovered"]: this.#hovered,
         })}"
       ></div>
     `;
   }
 
   /** @param {Event} event */
-  async handleEvent(event) {
+  #handlePointer = (event) => {
+    const pointerEvent = /** @type {PointerEvent} */ (event);
     /** @type {HTMLElement & { disabled?: boolean }} */
     const control = /** @type {any} */ (event.currentTarget);
     if (control?.disabled) return;
 
-    if (event.type === "pointerdown") {
-      this.createRipple(/** @type {MouseEvent} */ (event));
+    switch (pointerEvent.type) {
+      case "pointerdown":
+        // Only the primary button (left mouse, touch contact, pen tip).
+        if (pointerEvent.button !== 0) return;
+        this.#createRipple(pointerEvent);
+        break;
+      case "pointerup":
+      case "pointercancel":
+        this.#setPressed(false);
+        break;
+      case "pointerenter":
+        this.#setHovered(true);
+        break;
+      case "pointerleave":
+        // Releasing outside the control never fires `pointerup` on it.
+        this.#setPressed(false);
+        this.#setHovered(false);
+        break;
     }
-
-    if (event.type === "pointerup") {
-      this.endRipple();
-    }
-
-    if (event.type === "pointerenter") {
-      this.hovered = true;
-    }
-
-    if (event.type === "pointerleave") {
-      this.hovered = false;
-    }
-  }
+  };
 
   /**
-   * @private
    * @param {HTMLElement | null} prev
    * @param {HTMLElement | null} next
    */
-  onControlChange(prev, next) {
-    if (prev) {
-      prev.removeEventListener("pointerup", this);
-      prev.removeEventListener("pointerdown", this);
-      prev.removeEventListener("pointerenter", this);
-      prev.removeEventListener("pointerleave", this);
+  #onControlChange = (prev, next) => {
+    for (const type of POINTER_EVENTS) {
+      prev?.removeEventListener(type, this.#handlePointer);
+      next?.addEventListener(type, this.#handlePointer);
     }
-    next?.addEventListener("pointerup", this);
-    next?.addEventListener("pointerdown", this);
-    next?.addEventListener("pointerenter", this);
-    next?.addEventListener("pointerleave", this);
-  }
+    if (!next) {
+      this.#setPressed(false);
+      this.#setHovered(false);
+    }
+  };
 }

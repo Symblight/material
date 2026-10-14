@@ -57,10 +57,6 @@
   padding: 0.75rem 1rem;
 }
 
-.md-rich-tooltip__card > md-shadow {
-  --md-elevation-level: 2;
-}
-
 .md-rich-tooltip__subhead {
   position: relative;
   z-index: 1;

@@ -1,4 +1,5 @@
 import { expect, fixture, html } from "@open-wc/testing";
+import { resetMouse, sendMouse } from "@web/test-runner-commands";
 
 import "../card.js";
 /** @import {MdCard} from "../card.js" */
@@ -628,14 +629,17 @@ describe("md-card", () => {
 
   // ─── Regression: Bug 3 — State layer triggers from slotted children ──────────
   //
-  // FAILS today because pointerenter/pointerleave are non-bubbling events.
-  // Listeners registered on #card-surface never see events originating on
-  // slotted (light-DOM) children.  The fix attaches the ripple or its pointer
-  // listeners to the host element instead, where composed-path events from
-  // slotted children do surface.
+  // The ripple sits directly in the shadow root with no `for`, so it attaches
+  // to the host. Real pointer input over a slotted child fires
+  // pointerenter/down/up on the host too, so slotted content drives the state
+  // layer. Driven with a real mouse: synthetic non-bubbling events on the
+  // child alone are not what a browser dispatches.
 
   describe("Bug 3 — interactive states respond to events on slotted children", () => {
-    it("pointerenter on a slotted child sets md-ripple to hovered", async () => {
+    afterEach(() => resetMouse());
+
+    /** @returns {Promise<{ el: MdCard, ripple: MdRipple, child: HTMLElement }>} */
+    async function setup() {
       const el = /** @type {MdCard} */ (
         await fixture(
           html`<md-card interactive><p id="child">Text</p></md-card>`,
@@ -645,95 +649,60 @@ describe("md-card", () => {
       const ripple = /** @type {MdRipple} */ (
         el.shadowRoot.querySelector("md-ripple")
       );
+      await ripple.updateComplete;
+      return { el, ripple, child };
+    }
 
-      child.dispatchEvent(
-        new PointerEvent("pointerenter", { bubbles: false, composed: true }),
-      );
-      // Allow any microtask/Lit update to settle.
-      await el.updateComplete;
+    /** @param {Element} target */
+    function centerOf(target) {
+      const r = target.getBoundingClientRect();
+      return /** @type {[number, number]} */ ([
+        Math.round(r.left + r.width / 2),
+        Math.round(r.top + r.height / 2),
+      ]);
+    }
 
-      // Fails today: ripple.hovered stays false because the listener is on
-      // #card-surface which never sees a non-bubbling pointerenter from a
-      // slotted child.
-      expect(ripple.hovered).to.be.true;
+    /** @param {MdRipple} ripple @param {string} cls */
+    function hasSurfaceClass(ripple, cls) {
+      return ripple.shadowRoot.querySelector("div").classList.contains(cls);
+    }
+
+    it("hovering a slotted child sets md-ripple to hovered", async () => {
+      const { ripple, child } = await setup();
+      await sendMouse({ type: "move", position: centerOf(child) });
+      await ripple.updateComplete;
+      expect(hasSurfaceClass(ripple, "surface_hovered")).to.be.true;
     });
 
-    it("pointerleave on the host sets md-ripple hovered to false", async () => {
-      const el = /** @type {MdCard} */ (
-        await fixture(
-          html`<md-card interactive><p id="child">Text</p></md-card>`,
-        )
-      );
-      const ripple = /** @type {MdRipple} */ (
-        el.shadowRoot.querySelector("md-ripple")
-      );
-
-      // Simulate enter then leave at the host boundary.
-      el.dispatchEvent(
-        new PointerEvent("pointerenter", { bubbles: false, composed: true }),
-      );
-      await el.updateComplete;
-
-      el.dispatchEvent(
-        new PointerEvent("pointerleave", { bubbles: false, composed: true }),
-      );
-      await el.updateComplete;
-
-      expect(ripple.hovered).to.be.false;
+    it("leaving the card clears md-ripple hovered", async () => {
+      const { el, ripple, child } = await setup();
+      await sendMouse({ type: "move", position: centerOf(child) });
+      await ripple.updateComplete;
+      const r = el.getBoundingClientRect();
+      await sendMouse({
+        type: "move",
+        position: [Math.round(r.right + 20), Math.round(r.bottom + 20)],
+      });
+      await ripple.updateComplete;
+      expect(hasSurfaceClass(ripple, "surface_hovered")).to.be.false;
     });
 
-    it("pointerdown on a slotted child sets md-ripple to pressed", async () => {
-      const el = /** @type {MdCard} */ (
-        await fixture(
-          html`<md-card interactive><p id="child">Text</p></md-card>`,
-        )
-      );
-      const child = /** @type {HTMLElement} */ (el.querySelector("#child"));
-      const ripple = /** @type {MdRipple} */ (
-        el.shadowRoot.querySelector("md-ripple")
-      );
-
-      child.dispatchEvent(
-        new PointerEvent("pointerdown", {
-          bubbles: true,
-          composed: true,
-          clientX: 0,
-          clientY: 0,
-        }),
-      );
-      await el.updateComplete;
-
-      // pointerdown bubbles so this may already work; kept as regression guard.
-      expect(ripple.pressed).to.be.true;
+    it("pressing a slotted child sets md-ripple to pressed", async () => {
+      const { ripple, child } = await setup();
+      await sendMouse({ type: "move", position: centerOf(child) });
+      await sendMouse({ type: "down" });
+      await ripple.updateComplete;
+      expect(hasSurfaceClass(ripple, "surface_pressed")).to.be.true;
+      await sendMouse({ type: "up" });
     });
 
-    it("pointerup on a slotted child clears md-ripple pressed state", async () => {
-      const el = /** @type {MdCard} */ (
-        await fixture(
-          html`<md-card interactive><p id="child">Text</p></md-card>`,
-        )
-      );
-      const child = /** @type {HTMLElement} */ (el.querySelector("#child"));
-      const ripple = /** @type {MdRipple} */ (
-        el.shadowRoot.querySelector("md-ripple")
-      );
-
-      child.dispatchEvent(
-        new PointerEvent("pointerdown", {
-          bubbles: true,
-          composed: true,
-          clientX: 0,
-          clientY: 0,
-        }),
-      );
-      await el.updateComplete;
-
-      child.dispatchEvent(
-        new PointerEvent("pointerup", { bubbles: true, composed: true }),
-      );
-      await el.updateComplete;
-
-      expect(ripple.pressed).to.be.false;
+    it("releasing on a slotted child clears md-ripple pressed", async () => {
+      const { ripple, child } = await setup();
+      await sendMouse({ type: "move", position: centerOf(child) });
+      await sendMouse({ type: "down" });
+      await sendMouse({ type: "up" });
+      await ripple.updateComplete;
+      expect(hasSurfaceClass(ripple, "surface_pressed")).to.be.false;
     });
   });
 

@@ -36,6 +36,14 @@ describe("md-menu", () => {
       expect(el.shadowRoot.querySelector(".md-menu__card")).to.exist;
     });
 
+    it("elevates each card with md-shadow level 2", async () => {
+      const el = /** @type {MdMenu} */ (
+        await fixture(html`<md-menu></md-menu>`)
+      );
+      const shadow = el.shadowRoot.querySelector(".md-menu__card > md-shadow");
+      expect(shadow?.getAttribute("level")).to.equal("2");
+    });
+
     it("defaults: placement=bottom-start, offset=4, flip=true, variant=standard, trigger=click", async () => {
       const el = /** @type {MdMenu} */ (
         await fixture(html`<md-menu></md-menu>`)
