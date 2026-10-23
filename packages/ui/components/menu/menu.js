@@ -193,6 +193,7 @@ export class MdMenu extends LitElement {
           : "absolute",
       getUseNativePopover: () => this.#resolvedPositioning === "popover",
       getMatchAnchorWidth: () => this.matchAnchorWidth,
+      getFitAvailableHeight: () => true,
       getAnchorOverride: () => this.anchorElement ?? null,
       onAnchorChange: (next, prev) => this.#onAnchorChange(next, prev),
       onOpenChange: (isOpen) => {

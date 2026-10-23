@@ -51,11 +51,14 @@
   z-index: var(--md-menu-z-index, 1000);
 }
 
+/* Cards and the list shrink to the host's `max-block-size` (set to the space
+   beside the anchor), and the segments scroll instead of overflowing it. */
 .md-menu__card {
   position: relative;
   display: flex;
   flex-direction: column;
   inline-size: 100%;
+  min-block-size: 0;
   max-inline-size: var(--md-menu-max-width);
   border-radius: var(--md-menu-shape);
   background-color: var(--md-menu-surface-color);
@@ -86,6 +89,7 @@
   flex-direction: column;
   gap: 0.125rem;
   flex: 1 1 auto;
+  min-block-size: 0;
 }
 
 .md-menu__segment {

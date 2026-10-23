@@ -36,6 +36,10 @@ import { HTMLForController } from "../html-for-controller/html-for-controller.js
  *   Opt-in: forces the surface's `min-width` to match the reference
  *   element's width on every position computation (e.g. `md-select`'s menu
  *   should be exactly as wide as the trigger).
+ * @property {() => boolean} [getFitAvailableHeight]
+ *   Opt-in: caps the surface's `max-block-size` to the space left on its
+ *   side of the reference, so a tall surface never leaves the viewport
+ *   (`md-menu`, whose items then scroll).
  * @property {() => HTMLElement | null | undefined} [getAnchorOverride]
  *   Explicit reference element taking priority over the `for`-resolved
  *   control (e.g. a submenu anchored to its parent item, not its own `for`).
@@ -264,6 +268,12 @@ export class PopoverPositionController {
     // or not the surface is also a native popover.
     this.#attachLightDismiss();
 
+    // The last opening's cap would make flip() think the surface fits
+    // wherever it opens now.
+    if (this.options.getFitAvailableHeight?.()) {
+      surface.style.removeProperty("max-block-size");
+    }
+
     this.startAutoUpdate();
     await this.updatePosition();
   }
@@ -291,18 +301,24 @@ export class PopoverPositionController {
     const surface = this.options.getSurfaceEl();
     if (!reference || !surface) return;
 
-    const middleware = [
-      offset(this.options.getOffset()),
-      shift({ padding: 8 }),
-    ];
+    // floating-ui's order: flip() picks the side, shift() keeps it in view
+    // along that side, size() measures what's left there.
+    const middleware = [offset(this.options.getOffset())];
     if (this.options.getFlip()) middleware.push(flipMiddleware());
-    if (this.options.getMatchAnchorWidth?.()) {
+    middleware.push(shift({ padding: 8 }));
+    const matchAnchorWidth = this.options.getMatchAnchorWidth?.() ?? false;
+    const fitAvailableHeight = this.options.getFitAvailableHeight?.() ?? false;
+    if (matchAnchorWidth || fitAvailableHeight) {
       middleware.push(
         size({
-          apply: ({ rects }) => {
-            Object.assign(surface.style, {
-              minWidth: `${rects.reference.width}px`,
-            });
+          padding: 8,
+          apply: ({ rects, availableHeight }) => {
+            if (matchAnchorWidth) {
+              surface.style.minWidth = `${rects.reference.width}px`;
+            }
+            if (fitAvailableHeight) {
+              surface.style.maxBlockSize = `${Math.max(0, availableHeight)}px`;
+            }
           },
         }),
       );
