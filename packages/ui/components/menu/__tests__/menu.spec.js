@@ -247,6 +247,87 @@ describe("md-menu", () => {
 
       expect(menu.open).to.be.false;
     });
+
+    describe("fits the space beside its anchor", () => {
+      /**
+       * An open menu of `count` items anchored at a point, like a text
+       * field's `@` picker opened at its caret.
+       * @param {number} count
+       * @param {number} y
+       */
+      const openAtPoint = async (count, y) => {
+        const menu = /** @type {MdMenu} */ (
+          await fixture(html`
+            <md-menu placement="top-start">
+              ${Array.from(
+                { length: count },
+                (_, i) => html`<md-menu-item>Item ${i}</md-menu-item>`,
+              )}
+            </md-menu>
+          `)
+        );
+        menu.openAtPoint(100, y);
+        await tick(300);
+        return menu;
+      };
+
+      /** @param {MdMenu} menu */
+      const segmentOf = (menu) =>
+        /** @type {HTMLElement} */ (
+          menu.shadowRoot.querySelector(".md-menu__segment")
+        );
+
+      for (const ratio of [0.35, 0.5, 0.65]) {
+        it(`stays in the viewport when opened at ${ratio * 100}% of its height, scrolling its items`, async () => {
+          const menu = await openAtPoint(40, innerHeight * ratio);
+
+          const rect = menu.getBoundingClientRect();
+          expect(rect.top).to.be.at.least(0);
+          expect(rect.bottom).to.be.at.most(innerHeight);
+          const segment = segmentOf(menu);
+          expect(segment.scrollHeight).to.be.above(segment.clientHeight);
+        });
+      }
+
+      it("keeps a short menu its own height", async () => {
+        const menu = await openAtPoint(3, innerHeight / 2);
+
+        const segment = segmentOf(menu);
+        expect(segment.scrollHeight).to.equal(segment.clientHeight);
+      });
+
+      it("is not capped to a scrolling ancestor when fixed", async () => {
+        const container = await fixture(html`
+          <div style="block-size: 100px; overflow: auto">
+            <md-menu positioning="fixed" placement="top-start">
+              ${Array.from(
+                { length: 40 },
+                (_, i) => html`<md-menu-item>Item ${i}</md-menu-item>`,
+              )}
+            </md-menu>
+          </div>
+        `);
+        const menu = /** @type {MdMenu} */ (container.querySelector("md-menu"));
+        menu.openAtPoint(100, innerHeight - 20);
+        await tick(300);
+
+        const rect = menu.getBoundingClientRect();
+        expect(rect.height).to.be.above(200);
+        expect(rect.top).to.be.at.least(0);
+      });
+
+      it("grows again when reopened with more room", async () => {
+        const menu = await openAtPoint(40, innerHeight / 2);
+        const capped = menu.getBoundingClientRect().height;
+        await menu.close();
+        await tick(300);
+
+        menu.openAtPoint(100, innerHeight - 20);
+        await tick(300);
+
+        expect(menu.getBoundingClientRect().height).to.be.above(capped);
+      });
+    });
   });
 
   // ─── Opens / closes via trigger ─────────────────────────────────────────
