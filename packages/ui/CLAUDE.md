@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 pnpm dev              # Start Vite dev server
 pnpm build            # Full build (wireit: vite build → CSS build)
 pnpm sb               # Start Storybook on port 6006
-pnpm test             # Run tests with @web/test-runner (Playwright/Chromium)
+pnpm test             # Run tests with @web/test-runner (local Chrome)
 pnpm lint             # ESLint on .js files (parsed with @typescript-eslint/parser for decorator syntax)
 pnpm typecheck        # tsc --noEmit over JSDoc types (first CI step)
 pnpm format           # Prettier
@@ -20,7 +20,7 @@ To run a single test file:
 pnpm web-test-runner components/button/__tests__/button.spec.js --node-resolve
 ```
 
-Tests need Playwright's Chromium. If the runner reports "Executable doesn't exist", run `pnpm exec playwright install chromium` once. The husky pre-commit hook runs `pnpm test`, so commits fail without it.
+Tests run in the locally installed Google Chrome via `@web/test-runner`'s default Chrome launcher (no Playwright). Set `CHROME_PATH` if Chrome isn't in a standard location. The husky pre-commit hook runs `pnpm test`, so commits fail without it.
 
 ## Architecture
 
@@ -69,4 +69,4 @@ The library entry point is `components/index.js`, which side-effect-imports ever
 
 ### Testing
 
-Tests use `@open-wc/testing` (`fixture`, `expect`) with `@web/test-runner` and Playwright (Chromium). Test files match `components/**/*.spec.js`.
+Tests use `@open-wc/testing` (`fixture`, `expect`) with `@web/test-runner` in local Chrome. Test files match `components/**/*.spec.js`.
