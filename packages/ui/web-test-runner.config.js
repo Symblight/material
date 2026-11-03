@@ -1,6 +1,6 @@
 import path from "node:path";
 import { transformAsync } from "@babel/core";
-import { playwrightLauncher } from "@web/test-runner-playwright";
+import { chromeLauncher } from "@web/test-runner-chrome";
 
 const babelConfigFile = path.resolve(
   import.meta.dirname,
@@ -106,7 +106,7 @@ export default {
   // Serialized rather than the default (cpus/2) concurrent pages: a native
   // `<dialog>.showModal()` call in one test file can stall an unrelated
   // concurrently-running file's page for multiple seconds in this
-  // Playwright setup (cross-page contention, not a bug in either
+  // setup (cross-page contention, not a bug in either
   // component) — see dialog.spec.js / menu.spec.js's positioning="fixed"
   // test. Per-file overhead dominates total runtime here, so serializing
   // costs only ~10-20% more wall time.
@@ -133,7 +133,7 @@ export default {
   files: ["components/**/*.spec.js", "!node_modules/", "!.wireit/"],
   // Default Mocha timeout (2000ms) is too tight under concurrent test
   // files — a native `<dialog>.showModal()` call in one file can stall an
-  // unrelated file's page for 2+s in this Playwright setup (cross-page
+  // unrelated file's page for 2+s in this setup (cross-page
   // contention, not a bug in either component). 5000ms absorbs that jitter
   // while still failing on genuine hangs.
   testFramework: {
@@ -147,5 +147,19 @@ export default {
     babelDecoratorsPlugin(),
     processEnvShimPlugin(),
   ],
-  browsers: [playwrightLauncher({ product: "chromium" })],
+  // Local Chrome (no Playwright download). Test pages share one browser, so
+  // background tabs never receive focus events; emulate focus per page so
+  // `:focus` / focus handlers behave as in a foreground tab.
+  browsers: [
+    chromeLauncher({
+      async createPage({ browser }) {
+        const page = await browser.newPage();
+        const session = await page.createCDPSession();
+        await session.send("Emulation.setFocusEmulationEnabled", {
+          enabled: true,
+        });
+        return page;
+      },
+    }),
+  ],
 };

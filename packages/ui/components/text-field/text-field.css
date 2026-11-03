@@ -233,6 +233,11 @@
   padding-block-start: var(--md-text-field-top-space);
 }
 
+.text-field__icon_hidden,
+.text-field__slot_hidden {
+  display: none;
+}
+
 .text-field__trailing {
   padding-inline-end: var(--md-text-field-trailing-space);
 }

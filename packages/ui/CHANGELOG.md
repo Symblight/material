@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.2
+
+### Changed
+
+- `md-text-field`: `leadingSlot` and `trailingSlot` are now read-only. They update on their own when leading or trailing content is added or removed.
+
+### Fixed
+
+- `md-text-field` (outlined): the border no longer runs through a floated label when the field has a placeholder but no value and no focus. The notch now opens whenever the label floats.
+- `md-text-field` (outlined): a resting label no longer overlaps the leading icon. It now starts after the icon, lined up with the input text, in single-line and multiline fields.
+- `md-text-field`: leading and trailing icons added after the field connects are now detected. Previously they were only read once in `connectedCallback`.
+
 ## 0.5.0
 
 ### Breaking changes

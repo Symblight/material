@@ -178,6 +178,61 @@ export const Default: Story = {
    - [ ] No hardcoded colors or pixel values in CSS
    - [ ] State layers implemented for interactive components
 
+## Code Style Principles
+
+Follow these principles in all code you write or modify:
+
+### KISS (Keep It Simple)
+
+- Prefer the simplest solution that solves the actual problem — no speculative abstractions "for the future"
+- Avoid unnecessary layers, wrappers, or design patterns unless complexity is already present
+- If a function needs a comment to explain _what_ it does (not _why_), simplify it instead
+
+### SOLID
+
+- **S**: one class/module/function = one responsibility. Split parsing, storage, and side effects into separate units
+- **O**: extend behavior via new classes/strategies, don't modify working code with new `if`/`switch` branches
+- **L**: subclasses/implementations must be fully substitutable for their base type — no surprise behavior changes
+- **I**: keep interfaces small and specific; don't force consumers to depend on methods they don't use
+- **D**: depend on abstractions (interfaces/types), not concrete implementations — inject dependencies, don't instantiate them inline
+
+### DRY
+
+- Extract repeated logic into shared functions/constants — but only when it's the same _knowledge_, not just visually similar code
+- Don't force-unify two pieces of code that happen to look alike but represent different business rules
+- Prefer duplication over the wrong abstraction
+
+### CSS: use nested syntax
+
+- Use native CSS nesting (or Sass-style nesting if preprocessor is in use) instead of flat/repeated selectors
+- Example:
+
+```css
+.card {
+  padding: 16px;
+
+  &__title {
+    font-weight: 600;
+  }
+
+  &:hover {
+    box-shadow: var(--elevation-2);
+  }
+
+  @media (min-width: 768px) {
+    padding: 24px;
+  }
+}
+```
+
+- Avoid deep nesting beyond 2-3 levels — if selectors get too specific, it's a KISS violation too
+
+### Before writing code, agent should:
+
+1. Check if similar logic already exists in the codebase (DRY)
+2. Choose the simplest structure that satisfies the requirement (KISS)
+3. Only split into multiple classes/interfaces when there's a real reason to (SOLID, not over-engineering)
+
 ## Update Your Agent Memory
 
 As you work through this codebase, update your agent memory with discoveries that will accelerate future work:
