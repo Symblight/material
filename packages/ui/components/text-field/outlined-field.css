@@ -38,6 +38,18 @@
   overflow: hidden;
 }
 
+/* Resting label sits where the input text starts: leading icon + gap. */
+.text-field__outlined-label_leading:not(.text-field__outlined-label_populated) {
+  --_label-inline-start: calc(
+    var(--md-text-field-leading-space) + var(--md-text-field-icon-size) +
+      var(--md-text-field-inline-start-space)
+  );
+  transform: translate(var(--_label-inline-start), calc(50% - 0.75rem));
+  max-width: calc(
+    100% - var(--_label-inline-start) - var(--md-text-field-inline-end-space)
+  );
+}
+
 .text-field__outlined-label_populated {
   transition: all 200ms cubic-bezier(0, 0, 0.2, 1) 0ms;
   transform: translate(calc(0% + 1rem), -0.75rem);
@@ -48,6 +60,16 @@
   .text-field__outlined-label:not(.text-field__outlined-label_populated) {
   height: auto;
   transform: translate(1rem, var(--md-text-field-top-space));
+}
+
+.text-field_multiline
+  .text-field__outlined-label_leading:not(
+    .text-field__outlined-label_populated
+  ) {
+  transform: translate(
+    var(--_label-inline-start),
+    var(--md-text-field-top-space)
+  );
 }
 
 .text-field__outlined-indicator_focused {

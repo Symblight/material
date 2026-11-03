@@ -81,11 +81,14 @@ export class TextField extends FormControlMixin(LitElement) {
   /** @type {TextFieldVariant} */
   #variant = "filled";
 
+  /** Whether anything is assigned to the `leading` slot (tracked via `slotchange`). */
+  #hasLeading = false;
+
+  /** Whether anything is assigned to the `trailing` slot (tracked via `slotchange`). */
+  #hasTrailing = false;
+
   constructor() {
     super();
-
-    this.leadingSlot = false;
-    this.trailingSlot = false;
 
     /** @type {HTMLElement | null} */
     this.customInputElement = null;
@@ -114,6 +117,14 @@ export class TextField extends FormControlMixin(LitElement) {
   /** @returns {import("lit").CSSResultGroup} */
   static get styles() {
     return [styles, filledStyles, outlinedStyles];
+  }
+
+  get leadingSlot() {
+    return this.#hasLeading;
+  }
+
+  get trailingSlot() {
+    return this.#hasTrailing;
   }
 
   get variant() {
@@ -183,19 +194,6 @@ export class TextField extends FormControlMixin(LitElement) {
     control?.focus();
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-
-    const slots = Array.from(this.shadowRoot?.host.children || []).map(
-      (element) => element.attributes.getNamedItem("slot"),
-    );
-    const trailingSlot = slots.find((slot) => slot?.nodeValue === "trailing");
-    const leadingSlot = slots.find((slot) => slot?.nodeValue === "leading");
-
-    this.trailingSlot = !!trailingSlot;
-    this.leadingSlot = !!leadingSlot;
-  }
-
   disconnectedCallback() {
     super.disconnectedCallback();
     if (this.customInputElement) {
@@ -204,33 +202,68 @@ export class TextField extends FormControlMixin(LitElement) {
     }
   }
 
+  /** @param {Event} event */
+  #handleLeadingSlotChange(event) {
+    const hasLeading = this.#hasAssignedElements(event);
+    if (hasLeading === this.#hasLeading) return;
+    this.#hasLeading = hasLeading;
+    this.requestUpdate();
+  }
+
+  /** @param {Event} event */
+  #handleTrailingSlotChange(event) {
+    const hasTrailing = this.#hasAssignedElements(event);
+    if (hasTrailing === this.#hasTrailing) return;
+    this.#hasTrailing = hasTrailing;
+    this.requestUpdate();
+  }
+
+  /** @param {Event} event */
+  #hasAssignedElements(event) {
+    return (
+      /** @type {HTMLSlotElement} */ (event.target).assignedElements({
+        flatten: true,
+      }).length > 0
+    );
+  }
+
+  // The slots are always rendered so `slotchange` can report the first icon;
+  // the wrapper is hidden while its slot is empty.
   get renderLeading() {
-    if (!this.leadingSlot) return nothing;
     return html`
-      <div class="text-field__icon text-field__leading">
-        <slot name="leading"></slot>
+      <div
+        class="text-field__icon text-field__leading ${classMap({
+          "text-field__icon_hidden": !this.#hasLeading,
+        })}"
+      >
+        <slot
+          name="leading"
+          @slotchange=${this.#handleLeadingSlotChange}
+        ></slot>
       </div>
     `;
   }
 
   get renderTrailing() {
-    if (!this.trailingSlot) return nothing;
+    const showError = this.hasValidation && this.#hasTrailing;
     return html`
-      <div class="text-field__icon text-field__trailing">
+      <div
+        class="text-field__icon text-field__trailing ${classMap({
+          "text-field__icon_hidden": !this.#hasTrailing,
+        })}"
+      >
         ${when(
-          this.hasValidation && this.trailingSlot,
+          showError,
           () =>
-            html`<md-icon
-              name=${"alert"}
-              class="${classMap({
-                "text-field__icon_error": this.hasValidation,
-              })}"
-            >
+            html`<md-icon name=${"alert"} class="text-field__icon_error">
               ${unsafeSVG(errorIcon)}
             </md-icon>`,
-
-          () => html` <slot name="trailing"> </slot> `,
         )}
+        <slot
+          name="trailing"
+          class=${classMap({ "text-field__slot_hidden": showError })}
+          @slotchange=${this.#handleTrailingSlotChange}
+        ></slot>
       </div>
     `;
   }
@@ -386,7 +419,7 @@ export class TextField extends FormControlMixin(LitElement) {
           <legend
             class="text-field__outlined-legend ${classMap({
               "text-field__outlined-legend_focused":
-                !!this.label && (this.focused || !!this.value),
+                !!this.label && this.populated,
             })}"
           >
             <span class="text-field__outlined-legend-label">${this.label}</span>
@@ -407,7 +440,7 @@ export class TextField extends FormControlMixin(LitElement) {
             "text-field__label_active": this.focused,
             "text-field__label_error": this.hasValidation,
             "text-field__outlined-label_populated": this.populated,
-            "text-field__outlined-label_leading": this.leadingSlot,
+            "text-field__outlined-label_leading": this.#hasLeading,
           })}"
         >
           ${this.label}
